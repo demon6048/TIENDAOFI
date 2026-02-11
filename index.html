@@ -1,427 +1,783 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KGB STREAMING v4.4 | Menu Fix</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
-    
-    <style>
-        body { font-family: 'Montserrat', sans-serif; background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-        .chart-container { position: relative; width: 100%; height: 300px; }
-        .nav-item.active { background-color: #4338ca; color: white; font-weight: 600; border-left: 4px solid #a5b4fc; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); }
-        .refunded-row { background-color: #fee2e2 !important; }
-        .refunded-text { color: #991b1b !important; text-decoration: line-through; opacity: 0.6; }
-        
-        /* Sidebar Mobile Override Class */
-        .mobile-menu-open { transform: translateX(0) !important; }
-        
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    </style>
-</head>
-<body class="flex flex-col h-screen overflow-hidden text-slate-800 bg-slate-50">
+import React, { useState, useEffect } from 'react';
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  Users, 
+  Settings, 
+  TrendingUp, 
+  DollarSign, 
+  Package, 
+  Plus, 
+  ShoppingCart, 
+  Trash2,
+  AlertCircle,
+  Briefcase,
+  Search,
+  Menu,
+  X,
+  ChevronRight,
+  PieChart,
+  Activity,
+  Save,
+  Filter,
+  MessageCircle,
+  Phone,
+  RefreshCw,
+  Wifi,
+  LogOut
+} from 'lucide-react';
 
-    <!-- Header -->
-    <header class="bg-white border-b border-gray-200 shadow-sm z-30 h-16 flex-shrink-0 relative">
-        <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <!-- Botón Menú Móvil (Solo visible en pantallas pequeñas) -->
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-600 focus:outline-none p-2 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
+// --- Componentes UI Modernos & Responsivos ---
 
-                <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-indigo-500 font-bold text-lg shadow-lg border border-slate-700">
-                    <i class="fa-solid fa-play"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg md:text-2xl font-black text-slate-900 tracking-tighter leading-none uppercase">
-                        KGB <span class="text-indigo-600">STREAMING</span>
-                    </h1>
-                    <p class="text-[9px] md:text-[10px] text-slate-400 font-bold tracking-widest uppercase hidden sm:block">Sistema Local v4.4</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-2">
-                <button onclick="switchMainTab('blueprint')" id="btn-main-blueprint" class="hidden lg:flex px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded text-slate-500 hover:bg-slate-100 border border-transparent hover:border-slate-200">
-                    API
-                </button>
-                <button onclick="switchMainTab('app')" id="btn-main-app" class="px-3 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded bg-slate-900 text-white shadow-lg hover:bg-slate-800 flex items-center border border-slate-700">
-                    <i class="fa-solid fa-desktop mr-2 hidden md:inline"></i> Panel
-                </button>
-                <button onclick="hardReset()" class="text-[9px] md:text-[10px] text-red-300 hover:text-red-500 font-bold uppercase tracking-widest ml-2">Reset</button>
-            </div>
-        </div>
-    </header>
+const Card = ({ children, className = "", noPadding = false }) => (
+  <div className={`bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg shadow-slate-200/50 border border-white/50 ${noPadding ? '' : 'p-4 md:p-6'} ${className}`}>
+    {children}
+  </div>
+);
 
-    <!-- Main Wrapper -->
-    <div class="flex-1 overflow-hidden relative flex">
-        
-        <!-- Mobile Overlay (Fondo oscuro al abrir menú en celular) -->
-        <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity duration-300"></div>
-
-        <!-- Sidebar -->
-        <!-- Lógica CSS: 
-             - fixed: Fijo en móvil para sobreponerse.
-             - md:relative: Relativo en PC para empujar el contenido.
-             - -translate-x-full: Oculto por defecto en móvil (fuera de pantalla a la izq).
-             - md:translate-x-0: Siempre visible en PC (posición 0).
-        -->
-        <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col z-50 shadow-2xl border-r border-slate-800 h-full transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0">
-            <div class="p-6 flex justify-between items-center">
-                <div class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Navegación</div>
-                <!-- Botón cerrar solo visible en móvil -->
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
-            <nav class="space-y-2 px-4 flex-1 overflow-y-auto">
-                <button onclick="switchAppTab('pos')" id="nav-pos" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition active bg-indigo-700 text-white font-bold shadow-lg group">
-                    <i class="fa-solid fa-cart-shopping w-5 mr-3 group-hover:scale-110 transition"></i> <span>Venta Nueva</span>
-                </button>
-                <button onclick="switchAppTab('history')" id="nav-history" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
-                    <i class="fa-solid fa-list-check w-5 mr-3 group-hover:scale-110 transition"></i> <span>Historial</span>
-                </button>
-                <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
-                    <i class="fa-solid fa-chart-pie w-5 mr-3 group-hover:scale-110 transition"></i> <span>Reportes</span>
-                </button>
-                <button onclick="switchAppTab('config')" id="nav-config" class="nav-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-slate-800 transition text-slate-400 hover:text-white group">
-                    <i class="fa-solid fa-sliders w-5 mr-3 group-hover:scale-110 transition"></i> <span>Configuración</span>
-                </button>
-            </nav>
-            
-            <div class="p-5 bg-black/20 border-t border-slate-800 text-center">
-                <p class="text-xs text-slate-500 font-bold">Base de Datos: Local</p>
-                <p class="text-sm font-extrabold text-indigo-400 mt-0.5">José Vizcarra</p>
-            </div>
-        </aside>
-
-        <!-- App Content -->
-        <main class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 relative w-full">
-            
-            <!-- BLUEPRINT VIEW -->
-            <div id="view-blueprint" class="hidden max-w-4xl mx-auto space-y-6">
-                <div class="bg-white p-6 rounded-xl border-l-4 border-indigo-500 shadow-sm"><h2 class="font-bold text-slate-800">Backend API</h2><p class="text-sm text-slate-500">Para uso con Google Sheets (Opcional).</p></div>
-                <div class="bg-slate-900 rounded-xl p-6 relative"><button onclick="copyCode()" class="absolute top-4 right-4 bg-indigo-600 text-white px-3 py-1 rounded text-xs">Copiar</button><pre id="backend-code" class="code-block text-xs text-indigo-300">/* Copia tu código Apps Script aquí */</pre></div>
-            </div>
-
-            <!-- LIVE APP VIEW -->
-            <div id="view-app" class="flex flex-col gap-6">
-                
-                <!-- TAB: POS -->
-                <div id="tab-pos" class="app-tab max-w-4xl mx-auto w-full">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white">
-                            <h2 class="text-base md:text-lg font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-cash-register text-indigo-600"></i> <span class="hidden sm:inline">REGISTRAR</span> VENTA</h2>
-                            <div class="px-2 py-1 bg-slate-100 rounded text-[10px] font-bold text-slate-500">ID: <span id="pos-id">#--</span></div>
-                        </div>
-                        <div class="p-5 md:p-8 space-y-6 md:space-y-8">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Vendedor</label><select id="pos-seller" class="w-full border-gray-200 bg-slate-50 rounded-xl p-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 border"></select></div>
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Plataforma</label><select id="pos-product" onchange="updatePosCalc()" class="w-full border-gray-200 bg-slate-50 rounded-xl p-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 border"></select></div>
-                            </div>
-                            
-                            <!-- Calc Card -->
-                            <div class="bg-slate-900 rounded-2xl p-6 md:p-8 shadow-xl relative overflow-hidden text-white group">
-                                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-600 rounded-full filter blur-[50px] opacity-30 -mr-10 -mt-10"></div>
-                                <div class="grid grid-cols-3 gap-2 md:gap-8 text-center relative z-10">
-                                    <div><p class="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 md:mb-2">COSTO</p><input id="pos-cost" readonly class="w-full bg-transparent text-center font-mono text-base md:text-xl text-slate-400 font-bold outline-none" value="0.00"></div>
-                                    <div class="relative border-x border-slate-700"><p class="text-[8px] md:text-[10px] text-indigo-400 font-bold uppercase tracking-widest mb-1 md:mb-2">VENTA</p><div class="flex items-center justify-center"><span class="text-white font-bold text-sm md:text-lg mr-1">S/</span><input id="pos-price" type="number" oninput="reCalcProfitOnly()" class="w-16 md:w-24 text-center font-mono text-xl md:text-3xl text-white font-bold bg-transparent outline-none" value="0.00"></div></div>
-                                    <div><p class="text-[8px] md:text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1 md:mb-2">GANANCIA</p><p id="pos-profit" class="font-mono text-lg md:text-2xl text-emerald-400 font-bold mt-1">0.00</p></div>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Cliente</label><input type="text" id="pos-client" placeholder="Nombre" class="w-full border-gray-200 p-3 rounded-xl text-sm outline-none focus:border-indigo-500 border"></div>
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Teléfono</label><input type="tel" id="pos-phone" placeholder="999..." class="w-full border-gray-200 p-3 rounded-xl text-sm outline-none focus:border-indigo-500 border"></div>
-                            </div>
-                            <button onclick="submitSale()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-[0.98] uppercase tracking-widest text-sm flex justify-center items-center gap-2"><i class="fa-solid fa-check-circle"></i> Confirmar Venta</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB: HISTORY -->
-                <div id="tab-history" class="app-tab hidden max-w-7xl mx-auto w-full">
-                    <h2 class="text-xl md:text-2xl font-black text-slate-800 mb-4 md:mb-6 flex items-center gap-3">
-                        <span class="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 text-sm md:text-base"><i class="fa-solid fa-list"></i></span>
-                        Historial
-                    </h2>
-
-                    <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 mb-6">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
-                            <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Desde</label><input type="date" id="filter-start" onchange="renderHistoryTable()" class="w-full border-gray-200 rounded-lg p-2 text-xs md:text-sm outline-none border"></div>
-                            <div class="col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Hasta</label><input type="date" id="filter-end" onchange="renderHistoryTable()" class="w-full border-gray-200 rounded-lg p-2 text-xs md:text-sm outline-none border"></div>
-                            <div class="col-span-2 md:col-span-1"><label class="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Vendedor</label><select id="filter-seller" onchange="renderHistoryTable()" class="w-full border-gray-200 rounded-lg p-2 text-xs md:text-sm outline-none border"></select></div>
-                            <button onclick="exportToExcel()" class="col-span-2 md:col-span-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow flex items-center justify-center gap-2 text-xs md:text-sm h-[38px]"><i class="fa-solid fa-file-excel"></i> Exportar</button>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px] md:h-[600px]">
-                            <div class="overflow-x-auto flex-1">
-                                <table class="w-full text-sm text-left whitespace-nowrap md:whitespace-normal">
-                                    <thead class="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 shadow-sm z-10 font-bold tracking-wider">
-                                        <tr>
-                                            <th class="px-4 py-3 md:px-6 md:py-4">Producto / Fecha</th>
-                                            <th class="px-4 py-3 md:px-6 md:py-4">Cliente</th>
-                                            <th class="px-4 py-3 md:px-6 md:py-4 text-right">Comisión</th>
-                                            <th class="px-4 py-3 md:px-6 md:py-4 text-center">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="history-table-body" class="divide-y divide-gray-100"></tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Summary -->
-                        <div class="lg:col-span-1">
-                            <div class="bg-slate-900 text-white p-6 md:p-8 rounded-3xl shadow-xl sticky top-6 border border-slate-700">
-                                <h3 class="font-bold text-base md:text-lg mb-4 md:mb-6 flex items-center gap-2"><i class="fa-solid fa-wallet text-indigo-400"></i> Caja Real</h3>
-                                <div class="space-y-3 md:space-y-4 mb-6 md:mb-8">
-                                    <div class="flex justify-between border-b border-slate-700 pb-2 md:pb-3"><span class="text-slate-400 text-xs md:text-sm">Ventas</span><span class="font-mono font-bold text-base md:text-lg" id="liq-total">S/ 0.00</span></div>
-                                    <div class="flex justify-between border-b border-slate-700 pb-2 md:pb-3"><span class="text-slate-400 text-xs md:text-sm">Válidas</span><span class="font-mono font-bold text-base md:text-lg" id="liq-count">0</span></div>
-                                    <div class="flex justify-between border-b border-slate-700 pb-2 md:pb-3"><span class="text-red-400 text-xs md:text-sm">Reembolsos</span><span class="font-mono font-bold text-base md:text-lg text-red-400" id="liq-refunds">0</span></div>
-                                </div>
-                                <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl p-4 md:p-6 shadow-lg text-center md:text-left">
-                                    <p class="text-[9px] md:text-[10px] text-indigo-100 font-bold uppercase mb-1 tracking-widest">PAGO COMISIÓN</p>
-                                    <p class="text-2xl md:text-3xl font-black text-white font-mono tracking-tight" id="liq-comm">S/ 0.00</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB: CONFIG -->
-                <div id="tab-config" class="app-tab hidden max-w-4xl mx-auto pb-10 w-full">
-                    <h2 class="text-xl md:text-2xl font-black text-slate-800 mb-6">CONFIGURACIÓN</h2>
-                    <div class="flex flex-col gap-6 md:gap-8">
-                        
-                        <!-- 1. PLATAFORMAS -->
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 class="font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2 text-xs uppercase tracking-widest border-b pb-4"><i class="fa-solid fa-layer-group text-indigo-500"></i> Catálogo Plataformas</h3>
-                            <div class="bg-indigo-50 p-4 md:p-5 rounded-xl mb-4 border border-indigo-100 flex flex-col md:flex-row gap-3">
-                                <input type="text" id="new-prod-name" placeholder="Nombre (Ej. Netflix)" class="flex-grow border border-indigo-200 bg-white rounded-lg px-3 py-2 text-sm outline-none">
-                                <div class="flex gap-2">
-                                    <input type="number" id="new-prod-cost" class="w-20 border border-indigo-200 bg-white rounded-lg px-2 py-2 text-sm text-center" placeholder="Costo">
-                                    <input type="number" id="new-prod-price" class="w-20 border border-indigo-200 bg-white rounded-lg px-2 py-2 text-sm text-center" placeholder="Venta">
-                                    <button onclick="addProduct()" class="bg-indigo-600 text-white px-4 rounded-lg font-bold text-sm shadow-md">Add</button>
-                                </div>
-                            </div>
-                            <div class="overflow-y-auto max-h-[300px] border border-gray-100 rounded-xl">
-                                <table class="w-full text-sm text-left"><thead class="bg-slate-50 text-slate-500 font-bold sticky top-0 z-10 text-xs"><tr><th class="p-3">Plataforma</th><th class="p-3 text-center">Costo</th><th class="p-3 text-center">Venta</th><th class="p-3 text-right"></th></tr></thead><tbody id="config-prod-list" class="divide-y divide-gray-100 text-slate-700"></tbody></table>
-                            </div>
-                        </div>
-
-                        <!-- 2. VENDEDORES -->
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 class="font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2 text-xs uppercase tracking-widest border-b pb-4"><i class="fa-solid fa-users text-indigo-500"></i> Vendedores</h3>
-                            <div class="bg-slate-50 p-4 md:p-5 rounded-xl mb-4 border border-slate-100 flex flex-col md:flex-row gap-3">
-                                <input type="text" id="new-seller-name" placeholder="Nombre" class="flex-grow border border-gray-200 bg-white rounded-lg px-3 py-2 text-sm outline-none">
-                                <div class="flex gap-2">
-                                    <input type="tel" id="new-seller-phone" placeholder="Celular" class="w-32 border border-gray-200 bg-white rounded-lg px-3 py-2 text-sm outline-none">
-                                    <button onclick="addSeller()" class="bg-slate-800 text-white px-4 rounded-lg font-bold text-sm shadow-md">Crear</button>
-                                </div>
-                            </div>
-                            <div class="overflow-y-auto max-h-[300px] pr-1"><ul id="config-seller-list" class="space-y-2"></ul></div>
-                        </div>
-
-                        <!-- 3. DISTRIBUCIÓN -->
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200">
-                            <h3 class="font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2 text-xs uppercase tracking-widest border-b pb-4"><i class="fa-solid fa-percent text-indigo-500"></i> Distribución</h3>
-                            <div class="space-y-4">
-                                <div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Admin: <span id="display-admin-pct" class="text-indigo-600 font-black">60%</span></label><input type="range" id="range-admin" min="0" max="100" value="60" oninput="updateConfigRange('admin')" class="w-full h-2 bg-slate-200 rounded-lg accent-indigo-600"></div>
-                                <div><label class="flex justify-between text-xs font-bold text-slate-500 mb-1">Vendedor: <span id="display-seller-pct" class="text-emerald-600 font-black">40%</span></label><input type="range" id="range-seller" min="0" max="100" value="40" oninput="updateConfigRange('seller')" class="w-full h-2 bg-slate-200 rounded-lg accent-emerald-500"></div>
-                                <button onclick="saveConfigPercentages()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase hover:bg-black transition shadow-lg tracking-widest">Guardar Cambios</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB: DASHBOARD -->
-                <div id="tab-dashboard" class="app-tab hidden max-w-6xl mx-auto w-full">
-                    <h2 class="text-xl md:text-2xl font-black text-slate-800 mb-6">REPORTES</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-                        <div class="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm"><p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Ventas</p><p id="dash-total" class="text-xl md:text-2xl font-black text-slate-800">S/ 0.00</p></div>
-                        <div class="bg-white p-4 md:p-6 rounded-2xl border border-indigo-100 shadow-sm"><p class="text-[10px] text-indigo-500 uppercase font-bold mb-1">Utilidad</p><p id="dash-admin" class="text-xl md:text-2xl font-black text-indigo-600">S/ 0.00</p></div>
-                        <div class="bg-white p-4 md:p-6 rounded-2xl border border-emerald-100 shadow-sm"><p class="text-[10px] text-emerald-500 uppercase font-bold mb-1">Comisiones</p><p id="dash-seller" class="text-xl md:text-2xl font-black text-emerald-600">S/ 0.00</p></div>
-                        <div class="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm"><p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Ops</p><p id="dash-count" class="text-xl md:text-2xl font-black text-slate-800">0</p></div>
-                    </div>
-                    <div class="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm h-64 md:h-96 w-full"><canvas id="chartSellers"></canvas></div>
-                </div>
-
-            </div>
-        </main>
+const StatCard = ({ title, value, subtext, icon: Icon, colorClass, trend }) => (
+  <Card className="relative overflow-hidden group">
+    <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity ${colorClass}`}>
+      <Icon size={80} />
     </div>
+    <div className="relative z-10">
+      <div className="flex items-center gap-3 mb-2">
+        <div className={`p-2 rounded-lg ${colorClass} bg-opacity-10 text-opacity-100`}>
+          <Icon size={20} />
+        </div>
+        <span className="text-slate-500 font-medium text-sm">{title}</span>
+      </div>
+      <div className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">{value}</div>
+      <div className="flex items-center gap-2 mt-2">
+         {trend && <span className="text-emerald-500 text-xs font-bold bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-1">
+            <TrendingUp size={12}/> {trend}
+         </span>}
+        <span className="text-slate-400 text-xs truncate">{subtext}</span>
+      </div>
+    </div>
+  </Card>
+);
 
-    <!-- Modals -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4"><div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-100 transition"><h3 class="text-lg font-bold text-slate-800 mb-2">Confirmar</h3><p class="text-sm text-slate-500 mb-6">¿Estás seguro de esta acción?</p><div class="flex justify-end gap-3"><button onclick="closeConfirm()" class="px-4 py-2 text-slate-600 font-bold text-sm hover:bg-slate-100 rounded-lg">Cancelar</button><button id="btn-do-action" class="px-4 py-2 bg-red-600 text-white font-bold text-sm hover:bg-red-700 rounded-lg shadow-md">Confirmar</button></div></div></div>
-    <div id="toast" class="fixed bottom-8 right-1/2 translate-x-1/2 md:translate-x-0 md:right-8 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl translate-y-40 transition-transform duration-500 z-50 flex items-center gap-3 whitespace-nowrap"><div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white"><i class="fa-solid fa-check text-xs"></i></div><p class="text-xs md:text-sm font-bold">¡Hecho!</p></div>
+const Button = ({ children, onClick, variant = "primary", disabled = false, className = "", icon: Icon }) => {
+  const baseStyle = "px-4 py-3 md:py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-sm active:scale-95 touch-manipulation";
+  const variants = {
+    primary: "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-indigo-500/30 hover:shadow-lg disabled:opacity-50 disabled:shadow-none",
+    secondary: "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300",
+    danger: "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100",
+    success: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-emerald-500/30 hover:shadow-lg",
+    whatsapp: "bg-[#25D366] text-white hover:bg-[#128C7E] hover:shadow-green-500/30 hover:shadow-lg"
+  };
+  return (
+    <button onClick={onClick} disabled={disabled} className={`${baseStyle} ${variants[variant]} ${className}`}>
+      {Icon && <Icon size={18} />}
+      {children}
+    </button>
+  );
+};
 
-    <script>
-        // --- DATA STORE ---
-        const defaultData = { config: { adminPct: 0.60, sellerPct: 0.40 }, sellers: [], products: [], sales: [] };
-        let DB = JSON.parse(localStorage.getItem('kgb_db_v4')) || defaultData;
+const Input = ({ label, ...props }) => (
+  <div className="flex flex-col gap-1.5 mb-4">
+    {label && <label className="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">{label}</label>}
+    <input 
+      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-slate-700 placeholder:text-slate-400 text-base"
+      {...props} 
+    />
+  </div>
+);
 
-        // --- CORE UI ---
-        function saveData() { localStorage.setItem('kgb_db_v4', JSON.stringify(DB)); }
-        function hardReset() { if(confirm("¡PELIGRO! ¿Borrar todo?")) { localStorage.removeItem('kgb_db_v4'); location.reload(); } }
-        
-        // Sidebar Toggle with State Class Logic
-        function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('mobile-overlay');
-            if(sb.classList.contains('mobile-menu-open')) {
-                sb.classList.remove('mobile-menu-open');
-                ov.classList.add('hidden');
-            } else {
-                sb.classList.add('mobile-menu-open');
-                ov.classList.remove('hidden');
-            }
-        }
+const Badge = ({ children, color = "indigo" }) => {
+  const colors = {
+    indigo: "bg-indigo-50 text-indigo-700 border-indigo-100",
+    emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    amber: "bg-amber-50 text-amber-700 border-amber-100",
+    rose: "bg-rose-50 text-rose-700 border-rose-100",
+    slate: "bg-slate-100 text-slate-600 border-slate-200",
+  };
+  return (
+    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${colors[color] || colors.indigo} whitespace-nowrap`}>
+      {children}
+    </span>
+  );
+};
 
-        function initApp() {
-            renderPosSelects(); renderFilterSeller(); renderSellerList(); renderProductList(); loadConfigUI(); updatePosCalc();
-            document.getElementById('pos-id').innerText = '#' + Math.floor(Math.random()*10000);
-        }
+// --- Gráficos SVG Simples ---
+const SimpleBarChart = ({ data, maxVal }) => (
+  <div className="flex items-end gap-2 h-32 w-full pt-4 overflow-x-auto pb-2 no-scrollbar">
+    {data.map((item, idx) => {
+      const heightPct = maxVal > 0 ? (item.value / maxVal) * 100 : 0;
+      return (
+        <div key={idx} className="flex-1 min-w-[40px] flex flex-col items-center group">
+           <div className="relative w-full flex justify-center items-end h-full bg-slate-50 rounded-t-lg overflow-hidden">
+             <div 
+                style={{ height: `${heightPct}%` }} 
+                className="w-full max-w-[24px] bg-indigo-500 rounded-t-md transition-all duration-500 group-hover:bg-indigo-400 relative"
+             >
+             </div>
+           </div>
+           <span className="text-[10px] text-slate-400 mt-2 truncate w-full text-center">{item.label}</span>
+        </div>
+      );
+    })}
+  </div>
+);
 
-        function switchAppTab(t){
-            document.querySelectorAll('.app-tab').forEach(e=>e.classList.add('hidden'));
-            document.getElementById('tab-'+t).classList.remove('hidden');
-            document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active','bg-indigo-700','text-white','font-bold','shadow-lg'));
-            document.getElementById('nav-'+t).classList.add('active','bg-indigo-700','text-white','font-bold','shadow-lg');
-            if(t==='history'){renderFilterSeller();renderHistoryTable();}
-            if(t==='dashboard')updateDashboard();
-            
-            // Auto-close sidebar on mobile only
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('mobile-overlay');
-            if(sb.classList.contains('mobile-menu-open')) {
-                sb.classList.remove('mobile-menu-open');
-                ov.classList.add('hidden');
-            }
-        }
-        function showToast(m){const t=document.getElementById('toast');t.querySelector('p').innerText=m;t.classList.remove('translate-y-40');setTimeout(()=>t.classList.add('translate-y-40'),3000);}
+// --- Constantes de Inicialización ---
+const INITIAL_PRODUCTS = [
+  { id: 1, name: 'Lente Blue Defense 1.56', cost: 35, price: 85, stock: 12, category: 'Lentes' },
+  { id: 2, name: 'Montura Acetato Premium', cost: 45, price: 120, stock: 5, category: 'Monturas' },
+  { id: 3, name: 'Lente Policarbonato AR', cost: 25, price: 60, stock: 20, category: 'Lentes' },
+  { id: 4, name: 'Ray-Ban Aviator (Réplica)', cost: 60, price: 150, stock: 3, category: 'Sol' },
+  { id: 5, name: 'Spray Limpiador 60ml', cost: 5, price: 15, stock: 50, category: 'Accesorios' },
+];
 
-        // --- POS LOGIC ---
-        function renderPosSelects() {
-            const sSel = document.getElementById('pos-seller'); const pSel = document.getElementById('pos-product');
-            const currS = sSel.value; const currP = pSel.value;
-            sSel.innerHTML = DB.sellers.map(x=>`<option value="${x.name}">${x.name}</option>`).join('');
-            pSel.innerHTML = '<option value="">Seleccione...</option>' + DB.products.map((x,i)=>`<option value="${i}">${x.name}</option>`).join('');
-            if(currS) sSel.value = currS; if(currP && pSel.querySelector(`option[value="${currP}"]`)) pSel.value = currP;
-        }
-        function updatePosCalc(){
-            const idx=document.getElementById('pos-product').value; 
-            if(idx==="") { document.getElementById('pos-cost').value='0.00'; document.getElementById('pos-price').value='0.00'; document.getElementById('pos-profit').innerText='0.00'; return; }
-            const p=DB.products[idx]; document.getElementById('pos-cost').value=p.cost.toFixed(2);
-            let val=parseFloat(document.getElementById('pos-price').value); 
-            if(val===0||isNaN(val)) { val=p.price; document.getElementById('pos-price').value=val.toFixed(2); }
-            reCalcProfitOnly();
-        }
-        function reCalcProfitOnly() {
-            const c=parseFloat(document.getElementById('pos-cost').value)||0; const p=parseFloat(document.getElementById('pos-price').value)||0;
-            document.getElementById('pos-profit').innerText=(p-c).toFixed(2);
-        }
-        function submitSale(){
-            const idx=document.getElementById('pos-product').value; if(idx==="")return alert("Selecciona Plataforma");
-            const sName=document.getElementById('pos-seller').value; if(!sName)return alert("Crea vendedor");
-            const p=DB.products[idx]; const pr=parseFloat(document.getElementById('pos-price').value); const prof=pr-p.cost;
-            const sObj=DB.sellers.find(s=>s.name===sName);
-            DB.sales.push({
-                id:Math.floor(Date.now()/1000), date:new Date().toISOString(), seller:sName, sellerPhone:sObj?sObj.phone:'', 
-                product:p.name, client:document.getElementById('pos-client').value, phone:document.getElementById('pos-phone').value, 
-                price:pr, cost:p.cost, profit:prof, admin:prof*DB.config.adminPct, sellerComm:prof*DB.config.sellerPct, status:'active'
-            });
-            saveData(); showToast("Venta OK"); document.getElementById('pos-client').value=''; document.getElementById('pos-phone').value=''; document.getElementById('pos-id').innerText='#'+Math.floor(Math.random()*10000);
-        }
+const INITIAL_VENDORS = [
+  { id: 1, name: 'Ana García', phone: '51999111222', totalSales: 5, totalCommissions: 120, status: 'active' },
+  { id: 2, name: 'Carlos Pérez', phone: '51999333444', totalSales: 8, totalCommissions: 210, status: 'active' },
+  { id: 3, name: 'Sofía Lopez', phone: '51999555666', totalSales: 2, totalCommissions: 45, status: 'inactive' },
+];
 
-        // --- HISTORY ---
-        function renderFilterSeller() { const f=document.getElementById('filter-seller'); const c=f.value; f.innerHTML='<option value="">-- Todos --</option>'+DB.sellers.map(x=>`<option value="${x.name}">${x.name}</option>`).join(''); f.value=c; }
-        function getFilteredData() {
-            const s=document.getElementById('filter-start').value, e=document.getElementById('filter-end').value, sel=document.getElementById('filter-seller').value;
-            let d=DB.sales; if(s)d=d.filter(x=>x.date.split('T')[0]>=s); if(e)d=d.filter(x=>x.date.split('T')[0]<=e); if(sel)d=d.filter(x=>x.seller===sel); return d;
-        }
-        function renderHistoryTable() {
-            const d=getFilteredData(); let tc=0,ts=0,rc=0; d.forEach(x=>{if(x.status!=='refunded'){tc+=x.sellerComm;ts+=x.price;}else{rc++;}});
-            document.getElementById('liq-comm').innerText='S/ '+tc.toFixed(2); document.getElementById('liq-total').innerText='S/ '+ts.toFixed(2); document.getElementById('liq-count').innerText=d.length-rc; document.getElementById('liq-refunds').innerText=rc;
-            
-            const tbody=document.getElementById('history-table-body');
-            tbody.innerHTML=d.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(s=>{
-                const isR=s.status==='refunded';
-                const voucherText = `🎫 KGB STREAMING - REGISTRO\n---------------------------\n🆔 ID Transacción: #${s.id}\n📆 Fecha: ${new Date(s.date).toLocaleDateString()}\n👤 Vendedor: ${s.seller}\n📺 Plataforma: ${s.product}\n💰 TU COMISIÓN: S/ ${s.sellerComm.toFixed(2)}\n---------------------------\n✅ Su compra ha sido verificada en el sistema.`;
-                const safeV = JSON.stringify(voucherText).replace(/"/g, '&quot;'); const safeS = JSON.stringify(s).replace(/"/g, '&quot;');
-                return `<tr class="border-b border-gray-100 transition group ${isR?'refunded-row':'hover:bg-slate-50'}">
-                    <td class="px-4 py-3 md:px-6 md:py-4 align-top ${isR?'refunded-text':''}">
-                        <div class="font-black text-indigo-900 text-xs md:text-sm mb-1 uppercase">${s.product}</div>
-                        <div class="flex items-center gap-1 text-[10px] md:text-xs text-slate-500 font-medium"><span>${new Date(s.date).toLocaleDateString()}</span><span>-</span><span>${s.seller}</span></div>
-                    </td>
-                    <td class="px-4 py-3 md:px-6 md:py-4 align-top ${isR?'refunded-text':''}">
-                        <div class="font-bold text-slate-700 text-xs md:text-sm">${s.client||'-'}</div>
-                        <div class="text-[10px] md:text-xs text-slate-400 font-mono">${s.phone||'--'}</div>
-                    </td>
-                    <td class="px-4 py-3 md:px-6 md:py-4 text-right align-middle">
-                        ${isR ? '<span class="text-[10px] font-bold text-red-800">S/ 0.00</span>' : `<div class="font-black text-emerald-600 text-sm md:text-lg">S/ ${s.sellerComm.toFixed(2)}</div>`}
-                    </td>
-                    <td class="px-4 py-3 md:px-6 md:py-4 text-center align-middle">
-                        ${isR ? '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-[9px] font-bold">DEV</span>' 
-                              : `<div class="flex justify-center gap-2">
-                                   <button onclick="confirmAction('refund', ${s.id})" class="w-8 h-8 rounded border border-gray-200 text-red-400 hover:bg-red-50 flex items-center justify-center"><i class="fa-solid fa-rotate-left"></i></button>
-                                   <button onclick='copyVoucher(${safeV})' class="w-8 h-8 rounded border border-gray-200 text-blue-500 hover:bg-blue-50 flex items-center justify-center"><i class="fa-regular fa-copy"></i></button>
-                                   <button onclick='sendWhatsapp(${safeS})' class="w-8 h-8 rounded border border-gray-200 text-green-500 hover:bg-green-50 flex items-center justify-center"><i class="fa-brands fa-whatsapp font-bold"></i></button>
-                                 </div>`}
-                    </td>
-                </tr>`
-            }).join('');
-        }
+const INITIAL_SALES = [
+  { id: 101, productName: 'Lente Blue Defense', vendorId: 2, vendorName: 'Carlos Pérez', sellPrice: 85, grossProfit: 50, adminEarnings: 30, vendorEarnings: 20, date: new Date().toISOString() },
+  { id: 102, productName: 'Spray Limpiador', vendorId: 1, vendorName: 'Ana García', sellPrice: 15, grossProfit: 10, adminEarnings: 6, vendorEarnings: 4, date: new Date().toISOString() },
+];
 
-        // --- ACTIONS ---
-        function copyVoucher(txt){ const t=document.createElement("textarea"); t.value=txt; t.style.position="fixed"; t.style.opacity="0"; document.body.appendChild(t); t.focus(); t.select(); try{document.execCommand('copy');showToast("Copiado");}catch(e){} document.body.removeChild(t); }
-        function sendWhatsapp(s){
-            let p = s.sellerPhone; if(!p){const obj=DB.sellers.find(x=>x.name===s.seller); if(obj)p=obj.phone;} if(!p)return alert("Sin teléfono");
-            const txt = `🎫 KGB STREAMING - REGISTRO\n---------------------------\n🆔 ID Transacción: #${s.id}\n📆 Fecha: ${new Date(s.date).toLocaleDateString()}\n👤 Vendedor: ${s.seller}\n📺 Plataforma: ${s.product}\n💰 TU COMISIÓN: S/ ${s.sellerComm.toFixed(2)}\n---------------------------\n✅ Su compra ha sido verificada en el sistema.`;
-            window.open(`https://wa.me/${p}?text=${encodeURIComponent(txt)}`,'_blank');
-        }
-        let actId=null; let actType=''; 
-        function confirmAction(type, id) { actType=type; actId=id; document.getElementById('confirm-modal').classList.remove('hidden'); }
-        function closeConfirm(){document.getElementById('confirm-modal').classList.add('hidden');}
-        document.getElementById('btn-do-action').onclick=function(){
-            if(actType==='refund'){const s=DB.sales.find(x=>x.id===actId); if(s){s.status='refunded'; saveData(); showToast("Anulado"); renderHistoryTable();}}
-            if(actType==='del_seller'){DB.sellers=DB.sellers.filter(s=>s.id!==actId); saveData(); renderSellerList(); renderPosSelects(); showToast("Eliminado");}
-            if(actType==='del_prod'){DB.products=DB.products.filter(p=>p.id!==actId); saveData(); renderProductList(); renderPosSelects(); showToast("Eliminado");}
-            closeConfirm();
-        };
+const INITIAL_CONFIG = { adminPct: 60, vendorPct: 40 };
+const APP_VERSION = "2.3.1"; // Versión Mobile Optimized
 
-        function exportToExcel(){ const d=getFilteredData(); if(d.length===0)return alert("Sin datos"); const ws=XLSX.utils.json_to_sheet(d.map(x=>({Fecha:x.date,Vendedor:x.seller,Producto:x.product,Comision:x.status==='refunded'?0:x.sellerComm,Estado:x.status}))); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Ventas"); XLSX.writeFile(wb,"KGB_Reporte.xlsx"); }
+// --- Componente Principal ---
 
-        // --- CONFIG ---
-        function loadConfigUI(){document.getElementById('range-admin').value=DB.config.adminPct*100; document.getElementById('range-seller').value=DB.config.sellerPct*100; updateConfigRange('admin'); renderSellerList(); renderProductList();}
-        function updateConfigRange(s){ const a=document.getElementById('range-admin'),b=document.getElementById('range-seller'); let v=parseInt(s==='admin'?a.value:b.value); if(s==='admin')b.value=100-v; else a.value=100-v; document.getElementById('display-admin-pct').innerText=a.value+'%'; document.getElementById('display-seller-pct').innerText=b.value+'%'; }
-        function saveConfigPercentages(){ DB.config.adminPct=document.getElementById('range-admin').value/100; DB.config.sellerPct=document.getElementById('range-seller').value/100; saveData(); showToast("Guardado"); updatePosCalc(); }
-        
-        function renderSellerList(){ document.getElementById('config-seller-list').innerHTML=DB.sellers.map((s)=>`<li class="flex justify-between items-center p-3 bg-slate-50 border border-slate-100 rounded-lg text-sm group"><div><span class="font-bold text-slate-700 block">${s.name}</span><span class="text-xs text-slate-400 font-mono"><i class="fa-solid fa-phone mr-1"></i>${s.phone||'--'}</span></div><button onclick="confirmAction('del_seller', ${s.id})" class="text-slate-300 hover:text-red-500"><i class="fa-solid fa-trash fa-lg"></i></button></li>`).join(''); }
-        function addSeller(){ const n=document.getElementById('new-seller-name').value; const p=document.getElementById('new-seller-phone').value; if(n){ DB.sellers.push({id:Date.now(), name:n, phone:p}); document.getElementById('new-seller-name').value=''; document.getElementById('new-seller-phone').value=''; saveData(); renderSellerList(); renderPosSelects(); showToast("Agregado"); } }
-        function renderProductList(){ document.getElementById('config-prod-list').innerHTML=DB.products.map((p,i)=>`<tr class="border-b border-gray-50 hover:bg-slate-50 transition"><td class="p-4 font-bold text-slate-700">${p.name}</td><td class="p-4 text-slate-500 text-center">S/ ${p.cost}</td><td class="p-4 font-bold text-indigo-600 text-center">S/ ${p.price}</td><td class="p-4 text-right"><button onclick="confirmAction('del_prod', ${p.id})" class="text-slate-300 hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button></td></tr>`).join(''); }
-        function addProduct(){ const n=document.getElementById('new-prod-name').value, c=parseFloat(document.getElementById('new-prod-cost').value), p=parseFloat(document.getElementById('new-prod-price').value); if(n&&c&&p){ DB.products.push({id:Date.now(), name:n,cost:c,price:p}); document.getElementById('new-prod-name').value=''; saveData(); renderProductList(); renderPosSelects(); showToast("Agregado"); } }
+export default function App() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Cerrado por defecto en móvil si inicia así
+  const [isMobile, setIsMobile] = useState(false);
 
-        // --- DASHBOARD ---
-        function updateDashboard(){
-            let t=0,a=0,s=0,c=0; const ss={}; DB.sales.forEach(x=>{ if(x.status!=='refunded'){ t+=x.price; a+=x.admin; s+=x.sellerComm; c++; if(!ss[x.seller])ss[x.seller]=0; ss[x.seller]+=x.sellerComm; } });
-            document.getElementById('dash-total').innerText='S/ '+t.toFixed(2); document.getElementById('dash-admin').innerText='S/ '+a.toFixed(2); document.getElementById('dash-seller').innerText='S/ '+s.toFixed(2); document.getElementById('dash-count').innerText=c;
-            const ctxS=document.getElementById('chartSellers').getContext('2d'); new Chart(ctxS,{type:'bar',data:{labels:Object.keys(ss),datasets:[{label:'Comisión',data:Object.values(ss),backgroundColor:'#4f46e5',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
-        }
+  // Detectar móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(true); // En PC siempre abierto
+      else setSidebarOpen(false);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-        function copyCode(){ navigator.clipboard.writeText(document.getElementById('backend-code').innerText); showToast("Copiado"); }
+  // --- Estados Globales con Persistencia ---
+  const [config, setConfig] = useState(() => {
+    const saved = localStorage.getItem('opti_config');
+    return saved ? JSON.parse(saved) : INITIAL_CONFIG;
+  });
 
-        window.onload = initApp;
-    </script>
-</body>
-</html>
+  const [products, setProducts] = useState(() => {
+    const saved = localStorage.getItem('opti_products');
+    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+  });
+
+  const [vendors, setVendors] = useState(() => {
+    const saved = localStorage.getItem('opti_vendors');
+    return saved ? JSON.parse(saved) : INITIAL_VENDORS;
+  });
+
+  const [sales, setSales] = useState(() => {
+    const saved = localStorage.getItem('opti_sales');
+    return saved ? JSON.parse(saved) : INITIAL_SALES;
+  });
+
+  useEffect(() => { localStorage.setItem('opti_config', JSON.stringify(config)); }, [config]);
+  useEffect(() => { localStorage.setItem('opti_products', JSON.stringify(products)); }, [products]);
+  useEffect(() => { localStorage.setItem('opti_vendors', JSON.stringify(vendors)); }, [vendors]);
+  useEffect(() => { localStorage.setItem('opti_sales', JSON.stringify(sales)); }, [sales]);
+
+  // Estados UI
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [newProduct, setNewProduct] = useState({ name: '', category: 'Lentes', cost: '', price: '', stock: '' });
+
+  const [showVendorForm, setShowVendorForm] = useState(false);
+  const [newVendor, setNewVendor] = useState({ name: '', phone: '' });
+
+  const [posSelection, setPosSelection] = useState({ productId: '', vendorId: '' });
+
+  // --- Lógica de Negocio ---
+
+  const handleProcessSale = () => {
+    const product = products.find(p => p.id === Number(posSelection.productId));
+    const vendor = vendors.find(v => v.id === Number(posSelection.vendorId));
+
+    if (!product || !vendor) return alert("Por favor selecciona un producto y un vendedor.");
+    if (product.stock <= 0) return alert("¡Sin stock disponible!");
+
+    const grossProfit = product.price - product.cost;
+    const adminShare = grossProfit * (config.adminPct / 100);
+    const vendorShare = grossProfit * (config.vendorPct / 100);
+
+    const newSale = {
+      id: Date.now(),
+      productName: product.name,
+      sellPrice: product.price,
+      grossProfit,
+      vendorId: vendor.id,
+      vendorName: vendor.name,
+      adminEarnings: adminShare,
+      vendorEarnings: vendorShare,
+      date: new Date().toISOString()
+    };
+
+    setSales([newSale, ...sales]);
+    setProducts(products.map(p => p.id === product.id ? { ...p, stock: p.stock - 1 } : p));
+    setVendors(vendors.map(v => v.id === vendor.id ? { 
+      ...v, 
+      totalSales: v.totalSales + 1, 
+      totalCommissions: v.totalCommissions + vendorShare 
+    } : v));
+    
+    setPosSelection({ productId: '', vendorId: '' });
+  };
+
+  const sendWhatsappVoucher = (sale) => {
+    const vendor = vendors.find(v => v.id === sale.vendorId);
+    
+    if (!vendor || !vendor.phone) return alert("El vendedor no tiene un número de teléfono registrado.");
+
+    const fecha = new Date(sale.date).toLocaleDateString();
+    const hora = new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const message = `
+*🧾 COMPROBANTE DE COMISIÓN*
+*OPTISYSTEM* - Reporte Digital
+─────────────────────
+👤 *Vendedor:* ${vendor.name}
+📅 *Fecha:* ${fecha}  🕒 *Hora:* ${hora}
+─────────────────────
+🛍️ *DETALLE VENTA*
+Producto: ${sale.productName}
+P. Venta: S/ ${sale.sellPrice.toFixed(2)}
+
+💵 *TU GANANCIA*
+*S/ ${sale.vendorEarnings.toFixed(2)}*
+─────────────────────
+✅ _Estado: Pagado/Autorizado_
+🚀 ¡Sigue sumando ventas!
+    `.trim();
+
+    const url = `https://wa.me/${vendor.phone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
+
+  const contactVendor = (vendor) => {
+      if(!vendor.phone) return alert("Sin teléfono registrado");
+      const message = `Hola ${vendor.name}, te escribo desde la administración de OptiSystem...`;
+      window.open(`https://wa.me/${vendor.phone}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const handleAddProduct = () => {
+    if (!newProduct.name || !newProduct.price || !newProduct.cost) return alert("Completa los campos obligatorios");
+    
+    const productToAdd = {
+        id: Date.now(),
+        name: newProduct.name,
+        category: newProduct.category,
+        cost: parseFloat(newProduct.cost),
+        price: parseFloat(newProduct.price),
+        stock: parseInt(newProduct.stock) || 0
+    };
+
+    setProducts([...products, productToAdd]);
+    setNewProduct({ name: '', category: 'Lentes', cost: '', price: '', stock: '' });
+    setShowProductForm(false);
+  };
+
+  const handleDeleteProduct = (id) => {
+    if(confirm("¿Seguro que deseas eliminar este producto?")) {
+        setProducts(products.filter(p => p.id !== id));
+    }
+  };
+
+  const handleAddVendor = () => {
+      if(!newVendor.name || !newVendor.phone) return alert("Nombre y Teléfono son obligatorios");
+      setVendors([...vendors, { 
+          id: Date.now(), 
+          name: newVendor.name,
+          phone: newVendor.phone, 
+          totalSales: 0, 
+          totalCommissions: 0, 
+          status: 'active' 
+      }]);
+      setNewVendor({ name: '', phone: '' });
+      setShowVendorForm(false);
+  };
+
+  const handleConfigChange = (e) => {
+    const val = parseInt(e.target.value);
+    setConfig({ adminPct: val, vendorPct: 100 - val });
+  };
+
+  const handleResetApp = () => {
+    if(confirm("⚠️ ¿Resetear de Fábrica? Se borrarán todos los datos.")) {
+        localStorage.removeItem('opti_config');
+        localStorage.removeItem('opti_products');
+        localStorage.removeItem('opti_vendors');
+        localStorage.removeItem('opti_sales');
+        window.location.reload();
+    }
+  };
+
+  const chartData = vendors.map(v => ({ label: v.name.split(' ')[0], value: Math.round(v.totalCommissions) }));
+  const maxCommission = Math.max(...chartData.map(d => d.value), 100);
+  const totalAdminNet = sales.reduce((acc, curr) => acc + curr.adminEarnings, 0);
+  const totalRevenue = sales.reduce((acc, curr) => acc + curr.sellPrice, 0);
+
+  // --- Views ---
+
+  const SidebarItem = ({ id, icon: Icon, label }) => (
+    <button 
+      onClick={() => { setActiveTab(id); if(isMobile) setSidebarOpen(false); }}
+      className={`w-full flex items-center gap-3 px-4 py-3.5 md:py-3 rounded-xl transition-all duration-200 group ${
+        activeTab === id 
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
+        : 'text-slate-500 hover:bg-slate-100'
+      }`}
+    >
+      <Icon size={20} className={activeTab === id ? 'text-indigo-100' : 'text-slate-400 group-hover:text-slate-600'} />
+      <span className="font-medium">{label}</span>
+      {activeTab === id && <ChevronRight size={16} className="ml-auto opacity-50"/>}
+    </button>
+  );
+
+  return (
+    <div className="flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden">
+      
+      {/* Backdrop para Móvil */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Responsive */}
+      <aside className={`fixed md:relative top-0 left-0 h-full w-72 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 z-50 shadow-2xl md:shadow-none ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-20 lg:w-72'
+      }`}>
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
+              <span className="text-white font-bold text-xl">O</span>
+            </div>
+            <div className="md:hidden lg:block">
+              <h1 className="font-bold text-lg tracking-tight text-slate-900">OptiSystem</h1>
+              <p className="text-xs text-slate-400 font-medium">ERP v{APP_VERSION}</p>
+            </div>
+          </div>
+          {/* Botón Cerrar en Móvil */}
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden p-1 text-slate-400 hover:text-slate-600">
+             <X size={24} />
+          </button>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-2 mt-2 overflow-y-auto">
+          <SidebarItem id="dashboard" icon={LayoutDashboard} label="Dashboard" />
+          <SidebarItem id="pos" icon={ShoppingCart} label="Punto de Venta" />
+          <div className="my-4 border-t border-slate-100 md:hidden lg:block"></div>
+          <SidebarItem id="products" icon={Package} label="Inventario" />
+          <SidebarItem id="vendors" icon={Users} label="Vendedores" />
+          <SidebarItem id="config" icon={Settings} label="Configuración" />
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto relative w-full h-full">
+        {/* Header */}
+        <header className="sticky top-0 z-30 px-4 md:px-6 py-4 bg-white/80 backdrop-blur-md flex justify-between items-center border-b border-slate-200/50">
+          <div className="flex items-center gap-3">
+             <button 
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden p-2 -ml-2 rounded-lg text-slate-600 hover:bg-slate-100"
+             >
+                <Menu size={24}/>
+             </button>
+
+             <h2 className="text-lg md:text-2xl font-bold text-slate-800 tracking-tight truncate">
+               {activeTab === 'dashboard' && 'Panel de Control'}
+               {activeTab === 'pos' && 'Nueva Venta'}
+               {activeTab === 'products' && 'Inventario'}
+               {activeTab === 'vendors' && 'Vendedores'}
+               {activeTab === 'config' && 'Sistema'}
+             </h2>
+          </div>
+
+          <div className="flex items-center gap-2">
+             <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-emerald-100 shadow-sm">
+                <div className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </div>
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wide">Online</span>
+             </div>
+          </div>
+        </header>
+
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8 pb-24">
+
+          {/* --- DASHBOARD VIEW --- */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6 animate-fade-in-up">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <StatCard title="Utilidad Neta" value={`S/ ${totalAdminNet.toFixed(2)}`} subtext="Ganancia real" icon={DollarSign} colorClass="text-indigo-600" trend="+12%" />
+                <StatCard title="Ventas Totales" value={`S/ ${totalRevenue.toFixed(2)}`} subtext="Ingreso bruto" icon={ShoppingBag} colorClass="text-blue-600" />
+                <StatCard title="Vendedores" value={vendors.length} subtext="Equipo activo" icon={Users} colorClass="text-purple-600" />
+                <StatCard title="Stock Total" value={products.reduce((a,b)=>a+b.stock,0)} subtext="Unidades" icon={Package} colorClass="text-emerald-600" />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-2">
+                   <div className="flex justify-between items-end mb-6">
+                      <div>
+                        <h3 className="font-bold text-lg text-slate-800">Rendimiento</h3>
+                        <p className="text-slate-500 text-sm">Comisiones por agente</p>
+                      </div>
+                      <Badge color="indigo">Este Mes</Badge>
+                   </div>
+                   <div className="bg-white rounded-xl border border-slate-100 p-2 md:p-4">
+                      <SimpleBarChart data={chartData} maxVal={maxCommission} />
+                   </div>
+                </Card>
+
+                <Card>
+                  <h3 className="font-bold text-lg text-slate-800 mb-4">Accesos Rápidos</h3>
+                  <div className="space-y-3">
+                    <button onClick={() => setActiveTab('pos')} className="w-full p-3 rounded-xl border border-indigo-100 bg-indigo-50/50 flex items-center gap-3 text-indigo-700 hover:bg-indigo-100 transition-colors group">
+                      <div className="bg-white p-2 rounded-lg shadow-sm group-hover:scale-110 transition-transform"><Plus size={18}/></div>
+                      <span className="font-medium">Nueva Venta</span>
+                    </button>
+                    <button onClick={() => setActiveTab('products')} className="w-full p-3 rounded-xl border border-slate-100 bg-white flex items-center gap-3 text-slate-600 hover:bg-slate-50 transition-colors group">
+                      <div className="bg-slate-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><Package size={18}/></div>
+                      <span className="font-medium">Inventario</span>
+                    </button>
+                  </div>
+                </Card>
+              </div>
+
+              <Card noPadding className="overflow-hidden">
+                <div className="p-4 md:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                  <h3 className="font-bold text-lg text-slate-800">Transacciones</h3>
+                </div>
+                <div className="overflow-x-auto touch-pan-x">
+                  <table className="w-full text-left min-w-[600px]">
+                    <thead className="bg-slate-50/50 text-slate-500 text-xs uppercase tracking-wider font-semibold">
+                      <tr>
+                        <th className="p-4">Producto</th>
+                        <th className="p-4">Vendedor</th>
+                        <th className="p-4 text-right">P. Venta</th>
+                        <th className="p-4 text-right">Comisión</th>
+                        <th className="p-4 text-center">Voucher</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {sales.map((sale) => (
+                        <tr key={sale.id} className="hover:bg-indigo-50/30 transition-colors">
+                          <td className="p-4 font-medium text-slate-700">{sale.productName}</td>
+                          <td className="p-4 text-slate-600 text-sm">{sale.vendorName}</td>
+                          <td className="p-4 text-right text-slate-600">S/ {sale.sellPrice.toFixed(2)}</td>
+                          <td className="p-4 text-right font-medium text-emerald-600">S/ {sale.vendorEarnings.toFixed(2)}</td>
+                          <td className="p-4 text-center">
+                            <button 
+                              onClick={() => sendWhatsappVoucher(sale)}
+                              className="inline-flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-green-100 transition-colors border border-green-200 active:scale-95"
+                            >
+                              <MessageCircle size={14} />
+                              <span className="hidden md:inline">Enviar</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* --- POS VIEW --- */}
+          {activeTab === 'pos' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
+              <Card className="h-fit order-2 lg:order-1">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl"><ShoppingCart size={24}/></div>
+                    <div>
+                        <h3 className="text-xl font-bold text-slate-800">Nueva Venta</h3>
+                        <p className="text-sm text-slate-500">Seleccionar items</p>
+                    </div>
+                </div>
+
+                <div className="space-y-4 md:space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Producto</label>
+                    <select 
+                      className="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow text-base"
+                      value={posSelection.productId}
+                      onChange={(e) => setPosSelection({...posSelection, productId: e.target.value})}
+                    >
+                      <option value="">Seleccionar producto...</option>
+                      {products.map(p => (
+                        <option key={p.id} value={p.id} disabled={p.stock === 0}>
+                          {p.name} - S/ {p.price} (Stock: {p.stock})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Vendedor</label>
+                    <select 
+                      className="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow text-base"
+                      value={posSelection.vendorId}
+                      onChange={(e) => setPosSelection({...posSelection, vendorId: e.target.value})}
+                    >
+                      <option value="">Seleccionar vendedor...</option>
+                      {vendors.map(v => (
+                        <option key={v.id} value={v.id}>{v.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 mt-4">
+                     <div className="flex justify-between items-center mb-2 text-sm">
+                        <span className="text-slate-500">Configuración:</span>
+                        <div className="flex gap-2">
+                           <Badge color="indigo">Neg: {config.adminPct}%</Badge>
+                           <Badge color="emerald">Vend: {config.vendorPct}%</Badge>
+                        </div>
+                     </div>
+                  </div>
+
+                  <Button onClick={handleProcessSale} className="w-full py-4 text-lg shadow-xl shadow-indigo-500/20" icon={DollarSign}>
+                    Procesar Venta
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Preview Card */}
+              <div className="space-y-6 order-1 lg:order-2">
+                 <div className="bg-slate-800 text-white p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-12 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+                    <h4 className="text-slate-400 text-xs md:text-sm font-medium mb-1 uppercase tracking-wider">Vista Previa Ganancia</h4>
+                    <div className="text-3xl md:text-4xl font-bold mb-6">
+                        {posSelection.productId 
+                            ? `S/ ${(products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost).toFixed(2)}`
+                            : 'S/ 0.00'
+                        }
+                        <span className="text-sm md:text-lg text-slate-500 font-normal ml-2">Total</span>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="bg-white/10 p-3 md:p-4 rounded-xl flex justify-between items-center backdrop-blur-sm">
+                            <span className="text-slate-300 text-sm">Negocio ({config.adminPct}%)</span>
+                            <span className="text-lg md:text-xl font-bold text-white">
+                                {posSelection.productId 
+                                    ? `S/ ${((products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost) * (config.adminPct/100)).toFixed(2)}`
+                                    : '--'
+                                }
+                            </span>
+                        </div>
+                        <div className="bg-emerald-500/20 p-3 md:p-4 rounded-xl flex justify-between items-center backdrop-blur-sm border border-emerald-500/30">
+                            <span className="text-emerald-300 text-sm">Vendedor ({config.vendorPct}%)</span>
+                            <span className="text-lg md:text-xl font-bold text-emerald-400">
+                                {posSelection.productId 
+                                    ? `S/ ${((products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost) * (config.vendorPct/100)).toFixed(2)}`
+                                    : '--'
+                                }
+                            </span>
+                        </div>
+                    </div>
+                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* --- CONFIG VIEW --- */}
+          {activeTab === 'config' && (
+            <div className="max-w-3xl mx-auto space-y-6">
+              <Card className="overflow-hidden border-0 shadow-2xl shadow-indigo-100 p-0">
+                 <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 md:p-8 text-white text-center">
+                    <Settings size={40} className="mx-auto mb-4 opacity-80"/>
+                    <h2 className="text-xl md:text-2xl font-bold mb-2">Distribución de Ganancias</h2>
+                    <p className="text-indigo-100 text-sm md:text-base max-w-md mx-auto">Desliza para ajustar porcentajes.</p>
+                 </div>
+                 
+                 <div className="p-6 md:p-10">
+                    <div className="flex justify-between items-end mb-8 px-2">
+                       <div className="text-center">
+                          <div className="text-3xl md:text-4xl font-bold text-indigo-600">{config.adminPct}%</div>
+                          <div className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wide mt-1">Negocio</div>
+                       </div>
+                       <div className="text-center">
+                          <div className="text-3xl md:text-4xl font-bold text-emerald-500">{config.vendorPct}%</div>
+                          <div className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wide mt-1">Vendedor</div>
+                       </div>
+                    </div>
+
+                    <div className="relative h-8 bg-slate-100 rounded-full mb-6">
+                       <div className="absolute left-0 top-0 h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-l-full transition-all duration-300" style={{ width: `${config.adminPct}%` }}></div>
+                       <div className="absolute right-0 top-0 h-full bg-emerald-400 rounded-r-full transition-all duration-300" style={{ width: `${config.vendorPct}%` }}></div>
+                       
+                       <input 
+                          type="range" min="0" max="100" 
+                          value={config.adminPct} onChange={handleConfigChange}
+                          className="absolute inset-0 w-full opacity-0 cursor-ew-resize z-10 touch-none"
+                       />
+                       <div className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg border-2 border-slate-100 flex items-center justify-center pointer-events-none transition-all duration-300 z-0" style={{ left: `calc(${config.adminPct}% - 16px)` }}>
+                          <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+                       </div>
+                    </div>
+                 </div>
+              </Card>
+
+              <Card className="border-l-4 border-l-red-500 bg-red-50/50">
+                  <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                      <div className="text-center md:text-left">
+                          <h3 className="text-lg font-bold text-red-700 flex items-center justify-center md:justify-start gap-2">
+                              <AlertCircle size={20}/> Zona de Peligro
+                          </h3>
+                          <p className="text-sm text-red-600/80 mt-1">Borrar datos y restaurar fábrica.</p>
+                      </div>
+                      <Button variant="danger" onClick={handleResetApp} icon={RefreshCw} className="w-full md:w-auto">Resetear</Button>
+                  </div>
+              </Card>
+            </div>
+          )}
+
+          {/* --- INVENTORY VIEW --- */}
+          {activeTab === 'products' && (
+             <div className="space-y-6 animate-fade-in-up">
+               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                 <h2 className="text-xl md:text-2xl font-bold text-slate-800">Inventario Global</h2>
+                 <Button onClick={() => setShowProductForm(!showProductForm)} icon={showProductForm ? X : Plus} className="w-full md:w-auto">
+                    {showProductForm ? 'Cancelar' : 'Nuevo Producto'}
+                 </Button>
+               </div>
+
+               {showProductForm && (
+                 <Card className="border-l-4 border-l-indigo-500 animate-slide-down">
+                    <h3 className="font-bold text-lg mb-4 text-slate-800">Agregar Producto</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <Input label="Nombre del Producto" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} placeholder="Ej: Lente Blue Cut 1.67" />
+                       <div className="mb-4 flex flex-col gap-1.5">
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Categoría</label>
+                          <select 
+                             className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-base"
+                             value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})}
+                          >
+                             <option>Lentes</option><option>Monturas</option><option>Sol</option><option>Accesorios</option>
+                          </select>
+                       </div>
+                       <div className="grid grid-cols-3 gap-3 md:gap-4 md:col-span-2">
+                           <Input type="number" label="Costo" value={newProduct.cost} onChange={e => setNewProduct({...newProduct, cost: e.target.value})} placeholder="0.00" />
+                           <Input type="number" label="Precio" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} placeholder="0.00" />
+                           <Input type="number" label="Stock" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} placeholder="0" />
+                       </div>
+                    </div>
+                    <div className="flex flex-col md:flex-row justify-end gap-3 mt-4">
+                       <Button variant="secondary" onClick={() => setShowProductForm(false)} className="w-full md:w-auto">Cancelar</Button>
+                       <Button onClick={handleAddProduct} icon={Save} className="w-full md:w-auto">Guardar</Button>
+                    </div>
+                 </Card>
+               )}
+
+               <Card noPadding>
+                 <div className="overflow-x-auto touch-pan-x">
+                   <table className="w-full text-left min-w-[600px]">
+                     <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold border-b border-slate-200">
+                        <tr>
+                           <th className="p-4">Producto</th>
+                           <th className="p-4">Categoría</th>
+                           <th className="p-4 text-right">Costo</th>
+                           <th className="p-4 text-right">Precio</th>
+                           <th className="p-4 text-center">Stock</th>
+                           <th className="p-4 text-center">Acciones</th>
+                        </tr>
+                     </thead>
+                     <tbody className="divide-y divide-slate-100">
+                        {products.map(p => (
+                           <tr key={p.id} className="hover:bg-slate-50/50">
+                              <td className="p-4 font-medium text-slate-700">{p.name}</td>
+                              <td className="p-4"><Badge color="slate">{p.category}</Badge></td>
+                              <td className="p-4 text-right text-slate-500">S/ {p.cost.toFixed(2)}</td>
+                              <td className="p-4 text-right font-bold text-slate-700">S/ {p.price.toFixed(2)}</td>
+                              <td className="p-4 text-center"><span className={`font-bold ${p.stock < 5 ? 'text-red-500' : 'text-slate-600'}`}>{p.stock} u.</span></td>
+                              <td className="p-4 text-center">
+                                 <button onClick={() => handleDeleteProduct(p.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={18}/></button>
+                              </td>
+                           </tr>
+                        ))}
+                     </tbody>
+                   </table>
+                 </div>
+               </Card>
+             </div>
+          )}
+
+          {/* --- VENDORS VIEW --- */}
+          {activeTab === 'vendors' && (
+             <div className="space-y-6 animate-fade-in-up">
+               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                 <h2 className="text-xl md:text-2xl font-bold text-slate-800">Equipo de Ventas</h2>
+                 <Button onClick={() => setShowVendorForm(!showVendorForm)} icon={showVendorForm ? X : Plus} className="w-full md:w-auto">
+                    {showVendorForm ? 'Cancelar' : 'Nuevo Vendedor'}
+                 </Button>
+               </div>
+
+               {showVendorForm && (
+                 <Card className="max-w-xl mx-auto border-l-4 border-l-indigo-500 animate-slide-down">
+                    <h3 className="font-bold text-lg mb-4 text-slate-800">Registrar Vendedor</h3>
+                    <Input label="Nombre Completo" value={newVendor.name} onChange={e => setNewVendor({...newVendor, name: e.target.value})} placeholder="Ej: Juan Pérez" />
+                    <Input label="Teléfono (WhatsApp)" type="number" value={newVendor.phone} onChange={e => setNewVendor({...newVendor, phone: e.target.value})} placeholder="51999888777" />
+                    <div className="flex flex-col md:flex-row justify-end gap-3 mt-4">
+                       <Button variant="secondary" onClick={() => setShowVendorForm(false)} className="w-full md:w-auto">Cancelar</Button>
+                       <Button onClick={handleAddVendor} icon={Save} className="w-full md:w-auto">Registrar</Button>
+                    </div>
+                 </Card>
+               )}
+
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                  {vendors.map(v => (
+                     <Card key={v.id} className="flex flex-col items-center text-center hover:shadow-xl transition-shadow border border-slate-100 relative">
+                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-indigo-100 to-white flex items-center justify-center text-xl md:text-2xl font-bold text-indigo-600 mb-4 shadow-inner">
+                           {v.name.charAt(0)}
+                        </div>
+                        <h3 className="font-bold text-lg text-slate-800">{v.name}</h3>
+                        <p className="text-sm text-slate-400 mb-4 flex items-center gap-1"><Phone size={12}/> +{v.phone}</p>
+                        
+                        <div className="mb-6">
+                           <Badge color={v.status === 'active' ? 'emerald' : 'slate'}>{v.status === 'active' ? 'Activo' : 'Inactivo'}</Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 w-full border-t border-slate-100 pt-4 mb-4">
+                           <div>
+                              <div className="text-[10px] md:text-xs text-slate-400 uppercase font-bold tracking-wider">Ventas</div>
+                              <div className="text-lg md:text-xl font-bold text-slate-700">{v.totalSales}</div>
+                           </div>
+                           <div className="border-l border-slate-100">
+                              <div className="text-[10px] md:text-xs text-slate-400 uppercase font-bold tracking-wider">Comisión</div>
+                              <div className="text-lg md:text-xl font-bold text-emerald-600">S/ {v.totalCommissions.toFixed(0)}</div>
+                           </div>
+                        </div>
+
+                        <button 
+                           onClick={() => contactVendor(v)}
+                           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-green-50 text-green-700 font-bold hover:bg-green-100 transition-colors active:scale-95"
+                        >
+                           <MessageCircle size={20}/> Contactar
+                        </button>
+                     </Card>
+                  ))}
+               </div>
+             </div>
+          )}
+
+        </div>
+      </main>
+    </div>
+  );
+}
