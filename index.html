@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OptiSystem ERP</title>
     
-    <!-- 1. Tailwind CSS (Estilos) -->
+    <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 2. Configuración de Tailwind para animaciones -->
     <script>
         tailwind.config = {
             theme: {
@@ -28,35 +26,39 @@
         }
     </script>
 
-    <!-- 3. React & ReactDOM (Motor de la App) -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    
-    <!-- 4. Babel (Para entender el código moderno JSX) -->
+    <!-- 2. Babel para compilar JSX en vivo -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Estilos Extra -->
     <style>
         body { background-color: #f8fafc; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Evitar flash de contenido sin estilo */
+        #root:empty::before {
+            content: "Cargando sistema...";
+            display: block;
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-family: sans-serif;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
-    <!-- 5. LÓGICA DE LA APLICACIÓN -->
+    <!-- 3. LÓGICA DE LA APP (Tipo Modulo para Imports Modernos) -->
     <script type="text/babel" data-type="module">
-        // Importamos Iconos desde CDN (ESM)
+        // Importamos React y Lucide desde la misma fuente compatible (ESM)
+        import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0?dev';
+        import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client?dev';
         import { 
             LayoutDashboard, ShoppingBag, Users, Settings, TrendingUp, DollarSign, 
             Package, Plus, ShoppingCart, Trash2, AlertCircle, Menu, X, ChevronRight, 
             Save, MessageCircle, Phone, RefreshCw 
         } from 'https://esm.sh/lucide-react@0.344.0?dev';
 
-        const { useState, useEffect } = React;
-
-        // --- Componentes UI Modernos ---
+        // --- Componentes UI ---
 
         const Card = ({ children, className = "", noPadding = false }) => (
             <div className={`bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg shadow-slate-200/50 border border-white/50 ${noPadding ? '' : 'p-4 md:p-6'} ${className}`}>
@@ -129,7 +131,6 @@
             );
         };
 
-        // --- Gráficos SVG Simples ---
         const SimpleBarChart = ({ data, maxVal }) => (
             <div className="flex items-end gap-2 h-32 w-full pt-4 overflow-x-auto pb-2 no-scrollbar">
                 {data.map((item, idx) => {
