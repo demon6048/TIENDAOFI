@@ -1,249 +1,270 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  Users, 
-  Settings, 
-  TrendingUp, 
-  DollarSign, 
-  Package, 
-  Plus, 
-  ShoppingCart, 
-  Trash2,
-  AlertCircle,
-  Briefcase,
-  Search,
-  Menu,
-  X,
-  ChevronRight,
-  PieChart,
-  Activity,
-  Save,
-  Filter,
-  MessageCircle,
-  Phone,
-  RefreshCw,
-  Wifi,
-  LogOut
-} from 'lucide-react';
-
-// --- Componentes UI Modernos & Responsivos ---
-
-const Card = ({ children, className = "", noPadding = false }) => (
-  <div className={`bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg shadow-slate-200/50 border border-white/50 ${noPadding ? '' : 'p-4 md:p-6'} ${className}`}>
-    {children}
-  </div>
-);
-
-const StatCard = ({ title, value, subtext, icon: Icon, colorClass, trend }) => (
-  <Card className="relative overflow-hidden group">
-    <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity ${colorClass}`}>
-      <Icon size={80} />
-    </div>
-    <div className="relative z-10">
-      <div className="flex items-center gap-3 mb-2">
-        <div className={`p-2 rounded-lg ${colorClass} bg-opacity-10 text-opacity-100`}>
-          <Icon size={20} />
-        </div>
-        <span className="text-slate-500 font-medium text-sm">{title}</span>
-      </div>
-      <div className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">{value}</div>
-      <div className="flex items-center gap-2 mt-2">
-         {trend && <span className="text-emerald-500 text-xs font-bold bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-1">
-            <TrendingUp size={12}/> {trend}
-         </span>}
-        <span className="text-slate-400 text-xs truncate">{subtext}</span>
-      </div>
-    </div>
-  </Card>
-);
-
-const Button = ({ children, onClick, variant = "primary", disabled = false, className = "", icon: Icon }) => {
-  const baseStyle = "px-4 py-3 md:py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-sm active:scale-95 touch-manipulation";
-  const variants = {
-    primary: "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-indigo-500/30 hover:shadow-lg disabled:opacity-50 disabled:shadow-none",
-    secondary: "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300",
-    danger: "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100",
-    success: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-emerald-500/30 hover:shadow-lg",
-    whatsapp: "bg-[#25D366] text-white hover:bg-[#128C7E] hover:shadow-green-500/30 hover:shadow-lg"
-  };
-  return (
-    <button onClick={onClick} disabled={disabled} className={`${baseStyle} ${variants[variant]} ${className}`}>
-      {Icon && <Icon size={18} />}
-      {children}
-    </button>
-  );
-};
-
-const Input = ({ label, ...props }) => (
-  <div className="flex flex-col gap-1.5 mb-4">
-    {label && <label className="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">{label}</label>}
-    <input 
-      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-slate-700 placeholder:text-slate-400 text-base"
-      {...props} 
-    />
-  </div>
-);
-
-const Badge = ({ children, color = "indigo" }) => {
-  const colors = {
-    indigo: "bg-indigo-50 text-indigo-700 border-indigo-100",
-    emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    amber: "bg-amber-50 text-amber-700 border-amber-100",
-    rose: "bg-rose-50 text-rose-700 border-rose-100",
-    slate: "bg-slate-100 text-slate-600 border-slate-200",
-  };
-  return (
-    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${colors[color] || colors.indigo} whitespace-nowrap`}>
-      {children}
-    </span>
-  );
-};
-
-// --- Gráficos SVG Simples ---
-const SimpleBarChart = ({ data, maxVal }) => (
-  <div className="flex items-end gap-2 h-32 w-full pt-4 overflow-x-auto pb-2 no-scrollbar">
-    {data.map((item, idx) => {
-      const heightPct = maxVal > 0 ? (item.value / maxVal) * 100 : 0;
-      return (
-        <div key={idx} className="flex-1 min-w-[40px] flex flex-col items-center group">
-           <div className="relative w-full flex justify-center items-end h-full bg-slate-50 rounded-t-lg overflow-hidden">
-             <div 
-                style={{ height: `${heightPct}%` }} 
-                className="w-full max-w-[24px] bg-indigo-500 rounded-t-md transition-all duration-500 group-hover:bg-indigo-400 relative"
-             >
-             </div>
-           </div>
-           <span className="text-[10px] text-slate-400 mt-2 truncate w-full text-center">{item.label}</span>
-        </div>
-      );
-    })}
-  </div>
-);
-
-// --- Constantes de Inicialización ---
-const INITIAL_PRODUCTS = [
-  { id: 1, name: 'Lente Blue Defense 1.56', cost: 35, price: 85, stock: 12, category: 'Lentes' },
-  { id: 2, name: 'Montura Acetato Premium', cost: 45, price: 120, stock: 5, category: 'Monturas' },
-  { id: 3, name: 'Lente Policarbonato AR', cost: 25, price: 60, stock: 20, category: 'Lentes' },
-  { id: 4, name: 'Ray-Ban Aviator (Réplica)', cost: 60, price: 150, stock: 3, category: 'Sol' },
-  { id: 5, name: 'Spray Limpiador 60ml', cost: 5, price: 15, stock: 50, category: 'Accesorios' },
-];
-
-const INITIAL_VENDORS = [
-  { id: 1, name: 'Ana García', phone: '51999111222', totalSales: 5, totalCommissions: 120, status: 'active' },
-  { id: 2, name: 'Carlos Pérez', phone: '51999333444', totalSales: 8, totalCommissions: 210, status: 'active' },
-  { id: 3, name: 'Sofía Lopez', phone: '51999555666', totalSales: 2, totalCommissions: 45, status: 'inactive' },
-];
-
-const INITIAL_SALES = [
-  { id: 101, productName: 'Lente Blue Defense', vendorId: 2, vendorName: 'Carlos Pérez', sellPrice: 85, grossProfit: 50, adminEarnings: 30, vendorEarnings: 20, date: new Date().toISOString() },
-  { id: 102, productName: 'Spray Limpiador', vendorId: 1, vendorName: 'Ana García', sellPrice: 15, grossProfit: 10, adminEarnings: 6, vendorEarnings: 4, date: new Date().toISOString() },
-];
-
-const INITIAL_CONFIG = { adminPct: 60, vendorPct: 40 };
-const APP_VERSION = "2.3.1"; // Versión Mobile Optimized
-
-// --- Componente Principal ---
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Cerrado por defecto en móvil si inicia así
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detectar móvil
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (!mobile) setSidebarOpen(true); // En PC siempre abierto
-      else setSidebarOpen(false);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // --- Estados Globales con Persistencia ---
-  const [config, setConfig] = useState(() => {
-    const saved = localStorage.getItem('opti_config');
-    return saved ? JSON.parse(saved) : INITIAL_CONFIG;
-  });
-
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem('opti_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
-
-  const [vendors, setVendors] = useState(() => {
-    const saved = localStorage.getItem('opti_vendors');
-    return saved ? JSON.parse(saved) : INITIAL_VENDORS;
-  });
-
-  const [sales, setSales] = useState(() => {
-    const saved = localStorage.getItem('opti_sales');
-    return saved ? JSON.parse(saved) : INITIAL_SALES;
-  });
-
-  useEffect(() => { localStorage.setItem('opti_config', JSON.stringify(config)); }, [config]);
-  useEffect(() => { localStorage.setItem('opti_products', JSON.stringify(products)); }, [products]);
-  useEffect(() => { localStorage.setItem('opti_vendors', JSON.stringify(vendors)); }, [vendors]);
-  useEffect(() => { localStorage.setItem('opti_sales', JSON.stringify(sales)); }, [sales]);
-
-  // Estados UI
-  const [showProductForm, setShowProductForm] = useState(false);
-  const [newProduct, setNewProduct] = useState({ name: '', category: 'Lentes', cost: '', price: '', stock: '' });
-
-  const [showVendorForm, setShowVendorForm] = useState(false);
-  const [newVendor, setNewVendor] = useState({ name: '', phone: '' });
-
-  const [posSelection, setPosSelection] = useState({ productId: '', vendorId: '' });
-
-  // --- Lógica de Negocio ---
-
-  const handleProcessSale = () => {
-    const product = products.find(p => p.id === Number(posSelection.productId));
-    const vendor = vendors.find(v => v.id === Number(posSelection.vendorId));
-
-    if (!product || !vendor) return alert("Por favor selecciona un producto y un vendedor.");
-    if (product.stock <= 0) return alert("¡Sin stock disponible!");
-
-    const grossProfit = product.price - product.cost;
-    const adminShare = grossProfit * (config.adminPct / 100);
-    const vendorShare = grossProfit * (config.vendorPct / 100);
-
-    const newSale = {
-      id: Date.now(),
-      productName: product.name,
-      sellPrice: product.price,
-      grossProfit,
-      vendorId: vendor.id,
-      vendorName: vendor.name,
-      adminEarnings: adminShare,
-      vendorEarnings: vendorShare,
-      date: new Date().toISOString()
-    };
-
-    setSales([newSale, ...sales]);
-    setProducts(products.map(p => p.id === product.id ? { ...p, stock: p.stock - 1 } : p));
-    setVendors(vendors.map(v => v.id === vendor.id ? { 
-      ...v, 
-      totalSales: v.totalSales + 1, 
-      totalCommissions: v.totalCommissions + vendorShare 
-    } : v));
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OptiSystem ERP</title>
     
-    setPosSelection({ productId: '', vendorId: '' });
-  };
-
-  const sendWhatsappVoucher = (sale) => {
-    const vendor = vendors.find(v => v.id === sale.vendorId);
+    <!-- 1. Tailwind CSS (Estilos) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    if (!vendor || !vendor.phone) return alert("El vendedor no tiene un número de teléfono registrado.");
+    <!-- 2. Configuración de Tailwind para animaciones -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'fade-in-up': 'fadeInUp 0.5s ease-out',
+                        'slide-down': 'slideDown 0.3s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideDown: { '0%': { opacity: '0', transform: 'translateY(-20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                    }
+                }
+            }
+        }
+    </script>
 
-    const fecha = new Date(sale.date).toLocaleDateString();
-    const hora = new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    <!-- 3. React & ReactDOM (Motor de la App) -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    
+    <!-- 4. Babel (Para entender el código moderno JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    const message = `
+    <!-- Estilos Extra -->
+    <style>
+        body { background-color: #f8fafc; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- 5. LÓGICA DE LA APLICACIÓN -->
+    <script type="text/babel" data-type="module">
+        // Importamos Iconos desde CDN (ESM)
+        import { 
+            LayoutDashboard, ShoppingBag, Users, Settings, TrendingUp, DollarSign, 
+            Package, Plus, ShoppingCart, Trash2, AlertCircle, Menu, X, ChevronRight, 
+            Save, MessageCircle, Phone, RefreshCw 
+        } from 'https://esm.sh/lucide-react@0.344.0?dev';
+
+        const { useState, useEffect } = React;
+
+        // --- Componentes UI Modernos ---
+
+        const Card = ({ children, className = "", noPadding = false }) => (
+            <div className={`bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg shadow-slate-200/50 border border-white/50 ${noPadding ? '' : 'p-4 md:p-6'} ${className}`}>
+                {children}
+            </div>
+        );
+
+        const StatCard = ({ title, value, subtext, icon: Icon, colorClass, trend }) => (
+            <Card className="relative overflow-hidden group">
+                <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity ${colorClass}`}>
+                    <Icon size={80} />
+                </div>
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className={`p-2 rounded-lg ${colorClass} bg-opacity-10 text-opacity-100`}>
+                            <Icon size={20} />
+                        </div>
+                        <span className="text-slate-500 font-medium text-sm">{title}</span>
+                    </div>
+                    <div className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">{value}</div>
+                    <div className="flex items-center gap-2 mt-2">
+                        {trend && <span className="text-emerald-500 text-xs font-bold bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-1">
+                            <TrendingUp size={12}/> {trend}
+                        </span>}
+                        <span className="text-slate-400 text-xs truncate">{subtext}</span>
+                    </div>
+                </div>
+            </Card>
+        );
+
+        const Button = ({ children, onClick, variant = "primary", disabled = false, className = "", icon: Icon }) => {
+            const baseStyle = "px-4 py-3 md:py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-sm active:scale-95 touch-manipulation";
+            const variants = {
+                primary: "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-indigo-500/30 hover:shadow-lg disabled:opacity-50 disabled:shadow-none",
+                secondary: "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300",
+                danger: "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100",
+                success: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-emerald-500/30 hover:shadow-lg",
+                whatsapp: "bg-[#25D366] text-white hover:bg-[#128C7E] hover:shadow-green-500/30 hover:shadow-lg"
+            };
+            return (
+                <button onClick={onClick} disabled={disabled} className={`${baseStyle} ${variants[variant]} ${className}`}>
+                    {Icon && <Icon size={18} />}
+                    {children}
+                </button>
+            );
+        };
+
+        const Input = ({ label, ...props }) => (
+            <div className="flex flex-col gap-1.5 mb-4">
+                {label && <label className="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">{label}</label>}
+                <input 
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-slate-700 placeholder:text-slate-400 text-base"
+                    {...props} 
+                />
+            </div>
+        );
+
+        const Badge = ({ children, color = "indigo" }) => {
+            const colors = {
+                indigo: "bg-indigo-50 text-indigo-700 border-indigo-100",
+                emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
+                amber: "bg-amber-50 text-amber-700 border-amber-100",
+                rose: "bg-rose-50 text-rose-700 border-rose-100",
+                slate: "bg-slate-100 text-slate-600 border-slate-200",
+            };
+            return (
+                <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${colors[color] || colors.indigo} whitespace-nowrap`}>
+                    {children}
+                </span>
+            );
+        };
+
+        // --- Gráficos SVG Simples ---
+        const SimpleBarChart = ({ data, maxVal }) => (
+            <div className="flex items-end gap-2 h-32 w-full pt-4 overflow-x-auto pb-2 no-scrollbar">
+                {data.map((item, idx) => {
+                    const heightPct = maxVal > 0 ? (item.value / maxVal) * 100 : 0;
+                    return (
+                        <div key={idx} className="flex-1 min-w-[40px] flex flex-col items-center group">
+                            <div className="relative w-full flex justify-center items-end h-full bg-slate-50 rounded-t-lg overflow-hidden">
+                                <div 
+                                    style={{ height: `${heightPct}%` }} 
+                                    className="w-full max-w-[24px] bg-indigo-500 rounded-t-md transition-all duration-500 group-hover:bg-indigo-400 relative"
+                                >
+                                </div>
+                            </div>
+                            <span className="text-[10px] text-slate-400 mt-2 truncate w-full text-center">{item.label}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+
+        // --- Constantes Iniciales ---
+        const INITIAL_PRODUCTS = [
+            { id: 1, name: 'Lente Blue Defense 1.56', cost: 35, price: 85, stock: 12, category: 'Lentes' },
+            { id: 2, name: 'Montura Acetato Premium', cost: 45, price: 120, stock: 5, category: 'Monturas' },
+            { id: 3, name: 'Lente Policarbonato AR', cost: 25, price: 60, stock: 20, category: 'Lentes' },
+            { id: 4, name: 'Ray-Ban Aviator (Réplica)', cost: 60, price: 150, stock: 3, category: 'Sol' },
+            { id: 5, name: 'Spray Limpiador 60ml', cost: 5, price: 15, stock: 50, category: 'Accesorios' },
+        ];
+
+        const INITIAL_VENDORS = [
+            { id: 1, name: 'Ana García', phone: '51999111222', totalSales: 5, totalCommissions: 120, status: 'active' },
+            { id: 2, name: 'Carlos Pérez', phone: '51999333444', totalSales: 8, totalCommissions: 210, status: 'active' },
+            { id: 3, name: 'Sofía Lopez', phone: '51999555666', totalSales: 2, totalCommissions: 45, status: 'inactive' },
+        ];
+
+        const INITIAL_SALES = [
+            { id: 101, productName: 'Lente Blue Defense', vendorId: 2, vendorName: 'Carlos Pérez', sellPrice: 85, grossProfit: 50, adminEarnings: 30, vendorEarnings: 20, date: new Date().toISOString() },
+            { id: 102, productName: 'Spray Limpiador', vendorId: 1, vendorName: 'Ana García', sellPrice: 15, grossProfit: 10, adminEarnings: 6, vendorEarnings: 4, date: new Date().toISOString() },
+        ];
+
+        const INITIAL_CONFIG = { adminPct: 60, vendorPct: 40 };
+        const APP_VERSION = "2.3.1 HTML";
+
+        // --- Aplicación Principal ---
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+            const [isMobile, setIsMobile] = useState(false);
+
+            useEffect(() => {
+                const checkMobile = () => {
+                    const mobile = window.innerWidth < 768;
+                    setIsMobile(mobile);
+                    if (!mobile) setSidebarOpen(true);
+                    else setSidebarOpen(false);
+                };
+                checkMobile();
+                window.addEventListener('resize', checkMobile);
+                return () => window.removeEventListener('resize', checkMobile);
+            }, []);
+
+            // Persistencia
+            const [config, setConfig] = useState(() => {
+                const saved = localStorage.getItem('opti_config');
+                return saved ? JSON.parse(saved) : INITIAL_CONFIG;
+            });
+            const [products, setProducts] = useState(() => {
+                const saved = localStorage.getItem('opti_products');
+                return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+            });
+            const [vendors, setVendors] = useState(() => {
+                const saved = localStorage.getItem('opti_vendors');
+                return saved ? JSON.parse(saved) : INITIAL_VENDORS;
+            });
+            const [sales, setSales] = useState(() => {
+                const saved = localStorage.getItem('opti_sales');
+                return saved ? JSON.parse(saved) : INITIAL_SALES;
+            });
+
+            useEffect(() => { localStorage.setItem('opti_config', JSON.stringify(config)); }, [config]);
+            useEffect(() => { localStorage.setItem('opti_products', JSON.stringify(products)); }, [products]);
+            useEffect(() => { localStorage.setItem('opti_vendors', JSON.stringify(vendors)); }, [vendors]);
+            useEffect(() => { localStorage.setItem('opti_sales', JSON.stringify(sales)); }, [sales]);
+
+            // Formularios
+            const [showProductForm, setShowProductForm] = useState(false);
+            const [newProduct, setNewProduct] = useState({ name: '', category: 'Lentes', cost: '', price: '', stock: '' });
+            const [showVendorForm, setShowVendorForm] = useState(false);
+            const [newVendor, setNewVendor] = useState({ name: '', phone: '' });
+            const [posSelection, setPosSelection] = useState({ productId: '', vendorId: '' });
+
+            // Lógica
+            const handleProcessSale = () => {
+                const product = products.find(p => p.id === Number(posSelection.productId));
+                const vendor = vendors.find(v => v.id === Number(posSelection.vendorId));
+
+                if (!product || !vendor) return alert("Por favor selecciona un producto y un vendedor.");
+                if (product.stock <= 0) return alert("¡Sin stock disponible!");
+
+                const grossProfit = product.price - product.cost;
+                const adminShare = grossProfit * (config.adminPct / 100);
+                const vendorShare = grossProfit * (config.vendorPct / 100);
+
+                const newSale = {
+                    id: Date.now(),
+                    productName: product.name,
+                    sellPrice: product.price,
+                    grossProfit,
+                    vendorId: vendor.id,
+                    vendorName: vendor.name,
+                    adminEarnings: adminShare,
+                    vendorEarnings: vendorShare,
+                    date: new Date().toISOString()
+                };
+
+                setSales([newSale, ...sales]);
+                setProducts(products.map(p => p.id === product.id ? { ...p, stock: p.stock - 1 } : p));
+                setVendors(vendors.map(v => v.id === vendor.id ? { 
+                    ...v, 
+                    totalSales: v.totalSales + 1, 
+                    totalCommissions: v.totalCommissions + vendorShare 
+                } : v));
+                
+                setPosSelection({ productId: '', vendorId: '' });
+            };
+
+            const sendWhatsappVoucher = (sale) => {
+                const vendor = vendors.find(v => v.id === sale.vendorId);
+                if (!vendor || !vendor.phone) return alert("El vendedor no tiene un número de teléfono registrado.");
+
+                const fecha = new Date(sale.date).toLocaleDateString();
+                const hora = new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                const message = `
 *🧾 COMPROBANTE DE COMISIÓN*
 *OPTISYSTEM* - Reporte Digital
 ─────────────────────
@@ -258,526 +279,306 @@ P. Venta: S/ ${sale.sellPrice.toFixed(2)}
 *S/ ${sale.vendorEarnings.toFixed(2)}*
 ─────────────────────
 ✅ _Estado: Pagado/Autorizado_
-🚀 ¡Sigue sumando ventas!
-    `.trim();
+🚀 ¡Sigue sumando ventas!`.trim();
 
-    const url = `https://wa.me/${vendor.phone}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
-  };
+                window.open(`https://wa.me/${vendor.phone}?text=${encodeURIComponent(message)}`, '_blank');
+            };
 
-  const contactVendor = (vendor) => {
-      if(!vendor.phone) return alert("Sin teléfono registrado");
-      const message = `Hola ${vendor.name}, te escribo desde la administración de OptiSystem...`;
-      window.open(`https://wa.me/${vendor.phone}?text=${encodeURIComponent(message)}`, '_blank');
-  };
+            const contactVendor = (vendor) => {
+                if(!vendor.phone) return alert("Sin teléfono registrado");
+                const message = `Hola ${vendor.name}, te escribo desde la administración de OptiSystem...`;
+                window.open(`https://wa.me/${vendor.phone}?text=${encodeURIComponent(message)}`, '_blank');
+            };
 
-  const handleAddProduct = () => {
-    if (!newProduct.name || !newProduct.price || !newProduct.cost) return alert("Completa los campos obligatorios");
-    
-    const productToAdd = {
-        id: Date.now(),
-        name: newProduct.name,
-        category: newProduct.category,
-        cost: parseFloat(newProduct.cost),
-        price: parseFloat(newProduct.price),
-        stock: parseInt(newProduct.stock) || 0
-    };
+            const handleAddProduct = () => {
+                if (!newProduct.name || !newProduct.price || !newProduct.cost) return alert("Completa los campos obligatorios");
+                const productToAdd = {
+                    id: Date.now(),
+                    name: newProduct.name,
+                    category: newProduct.category,
+                    cost: parseFloat(newProduct.cost),
+                    price: parseFloat(newProduct.price),
+                    stock: parseInt(newProduct.stock) || 0
+                };
+                setProducts([...products, productToAdd]);
+                setNewProduct({ name: '', category: 'Lentes', cost: '', price: '', stock: '' });
+                setShowProductForm(false);
+            };
 
-    setProducts([...products, productToAdd]);
-    setNewProduct({ name: '', category: 'Lentes', cost: '', price: '', stock: '' });
-    setShowProductForm(false);
-  };
+            const handleDeleteProduct = (id) => {
+                if(confirm("¿Seguro que deseas eliminar este producto?")) setProducts(products.filter(p => p.id !== id));
+            };
 
-  const handleDeleteProduct = (id) => {
-    if(confirm("¿Seguro que deseas eliminar este producto?")) {
-        setProducts(products.filter(p => p.id !== id));
-    }
-  };
+            const handleAddVendor = () => {
+                if(!newVendor.name || !newVendor.phone) return alert("Nombre y Teléfono son obligatorios");
+                setVendors([...vendors, { id: Date.now(), name: newVendor.name, phone: newVendor.phone, totalSales: 0, totalCommissions: 0, status: 'active' }]);
+                setNewVendor({ name: '', phone: '' });
+                setShowVendorForm(false);
+            };
 
-  const handleAddVendor = () => {
-      if(!newVendor.name || !newVendor.phone) return alert("Nombre y Teléfono son obligatorios");
-      setVendors([...vendors, { 
-          id: Date.now(), 
-          name: newVendor.name,
-          phone: newVendor.phone, 
-          totalSales: 0, 
-          totalCommissions: 0, 
-          status: 'active' 
-      }]);
-      setNewVendor({ name: '', phone: '' });
-      setShowVendorForm(false);
-  };
+            const handleResetApp = () => {
+                if(confirm("⚠️ ¿Resetear de Fábrica? Se borrarán todos los datos.")) {
+                    localStorage.removeItem('opti_config'); localStorage.removeItem('opti_products');
+                    localStorage.removeItem('opti_vendors'); localStorage.removeItem('opti_sales');
+                    window.location.reload();
+                }
+            };
 
-  const handleConfigChange = (e) => {
-    const val = parseInt(e.target.value);
-    setConfig({ adminPct: val, vendorPct: 100 - val });
-  };
+            const chartData = vendors.map(v => ({ label: v.name.split(' ')[0], value: Math.round(v.totalCommissions) }));
+            const maxCommission = Math.max(...chartData.map(d => d.value), 100);
+            const totalAdminNet = sales.reduce((acc, curr) => acc + curr.adminEarnings, 0);
+            const totalRevenue = sales.reduce((acc, curr) => acc + curr.sellPrice, 0);
 
-  const handleResetApp = () => {
-    if(confirm("⚠️ ¿Resetear de Fábrica? Se borrarán todos los datos.")) {
-        localStorage.removeItem('opti_config');
-        localStorage.removeItem('opti_products');
-        localStorage.removeItem('opti_vendors');
-        localStorage.removeItem('opti_sales');
-        window.location.reload();
-    }
-  };
+            // Componentes de la Vista
+            const SidebarItem = ({ id, icon: Icon, label }) => (
+                <button 
+                    onClick={() => { setActiveTab(id); if(isMobile) setSidebarOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 md:py-3 rounded-xl transition-all duration-200 group ${
+                        activeTab === id 
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
+                        : 'text-slate-500 hover:bg-slate-100'
+                    }`}
+                >
+                    <Icon size={20} className={activeTab === id ? 'text-indigo-100' : 'text-slate-400 group-hover:text-slate-600'} />
+                    <span className="font-medium">{label}</span>
+                    {activeTab === id && <ChevronRight size={16} className="ml-auto opacity-50"/>}
+                </button>
+            );
 
-  const chartData = vendors.map(v => ({ label: v.name.split(' ')[0], value: Math.round(v.totalCommissions) }));
-  const maxCommission = Math.max(...chartData.map(d => d.value), 100);
-  const totalAdminNet = sales.reduce((acc, curr) => acc + curr.adminEarnings, 0);
-  const totalRevenue = sales.reduce((acc, curr) => acc + curr.sellPrice, 0);
+            return (
+                <div className="flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden">
+                    {/* Mobile Backdrop */}
+                    {isMobile && sidebarOpen && (
+                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 transition-opacity" onClick={() => setSidebarOpen(false)} />
+                    )}
 
-  // --- Views ---
+                    {/* Sidebar */}
+                    <aside className={`fixed md:relative top-0 left-0 h-full w-72 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 z-50 shadow-2xl md:shadow-none ${
+                        sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-20 lg:w-72'
+                    }`}>
+                        <div className="p-6 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
+                                    <span className="text-white font-bold text-xl">O</span>
+                                </div>
+                                <div className="md:hidden lg:block">
+                                    <h1 className="font-bold text-lg tracking-tight text-slate-900">OptiSystem</h1>
+                                    <p className="text-xs text-slate-400 font-medium">ERP v{APP_VERSION}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setSidebarOpen(false)} className="md:hidden p-1 text-slate-400 hover:text-slate-600"><X size={24} /></button>
+                        </div>
+                        <nav className="flex-1 px-4 space-y-2 mt-2 overflow-y-auto">
+                            <SidebarItem id="dashboard" icon={LayoutDashboard} label="Dashboard" />
+                            <SidebarItem id="pos" icon={ShoppingCart} label="Punto de Venta" />
+                            <div className="my-4 border-t border-slate-100 md:hidden lg:block"></div>
+                            <SidebarItem id="products" icon={Package} label="Inventario" />
+                            <SidebarItem id="vendors" icon={Users} label="Vendedores" />
+                            <SidebarItem id="config" icon={Settings} label="Configuración" />
+                        </nav>
+                    </aside>
 
-  const SidebarItem = ({ id, icon: Icon, label }) => (
-    <button 
-      onClick={() => { setActiveTab(id); if(isMobile) setSidebarOpen(false); }}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 md:py-3 rounded-xl transition-all duration-200 group ${
-        activeTab === id 
-        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
-        : 'text-slate-500 hover:bg-slate-100'
-      }`}
-    >
-      <Icon size={20} className={activeTab === id ? 'text-indigo-100' : 'text-slate-400 group-hover:text-slate-600'} />
-      <span className="font-medium">{label}</span>
-      {activeTab === id && <ChevronRight size={16} className="ml-auto opacity-50"/>}
-    </button>
-  );
+                    {/* Main Content */}
+                    <main className="flex-1 overflow-auto relative w-full h-full">
+                        <header className="sticky top-0 z-30 px-4 md:px-6 py-4 bg-white/80 backdrop-blur-md flex justify-between items-center border-b border-slate-200/50">
+                            <div className="flex items-center gap-3">
+                                <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 -ml-2 rounded-lg text-slate-600 hover:bg-slate-100"><Menu size={24}/></button>
+                                <h2 className="text-lg md:text-2xl font-bold text-slate-800 tracking-tight truncate">
+                                    {activeTab === 'dashboard' && 'Panel de Control'}
+                                    {activeTab === 'pos' && 'Nueva Venta'}
+                                    {activeTab === 'products' && 'Inventario'}
+                                    {activeTab === 'vendors' && 'Vendedores'}
+                                    {activeTab === 'config' && 'Sistema'}
+                                </h2>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-emerald-100 shadow-sm">
+                                    <span className="relative flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span></span>
+                                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-wide">Online</span>
+                                </div>
+                            </div>
+                        </header>
 
-  return (
-    <div className="flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden">
-      
-      {/* Backdrop para Móvil */}
-      {isMobile && sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 transition-opacity"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+                        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8 pb-24">
+                            {/* DASHBOARD */}
+                            {activeTab === 'dashboard' && (
+                                <div className="space-y-6 animate-fade-in-up">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                                        <StatCard title="Utilidad Neta" value={`S/ ${totalAdminNet.toFixed(2)}`} subtext="Ganancia real" icon={DollarSign} colorClass="text-indigo-600" trend="+12%" />
+                                        <StatCard title="Ventas Totales" value={`S/ ${totalRevenue.toFixed(2)}`} subtext="Ingreso bruto" icon={ShoppingBag} colorClass="text-blue-600" />
+                                        <StatCard title="Vendedores" value={vendors.length} subtext="Equipo activo" icon={Users} colorClass="text-purple-600" />
+                                        <StatCard title="Stock Total" value={products.reduce((a,b)=>a+b.stock,0)} subtext="Unidades" icon={Package} colorClass="text-emerald-600" />
+                                    </div>
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                        <Card className="lg:col-span-2">
+                                            <div className="flex justify-between items-end mb-6">
+                                                <div><h3 className="font-bold text-lg text-slate-800">Rendimiento</h3><p className="text-slate-500 text-sm">Comisiones</p></div>
+                                                <Badge color="indigo">Este Mes</Badge>
+                                            </div>
+                                            <div className="bg-white rounded-xl border border-slate-100 p-2 md:p-4"><SimpleBarChart data={chartData} maxVal={maxCommission} /></div>
+                                        </Card>
+                                        <Card>
+                                            <h3 className="font-bold text-lg text-slate-800 mb-4">Accesos Rápidos</h3>
+                                            <div className="space-y-3">
+                                                <button onClick={() => setActiveTab('pos')} className="w-full p-3 rounded-xl border border-indigo-100 bg-indigo-50/50 flex items-center gap-3 text-indigo-700 hover:bg-indigo-100 transition-colors group">
+                                                    <div className="bg-white p-2 rounded-lg shadow-sm group-hover:scale-110 transition-transform"><Plus size={18}/></div><span className="font-medium">Nueva Venta</span>
+                                                </button>
+                                                <button onClick={() => setActiveTab('products')} className="w-full p-3 rounded-xl border border-slate-100 bg-white flex items-center gap-3 text-slate-600 hover:bg-slate-50 transition-colors group">
+                                                    <div className="bg-slate-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><Package size={18}/></div><span className="font-medium">Inventario</span>
+                                                </button>
+                                            </div>
+                                        </Card>
+                                    </div>
+                                    <Card noPadding className="overflow-hidden">
+                                        <div className="p-4 md:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50"><h3 className="font-bold text-lg text-slate-800">Transacciones</h3></div>
+                                        <div className="overflow-x-auto touch-pan-x">
+                                            <table className="w-full text-left min-w-[600px]">
+                                                <thead className="bg-slate-50/50 text-slate-500 text-xs uppercase tracking-wider font-semibold">
+                                                    <tr><th className="p-4">Producto</th><th className="p-4">Vendedor</th><th className="p-4 text-right">P. Venta</th><th className="p-4 text-right">Comisión</th><th className="p-4 text-center">Voucher</th></tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100">
+                                                    {sales.map(s => (
+                                                        <tr key={s.id} className="hover:bg-indigo-50/30">
+                                                            <td className="p-4 font-medium text-slate-700">{s.productName}</td>
+                                                            <td className="p-4 text-slate-600 text-sm">{s.vendorName}</td>
+                                                            <td className="p-4 text-right text-slate-600">S/ {s.sellPrice.toFixed(2)}</td>
+                                                            <td className="p-4 text-right font-medium text-emerald-600">S/ {s.vendorEarnings.toFixed(2)}</td>
+                                                            <td className="p-4 text-center">
+                                                                <button onClick={() => sendWhatsappVoucher(s)} className="inline-flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-green-100 transition-colors border border-green-200 active:scale-95"><MessageCircle size={14} /><span className="hidden md:inline">Enviar</span></button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </Card>
+                                </div>
+                            )}
 
-      {/* Sidebar Responsive */}
-      <aside className={`fixed md:relative top-0 left-0 h-full w-72 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 z-50 shadow-2xl md:shadow-none ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-20 lg:w-72'
-      }`}>
-        <div className="p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
-              <span className="text-white font-bold text-xl">O</span>
-            </div>
-            <div className="md:hidden lg:block">
-              <h1 className="font-bold text-lg tracking-tight text-slate-900">OptiSystem</h1>
-              <p className="text-xs text-slate-400 font-medium">ERP v{APP_VERSION}</p>
-            </div>
-          </div>
-          {/* Botón Cerrar en Móvil */}
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden p-1 text-slate-400 hover:text-slate-600">
-             <X size={24} />
-          </button>
-        </div>
+                            {/* POS */}
+                            {activeTab === 'pos' && (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
+                                    <Card className="h-fit order-2 lg:order-1">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl"><ShoppingCart size={24}/></div><div><h3 className="text-xl font-bold text-slate-800">Nueva Venta</h3><p className="text-sm text-slate-500">Seleccionar items</p></div>
+                                        </div>
+                                        <div className="space-y-4 md:space-y-6">
+                                            <div><label className="block text-sm font-medium text-slate-700 mb-2">Producto</label>
+                                                <select className="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 text-base" value={posSelection.productId} onChange={e => setPosSelection({...posSelection, productId: e.target.value})}>
+                                                    <option value="">Seleccionar...</option>{products.map(p => <option key={p.id} value={p.id} disabled={p.stock===0}>{p.name} - S/ {p.price}</option>)}
+                                                </select>
+                                            </div>
+                                            <div><label className="block text-sm font-medium text-slate-700 mb-2">Vendedor</label>
+                                                <select className="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 text-base" value={posSelection.vendorId} onChange={e => setPosSelection({...posSelection, vendorId: e.target.value})}>
+                                                    <option value="">Seleccionar...</option>{vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                                                </select>
+                                            </div>
+                                            <Button onClick={handleProcessSale} className="w-full py-4 text-lg shadow-xl shadow-indigo-500/20" icon={DollarSign}>Procesar Venta</Button>
+                                        </div>
+                                    </Card>
+                                    <div className="space-y-6 order-1 lg:order-2">
+                                        <div className="bg-slate-800 text-white p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 p-12 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+                                            <h4 className="text-slate-400 text-xs md:text-sm font-medium mb-1 uppercase tracking-wider">Vista Previa Ganancia</h4>
+                                            <div className="text-3xl md:text-4xl font-bold mb-6">
+                                                {posSelection.productId ? `S/ ${(products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost).toFixed(2)}` : 'S/ 0.00'}
+                                                <span className="text-sm md:text-lg text-slate-500 font-normal ml-2">Total</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
-        <nav className="flex-1 px-4 space-y-2 mt-2 overflow-y-auto">
-          <SidebarItem id="dashboard" icon={LayoutDashboard} label="Dashboard" />
-          <SidebarItem id="pos" icon={ShoppingCart} label="Punto de Venta" />
-          <div className="my-4 border-t border-slate-100 md:hidden lg:block"></div>
-          <SidebarItem id="products" icon={Package} label="Inventario" />
-          <SidebarItem id="vendors" icon={Users} label="Vendedores" />
-          <SidebarItem id="config" icon={Settings} label="Configuración" />
-        </nav>
-      </aside>
+                            {/* INVENTORY */}
+                            {activeTab === 'products' && (
+                                <div className="space-y-6 animate-fade-in-up">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <h2 className="text-xl md:text-2xl font-bold text-slate-800">Inventario Global</h2>
+                                        <Button onClick={() => setShowProductForm(!showProductForm)} icon={showProductForm ? X : Plus} className="w-full md:w-auto">{showProductForm ? 'Cancelar' : 'Nuevo Producto'}</Button>
+                                    </div>
+                                    {showProductForm && (
+                                        <Card className="border-l-4 border-l-indigo-500 animate-slide-down">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <Input label="Nombre" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} placeholder="Ej: Lente Blue Cut" />
+                                                <div className="mb-4 flex flex-col gap-1.5"><label className="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Categoría</label>
+                                                    <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})}><option>Lentes</option><option>Monturas</option><option>Sol</option><option>Accesorios</option></select>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-3 md:gap-4 md:col-span-2">
+                                                    <Input type="number" label="Costo" value={newProduct.cost} onChange={e => setNewProduct({...newProduct, cost: e.target.value})} />
+                                                    <Input type="number" label="Precio" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} />
+                                                    <Input type="number" label="Stock" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} />
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col md:flex-row justify-end gap-3 mt-4">
+                                                <Button onClick={handleAddProduct} icon={Save} className="w-full md:w-auto">Guardar</Button>
+                                            </div>
+                                        </Card>
+                                    )}
+                                    <Card noPadding>
+                                        <div className="overflow-x-auto touch-pan-x"><table className="w-full text-left min-w-[600px]"><thead className="bg-slate-50 text-slate-500 text-xs uppercase border-b"><tr><th className="p-4">Producto</th><th className="p-4">Categoría</th><th className="p-4 text-right">Precio</th><th className="p-4 text-center">Stock</th><th className="p-4 text-center">Acciones</th></tr></thead><tbody className="divide-y">{products.map(p=>(<tr key={p.id}><td className="p-4 font-medium">{p.name}</td><td className="p-4"><Badge color="slate">{p.category}</Badge></td><td className="p-4 text-right font-bold">S/ {p.price.toFixed(2)}</td><td className="p-4 text-center"><span className={`font-bold ${p.stock<5?'text-red-500':'text-slate-600'}`}>{p.stock}</span></td><td className="p-4 text-center"><button onClick={()=>handleDeleteProduct(p.id)} className="p-2 text-red-400 hover:bg-red-50 rounded"><Trash2 size={18}/></button></td></tr>))}</tbody></table></div>
+                                    </Card>
+                                </div>
+                            )}
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto relative w-full h-full">
-        {/* Header */}
-        <header className="sticky top-0 z-30 px-4 md:px-6 py-4 bg-white/80 backdrop-blur-md flex justify-between items-center border-b border-slate-200/50">
-          <div className="flex items-center gap-3">
-             <button 
-                onClick={() => setSidebarOpen(true)}
-                className="md:hidden p-2 -ml-2 rounded-lg text-slate-600 hover:bg-slate-100"
-             >
-                <Menu size={24}/>
-             </button>
+                            {/* VENDORS */}
+                            {activeTab === 'vendors' && (
+                                <div className="space-y-6 animate-fade-in-up">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <h2 className="text-xl md:text-2xl font-bold text-slate-800">Equipo de Ventas</h2>
+                                        <Button onClick={() => setShowVendorForm(!showVendorForm)} icon={showVendorForm ? X : Plus} className="w-full md:w-auto">{showVendorForm ? 'Cancelar' : 'Nuevo Vendedor'}</Button>
+                                    </div>
+                                    {showVendorForm && (
+                                        <Card className="max-w-xl mx-auto border-l-4 border-l-indigo-500 animate-slide-down">
+                                            <Input label="Nombre" value={newVendor.name} onChange={e => setNewVendor({...newVendor, name: e.target.value})} />
+                                            <Input label="WhatsApp (51...)" type="number" value={newVendor.phone} onChange={e => setNewVendor({...newVendor, phone: e.target.value})} />
+                                            <Button onClick={handleAddVendor} icon={Save} className="w-full md:w-auto mt-4">Registrar</Button>
+                                        </Card>
+                                    )}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                                        {vendors.map(v => (
+                                            <Card key={v.id} className="flex flex-col items-center text-center relative">
+                                                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-indigo-100 to-white flex items-center justify-center text-xl md:text-2xl font-bold text-indigo-600 mb-4 shadow-inner">{v.name.charAt(0)}</div>
+                                                <h3 className="font-bold text-lg text-slate-800">{v.name}</h3>
+                                                <div className="grid grid-cols-2 w-full border-t border-slate-100 pt-4 mb-4 mt-4">
+                                                    <div><div className="text-xs text-slate-400 font-bold uppercase">Ventas</div><div className="text-xl font-bold text-slate-700">{v.totalSales}</div></div>
+                                                    <div className="border-l"><div className="text-xs text-slate-400 font-bold uppercase">Comisión</div><div className="text-xl font-bold text-emerald-600">S/ {v.totalCommissions.toFixed(0)}</div></div>
+                                                </div>
+                                                <button onClick={() => contactVendor(v)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-green-50 text-green-700 font-bold hover:bg-green-100 active:scale-95"><MessageCircle size={20}/> Contactar</button>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
-             <h2 className="text-lg md:text-2xl font-bold text-slate-800 tracking-tight truncate">
-               {activeTab === 'dashboard' && 'Panel de Control'}
-               {activeTab === 'pos' && 'Nueva Venta'}
-               {activeTab === 'products' && 'Inventario'}
-               {activeTab === 'vendors' && 'Vendedores'}
-               {activeTab === 'config' && 'Sistema'}
-             </h2>
-          </div>
-
-          <div className="flex items-center gap-2">
-             <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-emerald-100 shadow-sm">
-                <div className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                            {/* CONFIG */}
+                            {activeTab === 'config' && (
+                                <div className="max-w-3xl mx-auto space-y-6">
+                                    <Card className="p-0 overflow-hidden"><div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 md:p-8 text-white text-center"><h2 className="text-xl font-bold">Distribución de Ganancias</h2></div>
+                                        <div className="p-6 md:p-10">
+                                            <div className="flex justify-between mb-8 px-2"><div className="text-center"><div className="text-4xl font-bold text-indigo-600">{config.adminPct}%</div><div className="text-xs font-bold text-slate-400">NEGOCIO</div></div><div className="text-center"><div className="text-4xl font-bold text-emerald-500">{config.vendorPct}%</div><div className="text-xs font-bold text-slate-400">VENDEDOR</div></div></div>
+                                            <div className="relative h-8 bg-slate-100 rounded-full mb-6">
+                                                <div className="absolute left-0 top-0 h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-l-full" style={{ width: `${config.adminPct}%` }}></div>
+                                                <div className="absolute right-0 top-0 h-full bg-emerald-400 rounded-r-full" style={{ width: `${config.vendorPct}%` }}></div>
+                                                <input type="range" min="0" max="100" value={config.adminPct} onChange={e => setConfig({ adminPct: parseInt(e.target.value), vendorPct: 100 - parseInt(e.target.value) })} className="absolute inset-0 w-full opacity-0 cursor-ew-resize z-10" />
+                                            </div>
+                                        </div>
+                                    </Card>
+                                    <Card className="border-l-4 border-l-red-500 bg-red-50/50">
+                                        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                                            <div className="text-center md:text-left"><h3 className="text-lg font-bold text-red-700 flex items-center gap-2"><AlertCircle size={20}/> Zona de Peligro</h3></div>
+                                            <Button variant="danger" onClick={handleResetApp} icon={RefreshCw} className="w-full md:w-auto">Resetear Datos</Button>
+                                        </div>
+                                    </Card>
+                                </div>
+                            )}
+                        </div>
+                    </main>
                 </div>
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wide">Online</span>
-             </div>
-          </div>
-        </header>
+            );
+        }
 
-        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8 pb-24">
-
-          {/* --- DASHBOARD VIEW --- */}
-          {activeTab === 'dashboard' && (
-            <div className="space-y-6 animate-fade-in-up">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <StatCard title="Utilidad Neta" value={`S/ ${totalAdminNet.toFixed(2)}`} subtext="Ganancia real" icon={DollarSign} colorClass="text-indigo-600" trend="+12%" />
-                <StatCard title="Ventas Totales" value={`S/ ${totalRevenue.toFixed(2)}`} subtext="Ingreso bruto" icon={ShoppingBag} colorClass="text-blue-600" />
-                <StatCard title="Vendedores" value={vendors.length} subtext="Equipo activo" icon={Users} colorClass="text-purple-600" />
-                <StatCard title="Stock Total" value={products.reduce((a,b)=>a+b.stock,0)} subtext="Unidades" icon={Package} colorClass="text-emerald-600" />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2">
-                   <div className="flex justify-between items-end mb-6">
-                      <div>
-                        <h3 className="font-bold text-lg text-slate-800">Rendimiento</h3>
-                        <p className="text-slate-500 text-sm">Comisiones por agente</p>
-                      </div>
-                      <Badge color="indigo">Este Mes</Badge>
-                   </div>
-                   <div className="bg-white rounded-xl border border-slate-100 p-2 md:p-4">
-                      <SimpleBarChart data={chartData} maxVal={maxCommission} />
-                   </div>
-                </Card>
-
-                <Card>
-                  <h3 className="font-bold text-lg text-slate-800 mb-4">Accesos Rápidos</h3>
-                  <div className="space-y-3">
-                    <button onClick={() => setActiveTab('pos')} className="w-full p-3 rounded-xl border border-indigo-100 bg-indigo-50/50 flex items-center gap-3 text-indigo-700 hover:bg-indigo-100 transition-colors group">
-                      <div className="bg-white p-2 rounded-lg shadow-sm group-hover:scale-110 transition-transform"><Plus size={18}/></div>
-                      <span className="font-medium">Nueva Venta</span>
-                    </button>
-                    <button onClick={() => setActiveTab('products')} className="w-full p-3 rounded-xl border border-slate-100 bg-white flex items-center gap-3 text-slate-600 hover:bg-slate-50 transition-colors group">
-                      <div className="bg-slate-100 p-2 rounded-lg group-hover:scale-110 transition-transform"><Package size={18}/></div>
-                      <span className="font-medium">Inventario</span>
-                    </button>
-                  </div>
-                </Card>
-              </div>
-
-              <Card noPadding className="overflow-hidden">
-                <div className="p-4 md:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                  <h3 className="font-bold text-lg text-slate-800">Transacciones</h3>
-                </div>
-                <div className="overflow-x-auto touch-pan-x">
-                  <table className="w-full text-left min-w-[600px]">
-                    <thead className="bg-slate-50/50 text-slate-500 text-xs uppercase tracking-wider font-semibold">
-                      <tr>
-                        <th className="p-4">Producto</th>
-                        <th className="p-4">Vendedor</th>
-                        <th className="p-4 text-right">P. Venta</th>
-                        <th className="p-4 text-right">Comisión</th>
-                        <th className="p-4 text-center">Voucher</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {sales.map((sale) => (
-                        <tr key={sale.id} className="hover:bg-indigo-50/30 transition-colors">
-                          <td className="p-4 font-medium text-slate-700">{sale.productName}</td>
-                          <td className="p-4 text-slate-600 text-sm">{sale.vendorName}</td>
-                          <td className="p-4 text-right text-slate-600">S/ {sale.sellPrice.toFixed(2)}</td>
-                          <td className="p-4 text-right font-medium text-emerald-600">S/ {sale.vendorEarnings.toFixed(2)}</td>
-                          <td className="p-4 text-center">
-                            <button 
-                              onClick={() => sendWhatsappVoucher(sale)}
-                              className="inline-flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-green-100 transition-colors border border-green-200 active:scale-95"
-                            >
-                              <MessageCircle size={14} />
-                              <span className="hidden md:inline">Enviar</span>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            </div>
-          )}
-
-          {/* --- POS VIEW --- */}
-          {activeTab === 'pos' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
-              <Card className="h-fit order-2 lg:order-1">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl"><ShoppingCart size={24}/></div>
-                    <div>
-                        <h3 className="text-xl font-bold text-slate-800">Nueva Venta</h3>
-                        <p className="text-sm text-slate-500">Seleccionar items</p>
-                    </div>
-                </div>
-
-                <div className="space-y-4 md:space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Producto</label>
-                    <select 
-                      className="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow text-base"
-                      value={posSelection.productId}
-                      onChange={(e) => setPosSelection({...posSelection, productId: e.target.value})}
-                    >
-                      <option value="">Seleccionar producto...</option>
-                      {products.map(p => (
-                        <option key={p.id} value={p.id} disabled={p.stock === 0}>
-                          {p.name} - S/ {p.price} (Stock: {p.stock})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Vendedor</label>
-                    <select 
-                      className="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow text-base"
-                      value={posSelection.vendorId}
-                      onChange={(e) => setPosSelection({...posSelection, vendorId: e.target.value})}
-                    >
-                      <option value="">Seleccionar vendedor...</option>
-                      {vendors.map(v => (
-                        <option key={v.id} value={v.id}>{v.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-100 mt-4">
-                     <div className="flex justify-between items-center mb-2 text-sm">
-                        <span className="text-slate-500">Configuración:</span>
-                        <div className="flex gap-2">
-                           <Badge color="indigo">Neg: {config.adminPct}%</Badge>
-                           <Badge color="emerald">Vend: {config.vendorPct}%</Badge>
-                        </div>
-                     </div>
-                  </div>
-
-                  <Button onClick={handleProcessSale} className="w-full py-4 text-lg shadow-xl shadow-indigo-500/20" icon={DollarSign}>
-                    Procesar Venta
-                  </Button>
-                </div>
-              </Card>
-
-              {/* Preview Card */}
-              <div className="space-y-6 order-1 lg:order-2">
-                 <div className="bg-slate-800 text-white p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-12 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-                    <h4 className="text-slate-400 text-xs md:text-sm font-medium mb-1 uppercase tracking-wider">Vista Previa Ganancia</h4>
-                    <div className="text-3xl md:text-4xl font-bold mb-6">
-                        {posSelection.productId 
-                            ? `S/ ${(products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost).toFixed(2)}`
-                            : 'S/ 0.00'
-                        }
-                        <span className="text-sm md:text-lg text-slate-500 font-normal ml-2">Total</span>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div className="bg-white/10 p-3 md:p-4 rounded-xl flex justify-between items-center backdrop-blur-sm">
-                            <span className="text-slate-300 text-sm">Negocio ({config.adminPct}%)</span>
-                            <span className="text-lg md:text-xl font-bold text-white">
-                                {posSelection.productId 
-                                    ? `S/ ${((products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost) * (config.adminPct/100)).toFixed(2)}`
-                                    : '--'
-                                }
-                            </span>
-                        </div>
-                        <div className="bg-emerald-500/20 p-3 md:p-4 rounded-xl flex justify-between items-center backdrop-blur-sm border border-emerald-500/30">
-                            <span className="text-emerald-300 text-sm">Vendedor ({config.vendorPct}%)</span>
-                            <span className="text-lg md:text-xl font-bold text-emerald-400">
-                                {posSelection.productId 
-                                    ? `S/ ${((products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost) * (config.vendorPct/100)).toFixed(2)}`
-                                    : '--'
-                                }
-                            </span>
-                        </div>
-                    </div>
-                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* --- CONFIG VIEW --- */}
-          {activeTab === 'config' && (
-            <div className="max-w-3xl mx-auto space-y-6">
-              <Card className="overflow-hidden border-0 shadow-2xl shadow-indigo-100 p-0">
-                 <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 md:p-8 text-white text-center">
-                    <Settings size={40} className="mx-auto mb-4 opacity-80"/>
-                    <h2 className="text-xl md:text-2xl font-bold mb-2">Distribución de Ganancias</h2>
-                    <p className="text-indigo-100 text-sm md:text-base max-w-md mx-auto">Desliza para ajustar porcentajes.</p>
-                 </div>
-                 
-                 <div className="p-6 md:p-10">
-                    <div className="flex justify-between items-end mb-8 px-2">
-                       <div className="text-center">
-                          <div className="text-3xl md:text-4xl font-bold text-indigo-600">{config.adminPct}%</div>
-                          <div className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wide mt-1">Negocio</div>
-                       </div>
-                       <div className="text-center">
-                          <div className="text-3xl md:text-4xl font-bold text-emerald-500">{config.vendorPct}%</div>
-                          <div className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wide mt-1">Vendedor</div>
-                       </div>
-                    </div>
-
-                    <div className="relative h-8 bg-slate-100 rounded-full mb-6">
-                       <div className="absolute left-0 top-0 h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-l-full transition-all duration-300" style={{ width: `${config.adminPct}%` }}></div>
-                       <div className="absolute right-0 top-0 h-full bg-emerald-400 rounded-r-full transition-all duration-300" style={{ width: `${config.vendorPct}%` }}></div>
-                       
-                       <input 
-                          type="range" min="0" max="100" 
-                          value={config.adminPct} onChange={handleConfigChange}
-                          className="absolute inset-0 w-full opacity-0 cursor-ew-resize z-10 touch-none"
-                       />
-                       <div className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg border-2 border-slate-100 flex items-center justify-center pointer-events-none transition-all duration-300 z-0" style={{ left: `calc(${config.adminPct}% - 16px)` }}>
-                          <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                       </div>
-                    </div>
-                 </div>
-              </Card>
-
-              <Card className="border-l-4 border-l-red-500 bg-red-50/50">
-                  <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                      <div className="text-center md:text-left">
-                          <h3 className="text-lg font-bold text-red-700 flex items-center justify-center md:justify-start gap-2">
-                              <AlertCircle size={20}/> Zona de Peligro
-                          </h3>
-                          <p className="text-sm text-red-600/80 mt-1">Borrar datos y restaurar fábrica.</p>
-                      </div>
-                      <Button variant="danger" onClick={handleResetApp} icon={RefreshCw} className="w-full md:w-auto">Resetear</Button>
-                  </div>
-              </Card>
-            </div>
-          )}
-
-          {/* --- INVENTORY VIEW --- */}
-          {activeTab === 'products' && (
-             <div className="space-y-6 animate-fade-in-up">
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                 <h2 className="text-xl md:text-2xl font-bold text-slate-800">Inventario Global</h2>
-                 <Button onClick={() => setShowProductForm(!showProductForm)} icon={showProductForm ? X : Plus} className="w-full md:w-auto">
-                    {showProductForm ? 'Cancelar' : 'Nuevo Producto'}
-                 </Button>
-               </div>
-
-               {showProductForm && (
-                 <Card className="border-l-4 border-l-indigo-500 animate-slide-down">
-                    <h3 className="font-bold text-lg mb-4 text-slate-800">Agregar Producto</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <Input label="Nombre del Producto" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} placeholder="Ej: Lente Blue Cut 1.67" />
-                       <div className="mb-4 flex flex-col gap-1.5">
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Categoría</label>
-                          <select 
-                             className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-base"
-                             value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})}
-                          >
-                             <option>Lentes</option><option>Monturas</option><option>Sol</option><option>Accesorios</option>
-                          </select>
-                       </div>
-                       <div className="grid grid-cols-3 gap-3 md:gap-4 md:col-span-2">
-                           <Input type="number" label="Costo" value={newProduct.cost} onChange={e => setNewProduct({...newProduct, cost: e.target.value})} placeholder="0.00" />
-                           <Input type="number" label="Precio" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} placeholder="0.00" />
-                           <Input type="number" label="Stock" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} placeholder="0" />
-                       </div>
-                    </div>
-                    <div className="flex flex-col md:flex-row justify-end gap-3 mt-4">
-                       <Button variant="secondary" onClick={() => setShowProductForm(false)} className="w-full md:w-auto">Cancelar</Button>
-                       <Button onClick={handleAddProduct} icon={Save} className="w-full md:w-auto">Guardar</Button>
-                    </div>
-                 </Card>
-               )}
-
-               <Card noPadding>
-                 <div className="overflow-x-auto touch-pan-x">
-                   <table className="w-full text-left min-w-[600px]">
-                     <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold border-b border-slate-200">
-                        <tr>
-                           <th className="p-4">Producto</th>
-                           <th className="p-4">Categoría</th>
-                           <th className="p-4 text-right">Costo</th>
-                           <th className="p-4 text-right">Precio</th>
-                           <th className="p-4 text-center">Stock</th>
-                           <th className="p-4 text-center">Acciones</th>
-                        </tr>
-                     </thead>
-                     <tbody className="divide-y divide-slate-100">
-                        {products.map(p => (
-                           <tr key={p.id} className="hover:bg-slate-50/50">
-                              <td className="p-4 font-medium text-slate-700">{p.name}</td>
-                              <td className="p-4"><Badge color="slate">{p.category}</Badge></td>
-                              <td className="p-4 text-right text-slate-500">S/ {p.cost.toFixed(2)}</td>
-                              <td className="p-4 text-right font-bold text-slate-700">S/ {p.price.toFixed(2)}</td>
-                              <td className="p-4 text-center"><span className={`font-bold ${p.stock < 5 ? 'text-red-500' : 'text-slate-600'}`}>{p.stock} u.</span></td>
-                              <td className="p-4 text-center">
-                                 <button onClick={() => handleDeleteProduct(p.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={18}/></button>
-                              </td>
-                           </tr>
-                        ))}
-                     </tbody>
-                   </table>
-                 </div>
-               </Card>
-             </div>
-          )}
-
-          {/* --- VENDORS VIEW --- */}
-          {activeTab === 'vendors' && (
-             <div className="space-y-6 animate-fade-in-up">
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                 <h2 className="text-xl md:text-2xl font-bold text-slate-800">Equipo de Ventas</h2>
-                 <Button onClick={() => setShowVendorForm(!showVendorForm)} icon={showVendorForm ? X : Plus} className="w-full md:w-auto">
-                    {showVendorForm ? 'Cancelar' : 'Nuevo Vendedor'}
-                 </Button>
-               </div>
-
-               {showVendorForm && (
-                 <Card className="max-w-xl mx-auto border-l-4 border-l-indigo-500 animate-slide-down">
-                    <h3 className="font-bold text-lg mb-4 text-slate-800">Registrar Vendedor</h3>
-                    <Input label="Nombre Completo" value={newVendor.name} onChange={e => setNewVendor({...newVendor, name: e.target.value})} placeholder="Ej: Juan Pérez" />
-                    <Input label="Teléfono (WhatsApp)" type="number" value={newVendor.phone} onChange={e => setNewVendor({...newVendor, phone: e.target.value})} placeholder="51999888777" />
-                    <div className="flex flex-col md:flex-row justify-end gap-3 mt-4">
-                       <Button variant="secondary" onClick={() => setShowVendorForm(false)} className="w-full md:w-auto">Cancelar</Button>
-                       <Button onClick={handleAddVendor} icon={Save} className="w-full md:w-auto">Registrar</Button>
-                    </div>
-                 </Card>
-               )}
-
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                  {vendors.map(v => (
-                     <Card key={v.id} className="flex flex-col items-center text-center hover:shadow-xl transition-shadow border border-slate-100 relative">
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-indigo-100 to-white flex items-center justify-center text-xl md:text-2xl font-bold text-indigo-600 mb-4 shadow-inner">
-                           {v.name.charAt(0)}
-                        </div>
-                        <h3 className="font-bold text-lg text-slate-800">{v.name}</h3>
-                        <p className="text-sm text-slate-400 mb-4 flex items-center gap-1"><Phone size={12}/> +{v.phone}</p>
-                        
-                        <div className="mb-6">
-                           <Badge color={v.status === 'active' ? 'emerald' : 'slate'}>{v.status === 'active' ? 'Activo' : 'Inactivo'}</Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 w-full border-t border-slate-100 pt-4 mb-4">
-                           <div>
-                              <div className="text-[10px] md:text-xs text-slate-400 uppercase font-bold tracking-wider">Ventas</div>
-                              <div className="text-lg md:text-xl font-bold text-slate-700">{v.totalSales}</div>
-                           </div>
-                           <div className="border-l border-slate-100">
-                              <div className="text-[10px] md:text-xs text-slate-400 uppercase font-bold tracking-wider">Comisión</div>
-                              <div className="text-lg md:text-xl font-bold text-emerald-600">S/ {v.totalCommissions.toFixed(0)}</div>
-                           </div>
-                        </div>
-
-                        <button 
-                           onClick={() => contactVendor(v)}
-                           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-green-50 text-green-700 font-bold hover:bg-green-100 transition-colors active:scale-95"
-                        >
-                           <MessageCircle size={20}/> Contactar
-                        </button>
-                     </Card>
-                  ))}
-               </div>
-             </div>
-          )}
-
-        </div>
-      </main>
-    </div>
-  );
-}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
