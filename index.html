@@ -143,29 +143,31 @@
                         <i data-lucide="building-2" class="w-4 h-4"></i> Datos de tu Empresa
                     </h2>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="col-span-2 flex items-center gap-4">
-                            <div class="w-32 h-16 rounded border border-dashed border-gray-300 flex items-center justify-center bg-black overflow-hidden relative group cursor-pointer" onclick="document.getElementById('logoInput').click()" title="Cambiar logo">
-                                <img id="logoPreviewImg" src="LOGOTECHENOLOGY300.fw.jpg" alt="Logo" class="w-full h-full object-contain p-1 z-10" onerror="this.src='https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech';">
-                                <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center z-20">
-                                    <i data-lucide="upload" class="w-5 h-5 text-white"></i>
+                        <div class="col-span-2 flex flex-col gap-3">
+                            <div class="flex items-center gap-4">
+                                <div class="w-32 h-16 rounded border border-gray-200 flex items-center justify-center bg-black overflow-hidden shrink-0 p-1">
+                                    <img id="logoPreviewImg" src="https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech" alt="Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech';">
                                 </div>
-                                <input type="file" id="logoInput" class="hidden" accept="image/*" onchange="handleLogoUpload(event)">
+                                <div class="flex-1">
+                                    <input type="text" id="f_bizName" placeholder="Nombre del Negocio" value="KGB TECHNOLOGY" class="w-full text-base font-bold border-b border-gray-200 pb-1 px-1 focus:border-brand-tech bg-transparent transition-colors" oninput="updatePreview()">
+                                </div>
                             </div>
-                            <div class="flex-1">
-                                <input type="text" id="f_bizName" placeholder="Nombre del Negocio" value="KGB TECHNOLOGY" class="w-full text-base font-bold border-b border-gray-200 pb-1 px-1 focus:border-brand-tech bg-transparent transition-colors" oninput="updatePreview()">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Link del Logo (URL de internet)</label>
+                                <input type="url" id="f_logoUrl" placeholder="Pega aquí el enlace de tu logo (ej: https://.../milogo.png)" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-brand-tech" oninput="updateLogoUrl()">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Teléfono Fijo</label>
-                            <input type="text" id="f_bizPhone" placeholder="(01) 555-1234" value="(01) 555-1234" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                            <label class="block text-xs text-gray-500 mb-1">Celular</label>
+                            <input type="text" id="f_bizPhone" placeholder="917 309 964" value="917 309 964" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
                         </div>
                         <div>
                             <label class="block text-xs text-gray-500 mb-1">WhatsApp</label>
-                            <input type="text" id="f_bizWsp" placeholder="+51 999 888 777" value="+51 999 888 777" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                            <input type="text" id="f_bizWsp" placeholder="917 309 964" value="917 309 964" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
                         </div>
                         <div class="col-span-2">
                             <label class="block text-xs text-gray-500 mb-1">Dirección del Negocio</label>
-                            <input type="text" id="f_bizAddress" placeholder="Av. Tecnológica 123, Ciudad" value="Av. Tecnológica 123, Centro Financiero" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                            <input type="text" id="f_bizAddress" placeholder="Jr. 2 de mayo. 477 Int 201" value="Jr. 2 de mayo. 477 Int 201" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
                         </div>
                     </div>
                 </div>
@@ -287,13 +289,13 @@
                         <!-- Logo Dinámico -->
                         <div id="p_logoContainer" class="w-40 h-20 bg-black rounded-lg flex items-center justify-center overflow-hidden shrink-0 p-2">
                             <!-- Imagen por defecto (Logo cargado) -->
-                            <img id="p_uploadedLogo" src="LOGOTECHENOLOGY300.fw.jpg" alt="KGB Technology Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech';">
+                            <img id="p_uploadedLogo" src="https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech" alt="KGB Technology Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech';">
                         </div>
                         <div>
                             <h1 id="p_bizName" class="text-2xl font-black text-brand-dark uppercase tracking-tight">KGB TECHNOLOGY</h1>
                             <div class="text-gray-500 text-xs mt-1 space-y-0.5 font-medium">
-                                <p id="p_bizAddress">Av. Tecnológica 123, Centro Financiero</p>
-                                <p class="flex items-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> <span id="p_bizPhone">(01) 555-1234</span> &nbsp;|&nbsp; <i data-lucide="message-circle" class="w-3 h-3 text-green-500"></i> <span id="p_bizWsp">+51 999 888 777</span></p>
+                                <p id="p_bizAddress">Jr. 2 de mayo. 477 Int 201</p>
+                                <p class="flex items-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> <span id="p_bizPhone">917 309 964</span> &nbsp;|&nbsp; <i data-lucide="message-circle" class="w-3 h-3 text-green-500"></i> <span id="p_bizWsp">917 309 964</span></p>
                             </div>
                         </div>
                     </div>
@@ -428,43 +430,18 @@
             updatePreview();
         }
 
-        // Cambiar modo de visualización
-        function setMode(mode) {
-            viewMode = mode;
+        // Manejar URL de Logo desde internet
+        function updateLogoUrl() {
+            const url = document.getElementById('f_logoUrl').value.trim();
+            const imgForm = document.getElementById('logoPreviewImg');
+            const imgPrev = document.getElementById('p_uploadedLogo');
             
-            const btnDetalle = document.getElementById('btnModeDetalle');
-            const btnFinal = document.getElementById('btnModeFinal');
-            const descContainer = document.getElementById('generalDescContainer');
-
-            if (mode === 'detalle') {
-                btnDetalle.className = "px-3 py-1 text-xs font-medium rounded shadow-sm bg-white text-brand-tech";
-                btnFinal.className = "px-3 py-1 text-xs font-medium rounded text-gray-500 hover:text-gray-700 bg-transparent";
-                descContainer.classList.add('hidden');
+            if (url) {
+                imgForm.src = url;
+                imgPrev.src = url;
             } else {
-                btnFinal.className = "px-3 py-1 text-xs font-medium rounded shadow-sm bg-white text-brand-tech";
-                btnDetalle.className = "px-3 py-1 text-xs font-medium rounded text-gray-500 hover:text-gray-700 bg-transparent";
-                descContainer.classList.remove('hidden');
-            }
-
-            updatePreview();
-        }
-
-        // Manejar subida de Logo
-        function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imgData = e.target.result;
-                    // Formulario
-                    const imgForm = document.getElementById('logoPreviewImg');
-                    imgForm.src = imgData;
-                    
-                    // Vista previa
-                    const imgPrev = document.getElementById('p_uploadedLogo');
-                    imgPrev.src = imgData;
-                }
-                reader.readAsDataURL(file);
+                imgForm.src = 'https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech';
+                imgPrev.src = 'https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech';
             }
         }
 
