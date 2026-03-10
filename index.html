@@ -2,640 +2,656 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OptiSystem ERP + AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Proformas Tech</title>
     
-    <!-- 1. Tailwind CSS -->
+    <!-- Fuentes: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- html2pdf.js para exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Iconos -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-out',
-                        'slide-in': 'slideIn 0.3s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
                     },
-                    keyframes: {
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideIn: { '0%': { transform: 'translateX(-100%)' }, '100%': { transform: 'translateX(0)' } },
+                    colors: {
+                        brand: {
+                            dark: '#0f172a',    // Grafito/Negro
+                            corp: '#1e3a8a',    // Azul corporativo
+                            tech: '#2563eb',    // Azul tecnológico
+                            light: '#06b6d4',   // Celeste brillante
+                            accent: '#f97316',  // Naranja acento
+                            bg: '#f8fafc',      // Gris claro fondo
+                        }
                     }
                 }
             }
         }
     </script>
 
-    <!-- 2. Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Markdown Parser para respuestas AI -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
     <style>
-        body { background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        #root:empty::before {
-            content: "Cargando sistema con IA...";
-            display: block; text-align: center; padding: 20px; color: #64748b; font-family: sans-serif;
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
         }
-        /* Estilos para el markdown de la IA */
-        .prose-sm p { margin-bottom: 0.5em; }
-        .prose-sm ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.5em; }
-        .prose-sm strong { color: #4f46e5; font-weight: 700; }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
 
-    <!-- 3. LÓGICA DE LA APP -->
-    <script type="text/babel" data-type="module">
-        import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.2.0?dev';
-        import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client?dev';
-        import { 
-            LayoutDashboard, ShoppingBag, Users, Settings, TrendingUp, DollarSign, 
-            Package, Plus, ShoppingCart, Trash2, AlertCircle, Menu, X, ChevronRight, 
-            Save, MessageCircle, Phone, RefreshCw, BarChart3, AlertTriangle, History, User,
-            Sparkles, Send, Bot
-        } from 'https://esm.sh/lucide-react@0.344.0?dev';
+        /* Estilos específicos para la vista previa simulando hoja A4 */
+        .a4-preview {
+            width: 100%;
+            max-width: 210mm;
+            min-height: 297mm;
+            background: white;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            padding: 20mm;
+            position: relative;
+        }
 
-        // --- GEMINI API CONFIG ---
-        const apiKey = ""; // La clave se inyecta en tiempo de ejecución
+        /* Ocultar barra de desplazamiento en el contenedor de vista previa */
+        .hide-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .hide-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
 
-        // Función para llamar a Gemini con Reintentos
-        async function callGemini(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = { 
-                contents: [{ parts: [{ text: prompt }] }] 
-            };
-
-            const delays = [1000, 2000, 4000, 8000, 16000];
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    
-                    const data = await response.json();
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "No pude generar una respuesta.";
-                } catch (error) {
-                    if (i === 4) throw error; // Si falla el último intento
-                    await new Promise(resolve => setTimeout(resolve, delays[i]));
-                }
+        /* Estilos de impresión */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #preview-section, #preview-section * {
+                visibility: visible;
+            }
+            #preview-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+            .a4-preview {
+                box-shadow: none;
+                padding: 0;
+                min-height: auto;
+            }
+            /* Ocultar elementos UI durante impresión */
+            .no-print {
+                display: none !important;
             }
         }
 
-        // --- Componentes UI ---
-        const Card = ({ children, className = "", noPadding = false }) => (
-            <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 ${noPadding ? '' : 'p-4 md:p-6'} ${className}`}>
-                {children}
-            </div>
-        );
+        /* Efecto focus en inputs */
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-sm">
 
-        const StatCard = ({ title, value, subtext, icon: Icon, colorClass, trend }) => (
-            <Card className="relative overflow-hidden">
-                <div className={`absolute top-0 right-0 p-4 opacity-10 ${colorClass}`}><Icon size={80} /></div>
-                <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className={`p-2 rounded-lg ${colorClass} bg-opacity-10 text-opacity-100`}><Icon size={20} /></div>
-                        <span className="text-slate-500 font-medium text-sm">{title}</span>
-                    </div>
-                    <div className="text-2xl font-bold text-slate-800">{value}</div>
-                    <div className="flex items-center gap-1 mt-1">
-                        {trend && <span className="text-emerald-600 text-xs font-bold bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1"><TrendingUp size={12}/> {trend}</span>}
-                        <span className="text-slate-400 text-xs truncate">{subtext}</span>
+    <!-- Header / Navbar -->
+    <header class="bg-white border-b border-gray-200 h-16 flex items-center px-6 justify-between shrink-0 z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-brand-corp flex items-center justify-center text-white">
+                <i data-lucide="cpu" class="w-5 h-5"></i>
+            </div>
+            <h1 class="font-bold text-lg text-brand-dark tracking-tight">Proforma<span class="text-brand-tech">Tech</span></h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="clearForm()" class="px-4 py-2 text-gray-600 hover:text-brand-accent hover:bg-orange-50 rounded-lg transition-colors flex items-center gap-2 font-medium">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Limpiar
+            </button>
+            <button onclick="window.print()" class="px-4 py-2 bg-brand-tech hover:bg-brand-corp text-white rounded-lg transition-colors flex items-center gap-2 font-medium shadow-sm">
+                <i data-lucide="printer" class="w-4 h-4"></i> Imprimir
+            </button>
+            <button onclick="generatePDF()" class="px-4 py-2 bg-brand-accent hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center gap-2 font-medium shadow-sm">
+                <i data-lucide="download" class="w-4 h-4"></i> Descargar PDF
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden">
+        
+        <!-- LADO IZQUIERDO: Formulario -->
+        <section class="w-full lg:w-1/2 lg:min-w-[500px] xl:w-[45%] h-full overflow-y-auto hide-scrollbar bg-brand-bg p-6 border-r border-gray-200">
+            <div class="max-w-2xl mx-auto space-y-8 pb-20">
+
+                <!-- Datos del Negocio -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i data-lucide="building-2" class="w-4 h-4"></i> Datos de tu Empresa
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 flex items-center gap-4">
+                            <div class="w-32 h-16 rounded border border-dashed border-gray-300 flex items-center justify-center bg-black overflow-hidden relative group cursor-pointer" onclick="document.getElementById('logoInput').click()" title="Cambiar logo">
+                                <img id="logoPreviewImg" src="LOGOTECHENOLOGY300.fw.jpg" alt="Logo" class="w-full h-full object-contain p-1 z-10" onerror="this.src='https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech';">
+                                <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center z-20">
+                                    <i data-lucide="upload" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <input type="file" id="logoInput" class="hidden" accept="image/*" onchange="handleLogoUpload(event)">
+                            </div>
+                            <div class="flex-1">
+                                <input type="text" id="f_bizName" placeholder="Nombre del Negocio" value="KGB TECHNOLOGY" class="w-full text-base font-bold border-b border-gray-200 pb-1 px-1 focus:border-brand-tech bg-transparent transition-colors" oninput="updatePreview()">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Teléfono Fijo</label>
+                            <input type="text" id="f_bizPhone" placeholder="(01) 555-1234" value="(01) 555-1234" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">WhatsApp</label>
+                            <input type="text" id="f_bizWsp" placeholder="+51 999 888 777" value="+51 999 888 777" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs text-gray-500 mb-1">Dirección del Negocio</label>
+                            <input type="text" id="f_bizAddress" placeholder="Av. Tecnológica 123, Ciudad" value="Av. Tecnológica 123, Centro Financiero" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                        </div>
                     </div>
                 </div>
-            </Card>
-        );
 
-        const Button = ({ children, onClick, variant = "primary", disabled = false, className = "", icon: Icon }) => {
-            const baseStyle = "px-4 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center gap-2";
-            const variants = {
-                primary: "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 disabled:bg-indigo-300 disabled:shadow-none",
-                secondary: "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50",
-                danger: "bg-red-50 text-red-600 border border-red-100",
-                whatsapp: "bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-200",
-                ai: "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:shadow-lg hover:shadow-violet-200"
-            };
-            return (
-                <button onClick={onClick} disabled={disabled} className={`${baseStyle} ${variants[variant]} ${className}`}>
-                    {Icon && <Icon size={18} />} {children}
-                </button>
-            );
-        };
-
-        const Input = ({ label, ...props }) => (
-            <div className="flex flex-col gap-1.5 mb-4">
-                {label && <label className="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">{label}</label>}
-                <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700" {...props} />
-            </div>
-        );
-
-        const Badge = ({ children, color = "indigo" }) => (
-            <span className={`px-2 py-1 rounded-md text-xs font-bold border bg-${color}-50 text-${color}-700 border-${color}-100`}>
-                {children}
-            </span>
-        );
-
-        // --- Gráfico Simple ---
-        const SimpleBarChart = ({ data, maxVal }) => (
-            <div className="flex items-end gap-2 h-32 w-full pt-4 overflow-x-auto pb-2 no-scrollbar">
-                {data.map((item, idx) => {
-                    const heightPct = maxVal > 0 ? (item.value / maxVal) * 100 : 0;
-                    return (
-                        <div key={idx} className="flex-1 min-w-[40px] flex flex-col items-center">
-                            <div className="relative w-full flex justify-center items-end h-full bg-slate-50 rounded-t-lg">
-                                <div style={{ height: `${heightPct}%` }} className="w-full max-w-[20px] bg-indigo-500 rounded-t"></div>
-                            </div>
-                            <span className="text-[10px] text-slate-400 mt-2 truncate w-full text-center">{item.label}</span>
+                <!-- Meta Datos de Proforma -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">N° Proforma</label>
+                        <div class="flex items-center bg-gray-50 border border-gray-200 rounded-md px-3 py-2">
+                            <span class="text-gray-400 mr-1 font-mono">PF-</span>
+                            <input type="text" id="f_profNumber" class="w-full bg-transparent font-mono font-bold text-brand-corp focus:outline-none" oninput="updatePreview()">
                         </div>
-                    );
-                })}
-            </div>
-        );
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Fecha</label>
+                        <input type="date" id="f_date" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700" onchange="updatePreview()">
+                    </div>
+                </div>
 
-        // --- Datos Iniciales ---
-        const INITIAL_PRODUCTS = [
-            { id: 1, name: 'Lente Blue Defense', cost: 35, price: 85, stock: 12, category: 'Lentes' },
-            { id: 2, name: 'Montura Acetato', cost: 45, price: 120, stock: 5, category: 'Monturas' },
-            { id: 3, name: 'Lente Poly AR', cost: 25, price: 60, stock: 20, category: 'Lentes' },
-            { id: 4, name: 'Spray Limpiador', cost: 5, price: 15, stock: 50, category: 'Accesorios' },
-        ];
-        const INITIAL_VENDORS = [
-            { id: 1, name: 'Ana García', phone: '51999111222', totalSales: 5, totalCommissions: 120, status: 'active' },
-            { id: 2, name: 'Carlos Pérez', phone: '51999333444', totalSales: 8, totalCommissions: 210, status: 'active' },
-        ];
-        const INITIAL_SALES = [
-            { id: 101, productName: 'Lente Blue Defense', vendorId: 2, vendorName: 'Carlos Pérez', sellPrice: 85, grossProfit: 50, adminEarnings: 30, vendorEarnings: 20, date: new Date().toISOString(), clientName: 'Cliente Ejemplo', clientPhone: '000000000' }
-        ];
-        const INITIAL_CONFIG = { adminPct: 60, vendorPct: 40 };
-
-        // --- App Principal ---
-        function App() {
-            const [activeTab, setActiveTab] = useState('dashboard');
-            const [sidebarOpen, setSidebarOpen] = useState(false);
-            const [isMobile, setIsMobile] = useState(false);
-
-            // CONTROL DE MENU MOVIL
-            useEffect(() => {
-                const handleResize = () => {
-                    const mobile = window.innerWidth < 768;
-                    if (mobile !== isMobile) {
-                        setIsMobile(mobile);
-                        setSidebarOpen(!mobile); 
-                    }
-                };
-                const initialMobile = window.innerWidth < 768;
-                setIsMobile(initialMobile);
-                setSidebarOpen(!initialMobile);
-                window.addEventListener('resize', handleResize);
-                return () => window.removeEventListener('resize', handleResize);
-            }, [isMobile]);
-
-            // Persistencia
-            const useStickyState = (key, defaultValue) => {
-                const [value, setValue] = useState(() => {
-                    const stickyValue = localStorage.getItem(key);
-                    return stickyValue !== null ? JSON.parse(stickyValue) : defaultValue;
-                });
-                useEffect(() => { localStorage.setItem(key, JSON.stringify(value)); }, [key, value]);
-                return [value, setValue];
-            };
-
-            const [config, setConfig] = useStickyState('opti_config', INITIAL_CONFIG);
-            const [products, setProducts] = useStickyState('opti_products', INITIAL_PRODUCTS);
-            const [vendors, setVendors] = useStickyState('opti_vendors', INITIAL_VENDORS);
-            const [sales, setSales] = useStickyState('opti_sales', INITIAL_SALES);
-
-            // Estados UI
-            const [showProductForm, setShowProductForm] = useState(false);
-            const [newProduct, setNewProduct] = useState({ name: '', category: 'Lentes', cost: '', price: '', stock: '' });
-            const [showVendorForm, setShowVendorForm] = useState(false);
-            const [newVendor, setNewVendor] = useState({ name: '', phone: '' });
-            const [posSelection, setPosSelection] = useState({ productId: '', vendorId: '', clientName: '', clientPhone: '' });
-
-            // --- ESTADOS DE AI ---
-            const [aiQuery, setAiQuery] = useState('');
-            const [aiResponse, setAiResponse] = useState('');
-            const [aiLoading, setAiLoading] = useState(false);
-            const chatEndRef = useRef(null);
-
-            // Lógica de Negocio
-            const handleProcessSale = () => {
-                const product = products.find(p => p.id === Number(posSelection.productId));
-                const vendor = vendors.find(v => v.id === Number(posSelection.vendorId));
-                
-                if (!product || !vendor) return alert("Selecciona producto y vendedor");
-                if (product.stock <= 0) return alert("⛔ ERROR: ¡Producto sin Stock!");
-                if (!posSelection.clientName) return alert("Ingresa el nombre del cliente");
-
-                const grossProfit = product.price - product.cost;
-                const adminShare = grossProfit * (config.adminPct / 100);
-                const vendorShare = grossProfit * (config.vendorPct / 100);
-                const newStock = product.stock - 1;
-
-                const newSale = {
-                    id: Date.now(),
-                    productName: product.name,
-                    sellPrice: product.price,
-                    grossProfit,
-                    vendorId: vendor.id,
-                    vendorName: vendor.name,
-                    clientName: posSelection.clientName,
-                    clientPhone: posSelection.clientPhone,
-                    adminEarnings: adminShare,
-                    vendorEarnings: vendorShare,
-                    date: new Date().toISOString()
-                };
-
-                setSales([newSale, ...sales]);
-                setProducts(products.map(p => p.id === product.id ? { ...p, stock: newStock } : p));
-                setVendors(vendors.map(v => v.id === vendor.id ? { ...v, totalSales: v.totalSales + 1, totalCommissions: v.totalCommissions + vendorShare } : v));
-                setPosSelection({ productId: '', vendorId: '', clientName: '', clientPhone: '' });
-                
-                if (newStock === 0) alert(`✅ Venta Exitosa.\n⚠️ ALERTA CRÍTICA: ¡${product.name} AGOTADO!`);
-                else if (newStock <= 3) alert(`✅ Venta Exitosa.\n⚠️ Quedan pocas unidades de ${product.name}`);
-                else alert("✅ Venta registrada correctamente");
-            };
-
-            const sendWhatsappVoucher = (sale) => {
-                const vendor = vendors.find(v => v.id === sale.vendorId);
-                if (!vendor?.phone) return alert("Vendedor sin teléfono");
-                const msg = `*🧾 COMPROBANTE - OPTISYSTEM*\n\n👤 Vendedor: *${vendor.name}*\n🧑 Cliente: ${sale.clientName || 'General'}\n📦 Producto: ${sale.productName}\n💰 Venta: S/ ${sale.sellPrice.toFixed(2)}\n💵 *TU COMISIÓN: S/ ${sale.vendorEarnings.toFixed(2)}*`;
-                window.open(`https://wa.me/${vendor.phone}?text=${encodeURIComponent(msg)}`, '_blank');
-            };
-
-            const handleResetApp = () => {
-                if(confirm("⚠️ ¿BORRAR TODO? Se perderán los datos.")) {
-                    localStorage.clear();
-                    window.location.reload();
-                }
-            };
-
-            // --- LÓGICA DE ASISTENTE IA ---
-            const handleAskAI = async () => {
-                if (!aiQuery.trim()) return;
-                setAiLoading(true);
-                setAiResponse('');
-
-                // Preparar contexto del negocio para la IA
-                const contextData = `
-                    ACTÚA COMO UN ANALISTA DE NEGOCIOS EXPERTO PARA "OPTISYSTEM".
-                    
-                    DATOS ACTUALES DEL NEGOCIO:
-                    1. INVENTARIO: ${JSON.stringify(products.map(p => ({item: p.name, stock: p.stock, precio: p.price})))}
-                    2. VENDEDORES: ${JSON.stringify(vendors.map(v => ({nombre: v.name, ventas: v.totalSales, comision_total: v.totalCommissions})))}
-                    3. VENTAS RECIENTES (Muestra de 10): ${JSON.stringify(sales.slice(0,10).map(s => ({prod: s.productName, vend: s.vendorName, precio: s.sellPrice, fecha: s.date})))}
-                    4. CONFIGURACIÓN: El negocio gana el ${config.adminPct}% y el vendedor el ${config.vendorPct}% de la utilidad.
-
-                    INSTRUCCIÓN: Responde a la consulta del usuario basándote estrictamente en estos datos. Sé breve, profesional y usa formato Markdown (negritas, listas) para que se vea bien. Si te piden un resumen, destaca lo más importante. Responde siempre en Español.
-                `;
-
-                const prompt = `${contextData}\n\nCONSULTA DEL USUARIO: ${aiQuery}`;
-
-                try {
-                    const result = await callGemini(prompt);
-                    setAiResponse(result);
-                } catch (error) {
-                    console.error(error);
-                    setAiResponse("⚠️ Lo siento, hubo un problema al conectar con el servidor de IA. Verifica tu conexión o intenta más tarde.");
-                } finally {
-                    setAiLoading(false);
-                }
-            };
-
-            // Cálculos Dashboard
-            const totalAdminNet = sales.reduce((acc, curr) => acc + curr.adminEarnings, 0);
-            const totalRevenue = sales.reduce((acc, curr) => acc + curr.sellPrice, 0);
-            const totalCommissionsPaid = sales.reduce((acc, curr) => acc + curr.vendorEarnings, 0);
-            const totalStockValue = products.reduce((acc, curr) => acc + (curr.cost * curr.stock), 0);
-            const chartData = vendors.map(v => ({ label: v.name.split(' ')[0], value: Math.round(v.totalCommissions) }));
-            const maxCommission = Math.max(...chartData.map(d => d.value), 100);
-
-            // Componente Item Sidebar
-            const SidebarItem = ({ id, icon: Icon, label, isAi }) => (
-                <button 
-                    onClick={() => { setActiveTab(id); if(isMobile) setSidebarOpen(false); }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all mb-1 ${
-                        activeTab === id 
-                        ? (isAi ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md') 
-                        : 'text-slate-500 hover:bg-slate-100'
-                    }`}
-                >
-                    <Icon size={20} className={isAi ? 'text-white' : ''} /> <span className="font-medium">{label}</span>
-                </button>
-            );
-
-            return (
-                <div className="flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden">
-                    
-                    {/* BACKDROP MÓVIL */}
-                    {isMobile && sidebarOpen && (
-                        <div className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm transition-opacity" onClick={() => setSidebarOpen(false)} />
-                    )}
-
-                    {/* SIDEBAR */}
-                    <aside className={`fixed md:relative top-0 left-0 h-full w-72 bg-white border-r border-slate-200 flex flex-col z-50 transition-transform duration-300 shadow-2xl md:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-64'}`}>
-                        <div className="p-6 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">O</div>
-                                <div><h1 className="font-bold text-lg">OptiSystem</h1><p className="text-xs text-slate-400">v2.9 AI ✨</p></div>
-                            </div>
-                            <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-400 p-2"><X size={24}/></button>
+                <!-- Datos del Cliente -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4"></i> Datos del Cliente
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs text-gray-500 mb-1">Nombre / Razón Social</label>
+                            <input type="text" id="f_clientName" placeholder="Ej. Juan Pérez" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-brand-tech focus:border-transparent transition-all" oninput="updatePreview()">
                         </div>
-                        <nav className="flex-1 px-4 overflow-y-auto">
-                            <div className="mb-4">
-                                <SidebarItem id="assistant" icon={Sparkles} label="Asistente AI" isAi={true} />
-                            </div>
-                            <div className="my-4 border-t border-slate-100"></div>
-                            <SidebarItem id="dashboard" icon={LayoutDashboard} label="Dashboard" />
-                            <SidebarItem id="pos" icon={ShoppingCart} label="Punto de Venta" />
-                            <SidebarItem id="history" icon={History} label="Historial" />
-                            <div className="my-4 border-t border-slate-100"></div>
-                            <SidebarItem id="products" icon={Package} label="Inventario" />
-                            <SidebarItem id="vendors" icon={Users} label="Vendedores" />
-                            <SidebarItem id="config" icon={Settings} label="Configuración" />
-                        </nav>
-                    </aside>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Teléfono / Celular</label>
+                            <input type="text" id="f_clientPhone" placeholder="Ej. 987 654 321" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-brand-tech focus:border-transparent transition-all" oninput="updatePreview()">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Dirección (Opcional)</label>
+                            <input type="text" id="f_clientAddress" placeholder="Dirección del cliente" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-brand-tech focus:border-transparent transition-all" oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
 
-                    {/* CONTENIDO PRINCIPAL */}
-                    <main className="flex-1 flex flex-col h-full overflow-hidden w-full relative">
+                <!-- Detalles de Componentes -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="layers" class="w-4 h-4"></i> Componentes / Productos
+                        </h2>
                         
-                        {/* HEADER */}
-                        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex justify-between items-center z-30 shrink-0">
-                            <div className="flex items-center gap-3">
-                                <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 -ml-2 rounded-lg text-slate-600 hover:bg-slate-100 active:bg-slate-200">
-                                    <Menu size={28} />
-                                </button>
-                                <h2 className="text-lg font-bold text-slate-800 truncate max-w-[150px] md:max-w-none">
-                                    {activeTab === 'assistant' && 'Asistente Inteligente'}
-                                    {activeTab === 'dashboard' && 'Panel de Control'}
-                                    {activeTab === 'pos' && 'Nueva Venta'}
-                                    {activeTab === 'history' && 'Historial Ventas'}
-                                    {activeTab === 'products' && 'Inventario'}
-                                    {activeTab === 'vendors' && 'Vendedores'}
-                                    {activeTab === 'config' && 'Ajustes'}
-                                </h2>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-[10px] font-bold uppercase flex items-center gap-1">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online
-                                </span>
-                            </div>
-                        </header>
-
-                        {/* VISTAS */}
-                        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 pb-24">
-                            
-                            {/* --- AI ASSISTANT VIEW --- */}
-                            {activeTab === 'assistant' && (
-                                <div className="max-w-3xl mx-auto h-[calc(100vh-180px)] flex flex-col animate-fade-in">
-                                    {/* Chat Area */}
-                                    <Card className="flex-1 mb-4 overflow-y-auto flex flex-col gap-4 bg-slate-50/50">
-                                        {!aiResponse && !aiLoading && (
-                                            <div className="text-center text-slate-400 mt-10">
-                                                <Bot size={48} className="mx-auto mb-4 opacity-50 text-violet-500" />
-                                                <h3 className="text-lg font-bold text-slate-600">¿En qué puedo ayudarte hoy?</h3>
-                                                <p className="text-sm mt-2">Pregúntame sobre el stock, las ventas o recomendaciones.</p>
-                                                <div className="flex flex-wrap justify-center gap-2 mt-6">
-                                                    {['Resumen de ventas hoy', '¿Qué producto tiene poco stock?', 'Top vendedor del mes'].map(q => (
-                                                        <button key={q} onClick={() => {setAiQuery(q); handleAskAI();}} className="text-xs bg-white border border-slate-200 px-3 py-2 rounded-full hover:border-violet-400 hover:text-violet-600 transition-colors">
-                                                            {q}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                        
-                                        {aiResponse && (
-                                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 animate-fade-in">
-                                                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
-                                                    <Sparkles size={18} className="text-violet-600" />
-                                                    <span className="font-bold text-slate-700 text-sm">Análisis de OptiSystem AI</span>
-                                                </div>
-                                                <div className="prose-sm text-slate-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: marked.parse(aiResponse) }}></div>
-                                            </div>
-                                        )}
-
-                                        {aiLoading && (
-                                            <div className="flex items-center justify-center p-8 animate-pulse text-violet-600 gap-3">
-                                                <Sparkles className="animate-spin" size={24} />
-                                                <span className="font-medium text-sm">Analizando datos del negocio...</span>
-                                            </div>
-                                        )}
-                                        <div ref={chatEndRef}></div>
-                                    </Card>
-
-                                    {/* Input Area */}
-                                    <div className="relative">
-                                        <input 
-                                            type="text" 
-                                            value={aiQuery}
-                                            onChange={(e) => setAiQuery(e.target.value)}
-                                            onKeyPress={(e) => e.key === 'Enter' && handleAskAI()}
-                                            placeholder="Escribe tu consulta aquí..." 
-                                            className="w-full p-4 pr-16 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-sm"
-                                        />
-                                        <button 
-                                            onClick={handleAskAI}
-                                            disabled={aiLoading || !aiQuery.trim()}
-                                            className="absolute right-2 top-2 bottom-2 bg-violet-600 text-white p-3 rounded-xl hover:bg-violet-700 disabled:bg-slate-300 transition-colors"
-                                        >
-                                            <Send size={20} />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* DASHBOARD VIEW */}
-                            {activeTab === 'dashboard' && (
-                                <div className="space-y-6 animate-fade-in">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <StatCard title="Ventas Brutas" value={`S/ ${totalRevenue.toFixed(2)}`} subtext="Ingreso Total" icon={ShoppingBag} colorClass="text-blue-600" />
-                                        <StatCard title="Utilidad Neta" value={`S/ ${totalAdminNet.toFixed(2)}`} subtext="Ganancia Real" icon={DollarSign} colorClass="text-indigo-600" trend="+15%" />
-                                        <StatCard title="Comisiones" value={`S/ ${totalCommissionsPaid.toFixed(2)}`} subtext="Pagado a Vendedores" icon={Users} colorClass="text-amber-500" />
-                                        <StatCard title="Inventario" value={`${products.reduce((a,b)=>a+b.stock,0)} Unid.`} subtext={`Valor: S/ ${totalStockValue}`} icon={Package} colorClass="text-emerald-600" />
-                                    </div>
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                        <Card className="lg:col-span-2">
-                                            <h3 className="font-bold text-slate-700 mb-4">Comisiones por Vendedor</h3>
-                                            <SimpleBarChart data={chartData} maxVal={maxCommission} />
-                                        </Card>
-                                        <Card>
-                                            <h3 className="font-bold text-slate-700 mb-4">Atajos</h3>
-                                            <div className="space-y-3">
-                                                <Button onClick={() => setActiveTab('pos')} className="w-full" icon={Plus}>Nueva Venta</Button>
-                                                <Button onClick={() => setActiveTab('products')} variant="secondary" className="w-full" icon={Package}>Ver Stock</Button>
-                                                <Button onClick={() => { setActiveTab('assistant'); setAiQuery('¿Cómo van las ventas hoy?'); }} variant="ai" className="w-full" icon={Sparkles}>Preguntar a AI</Button>
-                                            </div>
-                                        </Card>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* POS VIEW */}
-                            {activeTab === 'pos' && (
-                                <div className="flex flex-col gap-6 max-w-4xl mx-auto animate-fade-in">
-                                    <Card className="h-fit">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="p-3 bg-indigo-100 rounded-xl text-indigo-600"><ShoppingCart size={24}/></div>
-                                            <div><h3 className="font-bold text-lg">Registrar Venta</h3><p className="text-xs text-slate-500">Completa los datos</p></div>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-4 md:col-span-2">
-                                                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                                    <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><Package size={14}/> Pedido</h4>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        <div>
-                                                            <label className="text-xs font-bold text-slate-500 uppercase ml-1">Producto</label>
-                                                            <select className="w-full p-3 rounded-xl border border-slate-200 bg-white" value={posSelection.productId} onChange={e => setPosSelection({...posSelection, productId: e.target.value})}>
-                                                                <option value="">Seleccionar...</option>
-                                                                {products.map(p => (
-                                                                    <option key={p.id} value={p.id} disabled={p.stock <= 0} className={p.stock <= 0 ? 'text-red-300' : ''}>
-                                                                        {p.name} {p.stock <= 0 ? '[AGOTADO]' : `- S/ ${p.price} (${p.stock} u.)`}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-xs font-bold text-slate-500 uppercase ml-1">Vendedor</label>
-                                                            <select className="w-full p-3 rounded-xl border border-slate-200 bg-white" value={posSelection.vendorId} onChange={e => setPosSelection({...posSelection, vendorId: e.target.value})}>
-                                                                <option value="">Seleccionar...</option>
-                                                                {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-4 md:col-span-2">
-                                                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                                    <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><User size={14}/> Cliente</h4>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        <Input label="Nombre" placeholder="Ej: María Lopez" value={posSelection.clientName} onChange={e => setPosSelection({...posSelection, clientName: e.target.value})} />
-                                                        <Input label="Teléfono" placeholder="Ej: 999 888 777" type="tel" value={posSelection.clientPhone} onChange={e => setPosSelection({...posSelection, clientPhone: e.target.value})} />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="pt-4 mt-2">
-                                            <Button onClick={handleProcessSale} className="w-full py-4 text-lg" icon={DollarSign}>Procesar Venta</Button>
-                                        </div>
-                                    </Card>
-                                    <div className="bg-slate-800 text-white p-6 rounded-2xl shadow-xl relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 p-12 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-                                        <h4 className="text-slate-400 text-xs font-bold uppercase mb-1">Resultado de la Operación</h4>
-                                        <div className="flex justify-between items-end mb-6 border-b border-slate-700 pb-4">
-                                            <div><span className="text-sm text-slate-400 block">Ganancia Neta Total</span><span className="text-4xl font-bold">{posSelection.productId ? `S/ ${(products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost).toFixed(2)}` : 'S/ 0.00'}</span></div>
-                                            <div className="text-right"><span className="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300">Config: {config.adminPct}% / {config.vendorPct}%</span></div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="p-3 bg-white/5 rounded-xl border border-white/10"><span className="text-slate-400 text-xs block mb-1">Negocio</span><span className="text-xl font-bold text-white">{posSelection.productId ? `S/ ${((products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost) * (config.adminPct/100)).toFixed(2)}` : '--'}</span></div>
-                                            <div className="p-3 bg-emerald-500/20 rounded-xl border border-emerald-500/30"><span className="text-emerald-300 text-xs block mb-1">Comisión Vendedor</span><span className="text-xl font-bold text-emerald-400">{posSelection.productId ? `S/ ${((products.find(p=>p.id==Number(posSelection.productId)).price - products.find(p=>p.id==Number(posSelection.productId)).cost) * (config.vendorPct/100)).toFixed(2)}` : '--'}</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* HISTORY VIEW */}
-                            {activeTab === 'history' && (
-                                <div className="space-y-6 animate-fade-in">
-                                    <h2 className="font-bold text-xl text-slate-800">Historial Completo</h2>
-                                    <Card noPadding>
-                                        <div className="overflow-x-auto touch-pan-x">
-                                            <table className="w-full text-left text-sm min-w-[800px]">
-                                                <thead className="bg-slate-50 text-slate-500 border-b"><tr><th className="p-4">Fecha</th><th className="p-4">Cliente</th><th className="p-4">Producto</th><th className="p-4">Vendedor</th><th className="p-4 text-right">Venta</th><th className="p-4 text-right">Comisión</th><th className="p-4 text-center">Acción</th></tr></thead>
-                                                <tbody className="divide-y">
-                                                    {sales.length === 0 ? (<tr><td colSpan="7" className="p-8 text-center text-slate-400">No hay ventas registradas aún.</td></tr>) : (sales.map(s => (
-                                                        <tr key={s.id} className="hover:bg-slate-50 transition-colors">
-                                                            <td className="p-4 text-slate-500"><div className="font-bold">{new Date(s.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div><div className="text-xs">{new Date(s.date).toLocaleDateString()}</div></td>
-                                                            <td className="p-4 font-medium text-slate-700">{s.clientName || 'Anónimo'}</td>
-                                                            <td className="p-4">{s.productName}</td>
-                                                            <td className="p-4"><div className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">{s.vendorName.charAt(0)}</div>{s.vendorName}</div></td>
-                                                            <td className="p-4 text-right font-medium">S/ {s.sellPrice.toFixed(2)}</td>
-                                                            <td className="p-4 text-right font-bold text-emerald-600">S/ {s.vendorEarnings.toFixed(2)}</td>
-                                                            <td className="p-4 text-center"><button onClick={() => sendWhatsappVoucher(s)} className="inline-flex items-center gap-2 bg-green-500 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-green-600 transition-colors shadow-sm active:scale-95"><MessageCircle size={16}/> Voucher</button></td>
-                                                        </tr>
-                                                    )))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </Card>
-                                </div>
-                            )}
-
-                            {/* INVENTORY & OTHERS */}
-                            {activeTab === 'products' && (
-                                <div className="space-y-4 animate-fade-in">
-                                    <div className="flex justify-between items-center"><h2 className="font-bold text-xl">Inventario</h2><Button onClick={() => setShowProductForm(!showProductForm)} icon={showProductForm ? X : Plus} className="text-xs px-3">{showProductForm ? 'Cerrar' : 'Nuevo'}</Button></div>
-                                    {showProductForm && (
-                                        <Card className="border-l-4 border-l-indigo-500">
-                                            <Input label="Nombre" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <Input type="number" label="Costo" value={newProduct.cost} onChange={e => setNewProduct({...newProduct, cost: e.target.value})} />
-                                                <Input type="number" label="Precio" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} />
-                                                <Input type="number" label="Stock" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} />
-                                            </div>
-                                            <Button onClick={() => { if(!newProduct.name) return; setProducts([...products, {...newProduct, id: Date.now(), cost: +newProduct.cost, price: +newProduct.price, stock: +newProduct.stock}]); setShowProductForm(false); setNewProduct({name:'',category:'Lentes',cost:'',price:'',stock:''}); }} className="w-full mt-2" icon={Save}>Guardar</Button>
-                                        </Card>
-                                    )}
-                                    <Card noPadding>
-                                        <div className="overflow-x-auto"><table className="w-full text-left text-sm min-w-[500px]"><thead className="bg-slate-50 text-slate-500 border-b"><tr><th className="p-3">Item</th><th className="p-3 text-right">Precio</th><th className="p-3 text-center">Stock</th><th className="p-3 text-center">Estado</th><th className="p-3"></th></tr></thead><tbody>{products.map(p=>(
-                                            <tr key={p.id} className="border-b last:border-0"><td className="p-3 font-medium">{p.name}</td><td className="p-3 text-right">S/ {p.price}</td><td className="p-3 text-center font-bold">{p.stock}</td><td className="p-3 text-center">{p.stock <= 0 ? <span className="bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs font-bold flex items-center justify-center gap-1"><AlertTriangle size={10}/> AGOTADO</span> : (p.stock < 5 ? <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-bold flex items-center justify-center gap-1">Poco Stock</span> : <span className="bg-emerald-100 text-emerald-600 px-2 py-1 rounded-full text-xs font-bold">Óptimo</span>)}</td><td className="p-3 text-right"><button onClick={()=>{if(confirm('¿Borrar?')) setProducts(products.filter(x=>x.id!==p.id))}} className="text-red-400"><Trash2 size={16}/></button></td></tr>
-                                        ))}</tbody></table></div>
-                                    </Card>
-                                </div>
-                            )}
-
-                            {activeTab === 'vendors' && (
-                                <div className="space-y-4 animate-fade-in">
-                                    <div className="flex justify-between items-center"><h2 className="font-bold text-xl">Vendedores</h2><Button onClick={() => setShowVendorForm(!showVendorForm)} icon={showVendorForm ? X : Plus} className="text-xs px-3">{showVendorForm ? 'Cerrar' : 'Nuevo'}</Button></div>
-                                    {showVendorForm && (
-                                        <Card className="border-l-4 border-l-indigo-500">
-                                            <Input label="Nombre" value={newVendor.name} onChange={e => setNewVendor({...newVendor, name: e.target.value})} />
-                                            <Input label="WhatsApp (51...)" type="number" value={newVendor.phone} onChange={e => setNewVendor({...newVendor, phone: e.target.value})} />
-                                            <Button onClick={() => { if(!newVendor.name) return; setVendors([...vendors, {...newVendor, id: Date.now(), totalSales:0, totalCommissions:0, status:'active'}]); setShowVendorForm(false); setNewVendor({name:'',phone:''}); }} className="w-full mt-2" icon={Save}>Guardar</Button>
-                                        </Card>
-                                    )}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {vendors.map(v => (
-                                            <Card key={v.id} className="text-center">
-                                                <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-2">{v.name.charAt(0)}</div>
-                                                <h3 className="font-bold text-lg">{v.name}</h3>
-                                                <div className="flex justify-center gap-4 text-sm my-3 border-y border-slate-100 py-2">
-                                                    <div><span className="text-slate-400 block text-xs">VENTAS</span> <b>{v.totalSales}</b></div>
-                                                    <div><span className="text-slate-400 block text-xs">COMISIÓN</span> <b className="text-emerald-600">S/ {v.totalCommissions.toFixed(0)}</b></div>
-                                                </div>
-                                                <Button variant="whatsapp" className="w-full py-2 text-xs" onClick={() => window.open(`https://wa.me/${v.phone}`, '_blank')} icon={MessageCircle}>Contactar</Button>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {activeTab === 'config' && (
-                                <div className="max-w-xl mx-auto space-y-6 animate-fade-in">
-                                    <Card className="text-center">
-                                        <h2 className="font-bold text-lg mb-4">Reparto de Utilidades</h2>
-                                        <div className="flex justify-between px-4 mb-2 font-bold text-xl"><span className="text-indigo-600">{config.adminPct}%</span> <span className="text-emerald-500">{config.vendorPct}%</span></div>
-                                        <input type="range" min="0" max="100" value={config.adminPct} onChange={e => setConfig({adminPct: parseInt(e.target.value), vendorPct: 100-parseInt(e.target.value)})} className="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"/>
-                                        <div className="flex justify-between text-xs text-slate-400 font-bold mt-1"><span>NEGOCIO</span><span>VENDEDOR</span></div>
-                                    </Card>
-                                    <Button variant="danger" onClick={handleResetApp} className="w-full" icon={Trash2}>Restaurar Fábrica</Button>
-                                </div>
-                            )}
-
+                        <!-- Selector de Modo -->
+                        <div class="flex items-center bg-gray-100 p-1 rounded-lg">
+                            <button id="btnModeDetalle" onclick="setMode('detalle')" class="px-3 py-1 text-xs font-medium rounded shadow-sm bg-white text-brand-tech">Detallado</button>
+                            <button id="btnModeFinal" onclick="setMode('final')" class="px-3 py-1 text-xs font-medium rounded text-gray-500 hover:text-gray-700">Precio Final</button>
                         </div>
-                    </main>
+                    </div>
+
+                    <!-- Input para modo resumido (Oculto por defecto) -->
+                    <div id="generalDescContainer" class="hidden mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                        <label class="block text-xs font-bold text-brand-corp mb-1">Descripción General del Equipo (Para modo Precio Final)</label>
+                        <input type="text" id="f_generalDesc" placeholder="Ej. Computadora de Escritorio Intel Core i7 - Alto Rendimiento" value="Computadora de Escritorio Alto Rendimiento" class="w-full border border-blue-200 rounded-md px-3 py-2 bg-white" oninput="updatePreview()">
+                    </div>
+
+                    <!-- Tabla de Inputs -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full mb-3">
+                            <thead>
+                                <tr class="text-left text-xs text-gray-500 border-b border-gray-200">
+                                    <th class="pb-2 w-16">Cant.</th>
+                                    <th class="pb-2">Descripción</th>
+                                    <th class="pb-2 w-24">P. Unit</th>
+                                    <th class="pb-2 w-8"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsBody">
+                                <!-- Filas generadas por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <button onclick="addItemRow()" class="text-xs font-medium text-brand-tech flex items-center gap-1 hover:text-brand-corp transition-colors">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Agregar Componente
+                    </button>
                 </div>
-            );
+
+                <!-- Observaciones -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i data-lucide="clipboard-list" class="w-4 h-4"></i> Condiciones comerciales
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Garantía</label>
+                            <input type="text" id="f_obsGarantia" value="12 meses contra defectos de fábrica" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Tiempo de Entrega</label>
+                            <input type="text" id="f_obsEntrega" value="24 a 48 horas tras confirmación" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Validez de Proforma</label>
+                            <input type="text" id="f_obsValidez" value="3 días útiles" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Otras Notas</label>
+                            <input type="text" id="f_obsNotas" placeholder="Opcional..." class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- LADO DERECHO: Vista Previa -->
+        <section class="w-full lg:w-1/2 lg:flex-1 h-full overflow-y-auto bg-gray-200/50 p-4 lg:p-8 flex justify-center">
+            
+            <div id="preview-section" class="a4-preview flex flex-col transition-all duration-300">
+                
+                <!-- Encabezado Proforma -->
+                <div class="flex justify-between items-start mb-10 pb-6 border-b-2 border-brand-corp">
+                    <div class="flex items-center gap-4">
+                        <!-- Logo Dinámico -->
+                        <div id="p_logoContainer" class="w-40 h-20 bg-black rounded-lg flex items-center justify-center overflow-hidden shrink-0 p-2">
+                            <!-- Imagen por defecto (Logo cargado) -->
+                            <img id="p_uploadedLogo" src="LOGOTECHENOLOGY300.fw.jpg" alt="KGB Technology Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/300x150/000000/FFFFFF?text=KGB+Tech';">
+                        </div>
+                        <div>
+                            <h1 id="p_bizName" class="text-2xl font-black text-brand-dark uppercase tracking-tight">KGB TECHNOLOGY</h1>
+                            <div class="text-gray-500 text-xs mt-1 space-y-0.5 font-medium">
+                                <p id="p_bizAddress">Av. Tecnológica 123, Centro Financiero</p>
+                                <p class="flex items-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> <span id="p_bizPhone">(01) 555-1234</span> &nbsp;|&nbsp; <i data-lucide="message-circle" class="w-3 h-3 text-green-500"></i> <span id="p_bizWsp">+51 999 888 777</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="bg-brand-corp text-white px-6 py-2 rounded-l-full -mr-20 shadow-md">
+                            <h2 class="text-3xl font-black tracking-widest uppercase">PROFORMA</h2>
+                        </div>
+                        <div class="mt-4 mr-2">
+                            <p class="text-sm font-bold text-gray-800">N° <span id="p_profNumber" class="text-brand-tech text-lg">PF-20260309-001</span></p>
+                            <p class="text-xs text-gray-500 mt-1 font-medium">Fecha: <span id="p_date" class="text-gray-800">09/03/2026</span></p>
+                            <p class="text-xs text-gray-500 font-medium">Hora: <span id="p_time" class="text-gray-800">11:43</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datos Cliente -->
+                <div class="bg-gray-50 rounded-lg p-5 mb-8 border border-gray-100 flex justify-between items-center">
+                    <div class="space-y-2 flex-1">
+                        <p class="text-xs text-brand-light font-bold uppercase tracking-wider mb-1">Cliente</p>
+                        <h3 id="p_clientName" class="text-lg font-bold text-brand-dark uppercase">--------------------</h3>
+                        <p class="text-sm text-gray-600 font-medium flex items-center gap-2">
+                            <i data-lucide="smartphone" class="w-4 h-4 text-gray-400"></i> 
+                            <span id="p_clientPhone">--</span>
+                        </p>
+                    </div>
+                    <div class="flex-1 border-l border-gray-200 pl-6 h-full flex flex-col justify-center">
+                        <p class="text-xs text-gray-400 font-bold uppercase mb-1">Dirección</p>
+                        <p id="p_clientAddress" class="text-sm text-gray-700 font-medium">--</p>
+                    </div>
+                </div>
+
+                <!-- Tabla Principal -->
+                <div class="flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-brand-corp text-white text-xs uppercase tracking-wider">
+                                <th class="py-3 px-4 font-bold rounded-tl-lg w-16 text-center">Cant</th>
+                                <th class="py-3 px-4 font-bold">Descripción del Artículo</th>
+                                <th class="py-3 px-4 font-bold w-32 text-right p-col-price">P. Unit</th>
+                                <th class="py-3 px-4 font-bold w-32 text-right rounded-tr-lg">Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody id="p_itemsBody" class="text-sm">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Totales y Footer -->
+                <div class="mt-8 pt-6 border-t border-gray-200 flex justify-between items-end">
+                    
+                    <!-- Observaciones -->
+                    <div class="w-3/5 text-xs text-gray-600 bg-blue-50/50 p-4 rounded-lg border border-blue-50">
+                        <h4 class="font-bold text-brand-corp mb-2 uppercase tracking-wider flex items-center gap-1">
+                            <i data-lucide="info" class="w-3 h-3"></i> Información Adicional
+                        </h4>
+                        <ul class="space-y-1.5 font-medium">
+                            <li><strong class="text-gray-800">Garantía:</strong> <span id="p_obsGarantia"></span></li>
+                            <li><strong class="text-gray-800">Entrega:</strong> <span id="p_obsEntrega"></span></li>
+                            <li><strong class="text-gray-800">Validez:</strong> <span id="p_obsValidez"></span></li>
+                            <li id="p_obsNotasContainer" class="hidden"><strong class="text-gray-800">Notas:</strong> <span id="p_obsNotas"></span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Caja Total -->
+                    <div class="w-1/3 space-y-2">
+                        <div class="flex justify-between items-center text-gray-500 font-medium px-4">
+                            <span>Subtotal</span>
+                            <span id="p_subtotal" class="font-mono">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-brand-corp text-white p-4 rounded-xl shadow-lg relative overflow-hidden">
+                            <!-- Decoración -->
+                            <div class="absolute -right-4 -top-4 w-16 h-16 bg-brand-light rounded-full opacity-20"></div>
+                            <span class="font-bold uppercase tracking-wider relative z-10">Total</span>
+                            <span id="p_total" class="text-xl font-black font-mono relative z-10">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensaje de Agradecimiento -->
+                <div class="mt-10 text-center">
+                    <p class="text-lg font-bold text-brand-corp italic">¡Gracias por su compra y confianza!</p>
+                </div>
+
+                <!-- Firmas -->
+                <div class="mt-12 pt-8 flex justify-center gap-32 border-t border-dashed border-gray-300">
+                    <div class="text-center">
+                        <div class="w-48 border-t border-gray-800 mb-2 mx-auto"></div>
+                        <p class="text-xs font-bold text-brand-dark uppercase">Departamento de Ventas</p>
+                        <p id="p_bizNameSign" class="text-[10px] text-gray-500">KGB TECHNOLOGY</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-48 border-t border-gray-400 mb-2 mx-auto"></div>
+                        <p class="text-xs font-bold text-gray-600 uppercase">Aceptación del Cliente</p>
+                        <p class="text-[10px] text-gray-400">Firma / Sello</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // Estado de la aplicación
+        let items = [
+            { id: 1, qty: 1, desc: 'Procesador Intel Core i7 13700K', price: 450.00 },
+            { id: 2, qty: 1, desc: 'Placa Madre ASUS ROG Strix Z790', price: 320.00 },
+            { id: 3, qty: 2, desc: 'Memoria RAM Corsair Vengeance 16GB DDR5', price: 85.00 }
+        ];
+        
+        let viewMode = 'detalle'; // 'detalle' o 'final'
+
+        // Inicializar fecha, hora y número de proforma
+        function initDefaults() {
+            const now = new Date();
+            
+            // Fecha formato YYYY-MM-DD para input
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            document.getElementById('f_date').value = `${yyyy}-${mm}-${dd}`;
+            
+            // Número proforma automático (AñoMesDía-Num)
+            const randomNum = Math.floor(Math.random() * 900) + 100;
+            document.getElementById('f_profNumber').value = `${yyyy}${mm}${dd}-${randomNum}`;
+            
+            renderItems();
+            updatePreview();
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Cambiar modo de visualización
+        function setMode(mode) {
+            viewMode = mode;
+            
+            const btnDetalle = document.getElementById('btnModeDetalle');
+            const btnFinal = document.getElementById('btnModeFinal');
+            const descContainer = document.getElementById('generalDescContainer');
+
+            if (mode === 'detalle') {
+                btnDetalle.className = "px-3 py-1 text-xs font-medium rounded shadow-sm bg-white text-brand-tech";
+                btnFinal.className = "px-3 py-1 text-xs font-medium rounded text-gray-500 hover:text-gray-700 bg-transparent";
+                descContainer.classList.add('hidden');
+            } else {
+                btnFinal.className = "px-3 py-1 text-xs font-medium rounded shadow-sm bg-white text-brand-tech";
+                btnDetalle.className = "px-3 py-1 text-xs font-medium rounded text-gray-500 hover:text-gray-700 bg-transparent";
+                descContainer.classList.remove('hidden');
+            }
+
+            updatePreview();
+        }
+
+        // Manejar subida de Logo
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgData = e.target.result;
+                    // Formulario
+                    const imgForm = document.getElementById('logoPreviewImg');
+                    imgForm.src = imgData;
+                    
+                    // Vista previa
+                    const imgPrev = document.getElementById('p_uploadedLogo');
+                    imgPrev.src = imgData;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Renderizar inputs de items en el formulario
+        function renderItems() {
+            const tbody = document.getElementById('itemsBody');
+            tbody.innerHTML = '';
+            
+            items.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="pr-2 pb-2">
+                        <input type="number" min="1" value="${item.qty}" onchange="updateItem(${item.id}, 'qty', this.value)" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-center">
+                    </td>
+                    <td class="pr-2 pb-2">
+                        <input type="text" placeholder="Descripción" value="${item.desc}" oninput="updateItem(${item.id}, 'desc', this.value)" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm">
+                    </td>
+                    <td class="pr-2 pb-2">
+                        <div class="relative">
+                            <span class="absolute left-2 top-1.5 text-gray-400">$</span>
+                            <input type="number" min="0" step="0.01" value="${item.price}" oninput="updateItem(${item.id}, 'price', this.value)" class="w-full border border-gray-300 rounded pl-6 pr-2 py-1.5 text-sm">
+                        </div>
+                    </td>
+                    <td class="pb-2 text-right">
+                        <button onclick="removeItem(${item.id})" class="text-red-400 hover:text-red-600 p-1 bg-red-50 hover:bg-red-100 rounded transition-colors" title="Eliminar">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+            updatePreview();
+        }
+
+        function updateItem(id, field, value) {
+            const item = items.find(i => i.id === id);
+            if (item) {
+                item[field] = field === 'desc' ? value : parseFloat(value) || 0;
+                updatePreview();
+            }
+        }
+
+        function addItemRow() {
+            const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+            items.push({ id: newId, qty: 1, desc: '', price: 0 });
+            renderItems();
+        }
+
+        function removeItem(id) {
+            items = items.filter(i => i.id !== id);
+            renderItems();
+        }
+
+        // Actualizar toda la vista previa
+        function updatePreview() {
+            // Textos simples
+            const syncText = (fromId, toId, defaultText = '') => {
+                const val = document.getElementById(fromId).value.trim();
+                document.getElementById(toId).innerText = val || defaultText;
+            };
+
+            // Sincronizar Negocio
+            syncText('f_bizName', 'p_bizName', 'KGB TECHNOLOGY');
+            syncText('f_bizName', 'p_bizNameSign', 'KGB TECHNOLOGY');
+            syncText('f_bizPhone', 'p_bizPhone', '-');
+            syncText('f_bizWsp', 'p_bizWsp', '-');
+            syncText('f_bizAddress', 'p_bizAddress', '-');
+
+            // Sincronizar Cliente
+            syncText('f_clientName', 'p_clientName', '--------------------');
+            syncText('f_clientPhone', 'p_clientPhone', 'Sin teléfono');
+            syncText('f_clientAddress', 'p_clientAddress', 'Sin dirección registrada');
+
+            // Sincronizar Meta
+            syncText('f_profNumber', 'p_profNumber', '00000');
+            
+            // Formatear fecha
+            const dateVal = document.getElementById('f_date').value;
+            if(dateVal) {
+                const [y, m, d] = dateVal.split('-');
+                document.getElementById('p_date').innerText = `${d}/${m}/${y}`;
+            }
+
+            // Sincronizar Observaciones
+            syncText('f_obsGarantia', 'p_obsGarantia', 'No especificada');
+            syncText('f_obsEntrega', 'p_obsEntrega', 'No especificada');
+            syncText('f_obsValidez', 'p_obsValidez', 'No especificada');
+            
+            const notas = document.getElementById('f_obsNotas').value.trim();
+            const notasContainer = document.getElementById('p_obsNotasContainer');
+            if(notas) {
+                document.getElementById('p_obsNotas').innerText = notas;
+                notasContainer.classList.remove('hidden');
+            } else {
+                notasContainer.classList.add('hidden');
+            }
+
+            // Actualizar Hora (Hora actual de generación)
+            const now = new Date();
+            document.getElementById('p_time').innerText = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+            // Renderizar Tabla Vista Previa
+            const pBody = document.getElementById('p_itemsBody');
+            pBody.innerHTML = '';
+            
+            let total = 0;
+            const priceHeader = document.querySelector('.p-col-price');
+
+            if (viewMode === 'detalle') {
+                priceHeader.style.display = ''; // Mostrar columna P.Unit
+                
+                items.forEach((item, index) => {
+                    const rowTotal = item.qty * item.price;
+                    total += rowTotal;
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 text-center font-medium border-l border-gray-100">${item.qty}</td>
+                        <td class="py-3 px-4 font-medium text-gray-800">${item.desc || '-'}</td>
+                        <td class="py-3 px-4 text-right text-gray-600 font-mono p-col-price">$${item.price.toFixed(2)}</td>
+                        <td class="py-3 px-4 text-right font-bold text-brand-dark font-mono border-r border-gray-100">$${rowTotal.toFixed(2)}</td>
+                    `;
+                    pBody.appendChild(tr);
+                });
+            } else {
+                // Modo Precio Final
+                priceHeader.style.display = 'none'; // Ocultar columna P.Unit
+                
+                items.forEach(item => {
+                    total += (item.qty * item.price);
+                });
+
+                const generalDesc = document.getElementById('f_generalDesc').value || 'Equipo Tecnológico según requerimientos';
+                
+                const tr = document.createElement('tr');
+                tr.className = 'bg-white border-b border-gray-100';
+                tr.innerHTML = `
+                    <td class="py-4 px-4 text-center font-bold text-gray-400">1</td>
+                    <td class="py-4 px-4 font-bold text-brand-tech text-base">${generalDesc}</td>
+                    <td class="py-4 px-4 text-right font-black text-brand-dark text-lg font-mono" colspan="2">$${total.toFixed(2)}</td>
+                `;
+                pBody.appendChild(tr);
+            }
+
+            // Actualizar Totales (Subtotal = Total para no complicar con impuestos a menos que se requiera)
+            document.getElementById('p_subtotal').innerText = `$${total.toFixed(2)}`;
+            document.getElementById('p_total').innerText = `$${total.toFixed(2)}`;
+        }
+
+        function clearForm() {
+            if(confirm('¿Estás seguro de limpiar todo el formulario?')) {
+                document.getElementById('f_clientName').value = '';
+                document.getElementById('f_clientPhone').value = '';
+                document.getElementById('f_clientAddress').value = '';
+                document.getElementById('f_obsNotas').value = '';
+                items = [{ id: 1, qty: 1, desc: '', price: 0 }];
+                renderItems();
+            }
+        }
+
+        function generatePDF() {
+            const element = document.getElementById('preview-section');
+            const opt = {
+                margin:       0,
+                filename:     `Proforma_${document.getElementById('f_profNumber').value}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Efecto visual de carga
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Generando...';
+            lucide.createIcons();
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = originalText;
+                lucide.createIcons();
+            });
+        }
+
+        // Iniciar
+        window.onload = initDefaults;
+
     </script>
 </body>
 </html>
