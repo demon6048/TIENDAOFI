@@ -225,6 +225,20 @@
                     </button>
                 </div>
 
+                <!-- Totales Manuales (Combos) -->
+                <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 shadow-sm">
+                    <h2 class="text-xs font-bold text-brand-corp uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <i data-lucide="calculator" class="w-4 h-4"></i> Precio Final (Combos / Paquetes)
+                    </h2>
+                    <p class="text-[10px] text-gray-500 mb-3">Si dejas los precios unitarios en 0, escribe aquí el precio total del combo. Si lo dejas vacío, se sumarán los precios de arriba automáticamente.</p>
+                    <div>
+                        <div class="relative max-w-xs">
+                            <span class="absolute left-3 top-2 text-gray-500 font-bold">S/</span>
+                            <input type="number" min="0" step="0.01" id="f_manualTotal" placeholder="Autocalculado" class="w-full bg-white border border-gray-200 rounded-md pl-8 pr-3 py-2 text-sm font-bold text-brand-dark focus:border-brand-tech focus:ring-1 focus:ring-brand-tech" oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Observaciones -->
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
                     <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -367,13 +381,13 @@
                     <div class="w-[35%] space-y-2">
                         <div class="flex justify-between items-center text-gray-800 font-bold px-4 bg-white/40 backdrop-blur-sm rounded py-1">
                             <span>Subtotal</span>
-                            <span id="p_subtotal" class="font-mono">$0.00</span>
+                            <span id="p_subtotal" class="font-mono">S/ 0.00</span>
                         </div>
                         <div class="flex justify-between items-center bg-brand-corp text-white p-4 rounded-xl shadow-lg relative overflow-hidden">
                             <!-- Decoración -->
                             <div class="absolute -right-4 -top-4 w-16 h-16 bg-brand-light rounded-full opacity-20"></div>
                             <span class="font-bold uppercase tracking-wider relative z-10">Total</span>
-                            <span id="p_total" class="text-xl font-black font-mono relative z-10">$0.00</span>
+                            <span id="p_total" class="text-xl font-black font-mono relative z-10">S/ 0.00</span>
                         </div>
                     </div>
                 </div>
@@ -458,8 +472,8 @@
                     </td>
                     <td class="pr-2 pb-2">
                         <div class="relative">
-                            <span class="absolute left-2 top-1.5 text-gray-400">$</span>
-                            <input type="number" min="0" step="0.01" value="${item.price}" oninput="updateItem(${item.id}, 'price', this.value)" class="w-full border border-gray-300 rounded pl-6 pr-2 py-1.5 text-sm">
+                            <span class="absolute left-2 top-1.5 text-gray-400">S/</span>
+                            <input type="number" min="0" step="0.01" value="${item.price}" oninput="updateItem(${item.id}, 'price', this.value)" class="w-full border border-gray-300 rounded pl-7 pr-2 py-1.5 text-sm">
                         </div>
                     </td>
                     <td class="pb-2 text-right">
@@ -544,14 +558,18 @@
                     const rowTotal = item.qty * item.price;
                     total += rowTotal;
                     
+                    // Lógica mágica: Si el precio es 0, dejamos la casilla completamente en blanco
+                    const displayPrice = item.price > 0 ? `S/ ${item.price.toFixed(2)}` : '';
+                    const displayRowTotal = rowTotal > 0 ? `S/ ${rowTotal.toFixed(2)}` : '';
+                    
                     const tr = document.createElement('tr');
                     // Filas con backdrop-blur para mejorar legibilidad
                     tr.className = index % 2 === 0 ? 'bg-white/70 backdrop-blur-sm' : 'bg-white/40 backdrop-blur-sm';
                     tr.innerHTML = `
                         <td class="py-1.5 px-3 text-center font-bold text-gray-800 border-l border-white/50">${item.qty}</td>
                         <td class="py-1.5 px-3 font-semibold text-gray-900">${item.desc || '-'}</td>
-                        <td class="py-1.5 px-3 text-right text-gray-900 font-mono p-col-price">$${item.price.toFixed(2)}</td>
-                        <td class="py-1.5 px-3 text-right font-bold text-brand-dark font-mono border-r border-white/50">$${rowTotal.toFixed(2)}</td>
+                        <td class="py-1.5 px-3 text-right text-gray-900 font-mono p-col-price">${displayPrice}</td>
+                        <td class="py-1.5 px-3 text-right font-bold text-brand-dark font-mono border-r border-white/50">${displayRowTotal}</td>
                     `;
                     pBody.appendChild(tr);
                 });
@@ -565,6 +583,14 @@
 
                 const generalDesc = document.getElementById('f_generalDesc').value || 'Equipo Tecnológico según requerimientos';
                 
+                // Lógica de Total Resumido adaptado a "ceros y manual"
+                const manualVal = document.getElementById('f_manualTotal')?.value;
+                let finalTotalResumen = total;
+                if (manualVal && manualVal.trim() !== '') {
+                    finalTotalResumen = parseFloat(manualVal) || 0;
+                }
+                const displayTotalResumen = finalTotalResumen > 0 ? `S/ ${finalTotalResumen.toFixed(2)}` : '';
+
                 const tr = document.createElement('tr');
                 tr.className = 'bg-white/70 backdrop-blur-sm border-b border-white/50';
                 
@@ -572,14 +598,21 @@
                 tr.innerHTML = `
                     <td class="py-3 px-3 text-center font-bold text-gray-800 border-l border-white/50">1</td>
                     <td class="py-3 px-3 font-bold text-brand-tech text-sm">${generalDesc}</td>
-                    <td class="py-3 px-3 text-right font-black text-brand-dark text-base font-mono border-r border-white/50" colspan="2">$${total.toFixed(2)}</td>
+                    <td class="py-3 px-3 text-right font-black text-brand-dark text-base font-mono border-r border-white/50" colspan="2">${displayTotalResumen}</td>
                 `;
                 pBody.appendChild(tr);
             }
 
-            // Actualizar Totales (Subtotal = Total)
-            document.getElementById('p_subtotal').innerText = `$${total.toFixed(2)}`;
-            document.getElementById('p_total').innerText = `$${total.toFixed(2)}`;
+            // Aplicar Total Final (Prioridad: Total Manual ingresado, sino Autocalculado)
+            const manualTotalInput = document.getElementById('f_manualTotal')?.value;
+            let finalTotal = total;
+            
+            if (manualTotalInput && manualTotalInput.trim() !== '') {
+                finalTotal = parseFloat(manualTotalInput) || 0;
+            }
+
+            document.getElementById('p_subtotal').innerText = `S/ ${finalTotal.toFixed(2)}`;
+            document.getElementById('p_total').innerText = `S/ ${finalTotal.toFixed(2)}`;
         }
 
         function clearForm() {
@@ -588,6 +621,10 @@
                 document.getElementById('f_clientPhone').value = '';
                 document.getElementById('f_clientAddress').value = '';
                 document.getElementById('f_obsNotas').value = '';
+                // Limpiar también el total manual si existe
+                const manualTotalInput = document.getElementById('f_manualTotal');
+                if(manualTotalInput) manualTotalInput.value = '';
+                
                 items = [{ id: 1, qty: 1, desc: '', price: 0 }];
                 renderItems();
             }
