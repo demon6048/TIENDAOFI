@@ -92,7 +92,6 @@
             </div>
         </div>
         <div class="flex items-center gap-2 flex-wrap justify-end">
-            <!-- Botón de Catálogo -->
             <button onclick="window.openCatalogModal()" class="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg transition-colors flex items-center gap-2 font-medium border border-purple-200 shadow-sm">
                 <i data-lucide="book-open" class="w-4 h-4"></i> Catálogo
             </button>
@@ -164,7 +163,6 @@
                     </div>
                 </div>
 
-                <!-- Componentes / Productos -->
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider flex items-center gap-2">
@@ -202,7 +200,6 @@
                     </button>
                 </div>
 
-                <!-- Totales Manuales (Combos) -->
                 <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 shadow-sm">
                     <h2 class="text-xs font-bold text-brand-corp uppercase tracking-wider mb-2 flex items-center gap-2">
                         <i data-lucide="calculator" class="w-4 h-4"></i> Precios para Combos / Paquetes
@@ -222,7 +219,6 @@
                     </div>
                 </div>
 
-                <!-- Observaciones -->
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
                     <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider mb-4 flex items-center gap-2">
                         <i data-lucide="clipboard-list" class="w-4 h-4"></i> Condiciones comerciales
@@ -380,7 +376,6 @@
                     </button>
                 </div>
                 
-                <!-- Agregar Nuevo Producto al Catálogo -->
                 <div class="p-5 bg-white border-b border-gray-100 shadow-sm flex gap-3 items-end">
                     <div class="flex-1">
                         <label class="block text-xs font-bold text-gray-700 mb-1">Descripción del Producto</label>
@@ -399,7 +394,6 @@
                     </button>
                 </div>
 
-                <!-- Lista del Catálogo -->
                 <div class="flex-1 overflow-y-auto p-5 bg-gray-50">
                     <p class="text-xs text-gray-500 mb-3"><i data-lucide="info" class="w-3 h-3 inline"></i> Los productos de esta lista se autocompletarán cuando escribas en el formulario de la proforma.</p>
                     <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -413,7 +407,6 @@
                                 </tr>
                             </thead>
                             <tbody id="catalogTableBody" class="text-sm divide-y divide-gray-100">
-                                <!-- Filas de Catálogo inyectadas por JS -->
                             </tbody>
                         </table>
                     </div>
@@ -435,7 +428,6 @@
                 
                 <div class="p-6 bg-gray-50 flex flex-col gap-6 overflow-y-auto">
                     
-                    <!-- PROYECCIÓN ACTUAL -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <i data-lucide="target" class="w-4 h-4"></i> Proyección de Proforma Actual
@@ -457,7 +449,6 @@
                         </div>
                     </div>
 
-                    <!-- MÉTRICAS HISTÓRICAS REALES -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
@@ -467,7 +458,6 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                             
-                            <!-- HOY -->
                             <div class="border border-gray-200 rounded-xl overflow-hidden">
                                 <div class="bg-gray-100 py-2.5 px-4 border-b border-gray-200">
                                     <h4 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4"></i> Hoy</h4>
@@ -484,7 +474,6 @@
                                 </div>
                             </div>
 
-                            <!-- ESTE MES -->
                             <div class="border-2 border-brand-tech/30 rounded-xl overflow-hidden shadow-sm relative">
                                 <div class="bg-brand-tech/10 py-2.5 px-4 border-b border-brand-tech/20 flex justify-between items-center">
                                     <h4 class="font-bold text-brand-dark text-sm flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4 text-brand-tech"></i> Este Mes</h4>
@@ -502,7 +491,6 @@
                                 </div>
                             </div>
 
-                            <!-- ESTE AÑO -->
                             <div class="border border-gray-200 rounded-xl overflow-hidden">
                                 <div class="bg-gray-100 py-2.5 px-4 border-b border-gray-200">
                                     <h4 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i data-lucide="calendar-check" class="w-4 h-4"></i> Este Año</h4>
@@ -596,39 +584,57 @@
 
         lucide.createIcons();
 
-        let firebaseConfig = {};
-        try { firebaseConfig = JSON.parse(__firebase_config); } catch (e) {}
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-proforma-app';
-        
+        // MOTOR DE ADAPTABILIDAD (Soluciona el problema de GitHub Pages)
+        let isConnectedToFirebase = false;
+        let app, auth, db;
         let currentUser = null;
         let proformasList = []; 
-        let productCatalog = []; // Lista maestra de productos
+        let productCatalog = []; 
 
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch(e) {}
-        };
-        initAuth();
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-proforma-app';
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) { 
-                loadHistoryData(); 
-                loadCatalogData();
+        try {
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                // Entorno Gemini
+                const firebaseConfig = JSON.parse(__firebase_config);
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isConnectedToFirebase = true;
+
+                const initAuth = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch(e) { console.error("Auth error:", e); }
+                };
+                initAuth();
+
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    if (user) { 
+                        loadHistoryData(); 
+                        loadCatalogData();
+                    }
+                });
+            } else {
+                // Entorno Externo (GitHub Pages)
+                console.log("Modo Externo (GitHub): Firebase omitido. Usando memoria temporal y Google Sheets.");
+                currentUser = { uid: 'github_user' };
+                setTimeout(() => {
+                    loadCatalogData(); // Carga productos por defecto
+                    renderHistoryTable(); // Carga tabla vacía
+                }, 500);
             }
-        });
+        } catch(error) {
+            console.error("Error Init:", error);
+        }
 
         let items = [
-            { id: 1, qty: 1, desc: '', cost: 0, price: 0 } // Empieza vacío para probar el autocompletado
+            { id: 1, qty: 1, desc: '', cost: 0, price: 0 } 
         ];
         let viewMode = 'detalle';
 
@@ -674,7 +680,6 @@
                         <input type="number" min="1" value="${item.qty}" onchange="window.updateItem(${item.id}, 'qty', this.value)" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:border-brand-tech focus:ring-1">
                     </td>
                     <td class="pr-1 pb-2">
-                        <!-- AUTOCOMPLETADO (Atributo list="inventoryList") -->
                         <input type="text" list="inventoryList" placeholder="Descripción" value="${item.desc}" oninput="window.updateItem(${item.id}, 'desc', this.value)" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:border-brand-tech focus:ring-1">
                     </td>
                     <td class="pr-1 pb-2">
@@ -706,12 +711,10 @@
             if (item) {
                 if (field === 'desc') {
                     item[field] = value;
-                    // LOGICA DE AUTOCOMPLETADO DE PRECIOS
                     const foundProd = productCatalog.find(p => p.desc.toLowerCase() === value.trim().toLowerCase());
                     if (foundProd) {
                         item.cost = foundProd.cost;
                         item.price = foundProd.price;
-                        // Actualizamos los campos directo sin recargar toda la tabla para no perder el enfoque del teclado
                         document.getElementById(`cost_${id}`).value = foundProd.cost;
                         document.getElementById(`price_${id}`).value = foundProd.price;
                     }
@@ -873,13 +876,11 @@
         // BASE DE DATOS PROFORMAS Y DASHBOARD FINANCIERO
         // ---------------------------------------------------------
         window.openProfitModal = () => {
-            // 1. Datos de Proforma Actual (Proyección)
             const t = window.getCalculatedTotals();
             document.getElementById('m_inv').innerText = `S/ ${t.cost.toFixed(2)}`;
             document.getElementById('m_ven').innerText = `S/ ${t.venta.toFixed(2)}`;
             document.getElementById('m_gan').innerText = `S/ ${t.ganancia.toFixed(2)}`;
             
-            // 2. Cálculo Histórico de Finanzas (Solo 'Terminado')
             const now = new Date();
             const yyyy = now.getFullYear().toString();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -895,7 +896,7 @@
 
             proformasList.forEach(p => {
                 if (p.status === 'Terminado') {
-                    const pDate = p.date; // Formato: YYYY-MM-DD
+                    const pDate = p.date; 
                     const pProfit = p.profit || 0;
                     const pTotal = p.total || 0;
 
@@ -914,13 +915,10 @@
                 }
             });
 
-            // Pintar Dashboard Histórico
             document.getElementById('m_hoy_ingreso').innerText = `S/ ${hoyIngreso.toFixed(2)}`;
             document.getElementById('m_hoy_ganancia').innerText = `S/ ${hoyGanancia.toFixed(2)}`;
-            
             document.getElementById('m_mes_ingreso').innerText = `S/ ${mesIngreso.toFixed(2)}`;
             document.getElementById('m_mes_ganancia').innerText = `S/ ${mesGanancia.toFixed(2)}`;
-
             document.getElementById('m_ano_ingreso').innerText = `S/ ${anoIngreso.toFixed(2)}`;
             document.getElementById('m_ano_ganancia').innerText = `S/ ${anoGanancia.toFixed(2)}`;
 
@@ -929,9 +927,6 @@
         
         window.closeProfitModal = () => { document.getElementById('profitModal').classList.add('hidden'); };
 
-        // ---------------------------------------------------------
-        // INDICADOR DE ESTADO DE NUBE
-        // ---------------------------------------------------------
         window.setCloudStatus = (status) => {
             const ind = document.getElementById('cloudSyncIndicator');
             if(status === 'syncing') {
@@ -948,7 +943,6 @@
             lucide.createIcons();
         };
 
-        // Motor de sincronización automática de PROFORMAS
         window.syncToGoogleSheets = async (proformaData, itemsArr) => {
             window.setCloudStatus('syncing');
             const webhookUrl = "https://script.google.com/macros/s/AKfycbwpjKjiX9IBjew0HhtF4cKo5NZWeKpt9jbfspNNhCzQJqXsQb0rBjNVxxEzLrldCwnNGw/exec";
@@ -992,7 +986,6 @@
             }
         };
 
-        // Motor de sincronización automática de PRODUCTOS (Catálogo)
         window.syncProductToGoogleSheets = async (desc, cost, price) => {
             window.setCloudStatus('syncing');
             const webhookUrl = "https://script.google.com/macros/s/AKfycbwpjKjiX9IBjew0HhtF4cKo5NZWeKpt9jbfspNNhCzQJqXsQb0rBjNVxxEzLrldCwnNGw/exec";
@@ -1020,7 +1013,6 @@
         };
 
         window.saveProforma = async (btn) => {
-            if (!currentUser) return alert("Cargando conexión segura.");
             const totals = window.getCalculatedTotals();
             const data = {
                 profNumber: document.getElementById('f_profNumber').value,
@@ -1032,8 +1024,7 @@
                 status: document.getElementById('f_status').value, 
                 viewMode: viewMode,
                 generalDesc: document.getElementById('f_generalDesc').value || '',
-                items: items.map(i => ({ qty: i.qty, desc: i.desc, cost: i.cost, price: i.price })), 
-                createdAt: serverTimestamp()
+                items: items.map(i => ({ qty: i.qty, desc: i.desc, cost: i.cost, price: i.price }))
             };
 
             const originalText = btn.innerHTML;
@@ -1041,10 +1032,18 @@
             lucide.createIcons();
 
             try {
-                const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
-                await addDoc(colRef, data);
+                // Si está conectado a Firebase (Entorno Canvas) lo guarda ahí, sino usa memoria temporal (GitHub)
+                if (isConnectedToFirebase && currentUser) {
+                    const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
+                    const docRef = await addDoc(colRef, data);
+                    data.id = docRef.id;
+                } else {
+                    data.id = 'mem_' + Date.now();
+                    proformasList.unshift(data);
+                    renderHistoryTable();
+                }
 
-                // 1. DISPARAR PROFORMA A GOOGLE SHEETS (Esperamos a que termine)
+                // 1. DISPARAR PROFORMA A GOOGLE SHEETS (Esto SIEMPRE funciona, incluso en GitHub)
                 let itemsArrToSync = data.items && data.items.length > 0 ? data.items : [{qty: 1, desc: 'Sin detalle', cost: data.cost||0, price: data.total}];
                 await window.syncToGoogleSheets(data, itemsArrToSync);
 
@@ -1054,10 +1053,15 @@
                         const exists = productCatalog.some(p => p.desc.toLowerCase() === item.desc.trim().toLowerCase());
                         
                         if (!exists) {
-                            const invRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
-                            await addDoc(invRef, { desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
+                            if (isConnectedToFirebase && currentUser) {
+                                const invRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
+                                await addDoc(invRef, { desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
+                            } else {
+                                productCatalog.push({ id: 'mem_' + Date.now(), desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
+                                renderCatalogTable();
+                                updateDatalist();
+                            }
                             
-                            // Disparar a la hoja "Productos" (Esperamos a que termine)
                             await window.syncProductToGoogleSheets(item.desc.trim(), item.cost || 0, item.price || 0);
                         }
                     }
@@ -1073,13 +1077,14 @@
                 }, 2000);
             } catch (error) { 
                 alert("Error guardando."); 
+                console.error(error);
                 btn.innerHTML = originalText; 
                 lucide.createIcons();
             }
         };
 
         function loadHistoryData() {
-            if (!currentUser) return;
+            if (!currentUser || !isConnectedToFirebase) return;
             const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
             onSnapshot(colRef, (snapshot) => {
                 proformasList = [];
@@ -1131,11 +1136,17 @@
         }
 
         window.updateStatus = async (id, newStatus) => {
-            if (!currentUser) return;
             try {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', id), { status: newStatus });
+                if (isConnectedToFirebase && currentUser) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', id), { status: newStatus });
+                } else {
+                    const idx = proformasList.findIndex(p => p.id === id);
+                    if(idx > -1) {
+                        proformasList[idx].status = newStatus;
+                        renderHistoryTable();
+                    }
+                }
                 
-                // DISPARADOR A GOOGLE SHEETS AL CAMBIAR ESTADO
                 const profToSync = proformasList.find(p => p.id === id);
                 if (profToSync) {
                     profToSync.status = newStatus;
@@ -1144,10 +1155,18 @@
                 }
             } catch (error) { console.error("Error actualizando estado:", error); }
         };
+
         window.deleteProforma = async (id) => {
-            if (!currentUser) return;
-            if (confirm("Eliminar proforma?")) await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', id));
+            if (confirm("¿Eliminar proforma del historial?")) {
+                if (isConnectedToFirebase && currentUser) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', id));
+                } else {
+                    proformasList = proformasList.filter(p => p.id !== id);
+                    renderHistoryTable();
+                }
+            }
         };
+
         window.openHistory = () => document.getElementById('historyModal').classList.remove('hidden');
         window.closeHistory = () => document.getElementById('historyModal').classList.add('hidden');
 
@@ -1179,24 +1198,32 @@
         // ---------------------------------------------------------
         // CATÁLOGO DE PRODUCTOS (AUTOCOMPLETADO)
         // ---------------------------------------------------------
+        function setMockCatalog() {
+            productCatalog = [
+                {id: 'cat_1', desc: "Procesador Intel Core i7 13700K", cost: 380, price: 450},
+                {id: 'cat_2', desc: "Memoria RAM Corsair Vengeance 16GB DDR5", cost: 60, price: 85}
+            ];
+            renderCatalogTable();
+            updateDatalist();
+        }
+
         function loadCatalogData() {
-            if (!currentUser) return;
-            const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
-            onSnapshot(colRef, (snapshot) => {
-                productCatalog = [];
-                snapshot.forEach(doc => { productCatalog.push({ id: doc.id, ...doc.data() }); });
-                
-                // Si está vacío, le ponemos un par de ejemplos para que vea cómo funciona
-                if(productCatalog.length === 0) {
-                    productCatalog = [
-                        {desc: "Procesador Intel Core i7 13700K", cost: 380, price: 450},
-                        {desc: "Memoria RAM Corsair Vengeance 16GB DDR5", cost: 60, price: 85}
-                    ];
-                }
-                
-                renderCatalogTable();
-                updateDatalist();
-            });
+            if (isConnectedToFirebase && currentUser) {
+                const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
+                onSnapshot(colRef, (snapshot) => {
+                    productCatalog = [];
+                    snapshot.forEach(doc => { productCatalog.push({ id: doc.id, ...doc.data() }); });
+                    
+                    if(productCatalog.length === 0) {
+                        setMockCatalog();
+                    } else {
+                        renderCatalogTable();
+                        updateDatalist();
+                    }
+                });
+            } else {
+                setMockCatalog(); // En GitHub carga datos de prueba para que sepas usarlo
+            }
         }
 
         function renderCatalogTable() {
@@ -1209,7 +1236,7 @@
                     <td class="py-2 px-4 text-right text-orange-600 font-mono">S/ ${p.cost.toFixed(2)}</td>
                     <td class="py-2 px-4 text-right text-green-600 font-mono">S/ ${p.price.toFixed(2)}</td>
                     <td class="py-2 px-4 text-center">
-                        ${p.id ? `<button onclick="window.deleteCatalogItem('${p.id}')" class="text-red-400 hover:text-red-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : `<span class="text-xs text-gray-400">Ejemplo</span>`}
+                        <button onclick="window.deleteCatalogItem('${p.id}')" class="text-red-400 hover:text-red-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1228,7 +1255,6 @@
         }
 
         window.addCatalogItem = async () => {
-            if (!currentUser) return alert("Inicia sesión para guardar productos.");
             const desc = document.getElementById('cat_desc').value.trim();
             const cost = parseFloat(document.getElementById('cat_cost').value) || 0;
             const price = parseFloat(document.getElementById('cat_price').value) || 0;
@@ -1240,10 +1266,15 @@
             document.getElementById('cat_price').value = '';
 
             try {
-                const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
-                await addDoc(colRef, { desc, cost, price });
+                if (isConnectedToFirebase && currentUser) {
+                    const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
+                    await addDoc(colRef, { desc, cost, price });
+                } else {
+                    productCatalog.push({ id: 'mem_' + Date.now(), desc, cost, price });
+                    renderCatalogTable();
+                    updateDatalist();
+                }
 
-                // --- DISPARADOR A GOOGLE SHEETS PARA EL CATÁLOGO ---
                 await window.syncProductToGoogleSheets(desc, cost, price);
 
             } catch (error) { console.error("Error guardando producto:", error); }
@@ -1251,7 +1282,13 @@
 
         window.deleteCatalogItem = async (id) => {
             if(confirm("¿Eliminar este producto del catálogo?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory', id));
+                if (isConnectedToFirebase && currentUser) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory', id));
+                } else {
+                    productCatalog = productCatalog.filter(c => c.id !== id);
+                    renderCatalogTable();
+                    updateDatalist();
+                }
             }
         };
 
