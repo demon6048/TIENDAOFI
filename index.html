@@ -277,7 +277,7 @@
                             <h2 class="text-2xl font-black tracking-widest uppercase">PROFORMA</h2>
                         </div>
                         <div class="mt-3 pr-2">
-                            <p class="text-sm font-bold text-gray-800">N° <span id="p_profNumber" class="text-brand-tech text-lg">PF-20260309-001</span></p>
+                            <p class="text-sm font-bold text-gray-800">N° <span class="text-brand-tech text-lg">PF-<span id="p_profNumber">0000</span></span></p>
                             <p class="text-xs text-gray-600 mt-1 font-medium">Fecha: <span id="p_date" class="text-gray-800">09/03/2026</span></p>
                         </div>
                     </div>
@@ -638,6 +638,30 @@
         ];
         let viewMode = 'detalle';
 
+        // NUEVO: Función que busca el último número en Google Sheets y suma 1
+        window.generateNextProfNumber = async () => {
+            const webhookUrl = "https://script.google.com/macros/s/AKfycbxpWydmE4JcmrqWPMVTnYTazRT-DJNQYI3vS-NaZC18XGGMDxueaIw-TlAjINpGOIQDTA/exec";
+            const input = document.getElementById('f_profNumber');
+            input.value = "..."; // Indicador de carga
+            
+            try {
+                // Al hacer fetch sin 'no-cors', podemos leer la respuesta de Google
+                const response = await fetch(webhookUrl);
+                const data = await response.json();
+                const nextNum = data.next || 1;
+                
+                // Formatear con ceros a la izquierda (ej: 0001, 0015)
+                input.value = String(nextNum).padStart(4, '0');
+                window.updatePreview();
+            } catch (error) {
+                console.error("Error obteniendo correlativo:", error);
+                // Si no hay internet, genera uno temporal aleatorio
+                const randomNum = Math.floor(Math.random() * 9000) + 1000;
+                input.value = randomNum.toString();
+                window.updatePreview();
+            }
+        };
+
         window.initDefaults = () => {
             const now = new Date();
             const yyyy = now.getFullYear();
@@ -645,11 +669,9 @@
             const dd = String(now.getDate()).padStart(2, '0');
             document.getElementById('f_date').value = `${yyyy}-${mm}-${dd}`;
             
-            const randomNum = Math.floor(Math.random() * 900) + 100;
-            document.getElementById('f_profNumber').value = `${yyyy}${mm}${dd}-${randomNum}`;
-
+            // Genera el número consecutivo al iniciar
+            window.generateNextProfNumber();
             window.renderItems();
-            window.updatePreview();
         };
 
         window.setMode = (mode) => {
@@ -841,6 +863,8 @@
                 document.getElementById('f_status').value = 'Solo Proforma';
                 
                 items = [{ id: 1, qty: 1, desc: '', cost: 0, price: 0 }];
+                // Genera el NUEVO número consecutivo al limpiar la proforma vieja
+                window.generateNextProfNumber();
                 window.renderItems();
             }
         };
@@ -852,7 +876,7 @@
 
             const opt = {
                 margin: 0,
-                filename: `Proforma_${document.getElementById('f_profNumber').value}.pdf`,
+                filename: `Proforma_PF-${document.getElementById('f_profNumber').value}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -945,7 +969,7 @@
 
         window.syncToGoogleSheets = async (proformaData, itemsArr) => {
             window.setCloudStatus('syncing');
-            const webhookUrl = "https://script.google.com/macros/s/AKfycbxkd1h78cXKLcol1i_ZPsvt1ikuFP09IhQ4xmVGjq8e_YyV0vqlGqJfpTNYRH2MeiTt2g/exec";
+            const webhookUrl = "https://script.google.com/macros/s/AKfycbxpWydmE4JcmrqWPMVTnYTazRT-DJNQYI3vS-NaZC18XGGMDxueaIw-TlAjINpGOIQDTA/exec";
 
             const rowsToSync = [];
             itemsArr.forEach(item => {
@@ -988,7 +1012,7 @@
 
         window.syncProductToGoogleSheets = async (desc, cost, price) => {
             window.setCloudStatus('syncing');
-            const webhookUrl = "https://script.google.com/macros/s/AKfycbxkd1h78cXKLcol1i_ZPsvt1ikuFP09IhQ4xmVGjq8e_YyV0vqlGqJfpTNYRH2MeiTt2g/exec";
+            const webhookUrl = "https://script.google.com/macros/s/AKfycbxpWydmE4JcmrqWPMVTnYTazRT-DJNQYI3vS-NaZC18XGGMDxueaIw-TlAjINpGOIQDTA/exec";
             
             const payload = {
                 type: "producto", 
@@ -1015,7 +1039,8 @@
         window.saveProforma = async (btn) => {
             const totals = window.getCalculatedTotals();
             const data = {
-                profNumber: document.getElementById('f_profNumber').value,
+                // Guarda en la base de datos asegurando que lleve el "PF-"
+                profNumber: "PF-" + document.getElementById('f_profNumber').value,
                 date: document.getElementById('f_date').value,
                 clientName: document.getElementById('f_clientName').value || 'Sin Nombre',
                 cost: totals.cost,       
