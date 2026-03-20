@@ -652,8 +652,18 @@
                     } catch(e) { console.error("Error cargando historial local", e); }
                 }
 
+                // NUEVO: Recuperar catálogo guardado en la memoria del navegador
+                const savedCatalog = localStorage.getItem('productCatalog_kgb');
+                if (savedCatalog) {
+                    try {
+                        productCatalog = JSON.parse(savedCatalog);
+                    } catch(e) { console.error("Error cargando catálogo local", e); }
+                }
+
                 setTimeout(() => {
                     renderHistoryTable(); // Carga tabla con los datos recuperados
+                    renderCatalogTable(); // Carga catálogo visual
+                    updateDatalist();     // Activa el autocompletado inmediatamente
                 }, 500);
             }
         } catch(error) {
@@ -682,8 +692,9 @@
 
                 // 2. Cargar Catálogo de Productos desde la hoja "Productos"
                 if (data.products && data.products.length > 0) {
-                    const uniqueProducts = [];
-                    const descSet = new Set();
+                    const uniqueProducts = [...productCatalog]; // Empezamos con lo local
+                    const descSet = new Set(productCatalog.map(p => p.desc.toLowerCase()));
+                    
                     data.products.forEach((p, i) => {
                         if(!descSet.has(p.desc.toLowerCase())) {
                             descSet.add(p.desc.toLowerCase());
@@ -697,6 +708,8 @@
                     });
                     
                     productCatalog = uniqueProducts;
+                    // Guardar los nuevos en la memoria local
+                    localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
                     renderCatalogTable();
                     updateDatalist();
                 }
@@ -1126,6 +1139,7 @@
                 await window.syncToGoogleSheets(data, itemsArrToSync);
 
                 // 2. AUTO-GUARDAR PRODUCTOS NUEVOS EN EL CATÁLOGO Y EN GOOGLE SHEETS
+                let isCatalogUpdated = false;
                 for (const item of data.items) {
                     if (item.desc && item.desc.trim() !== '') {
                         const exists = productCatalog.some(p => p.desc.toLowerCase() === item.desc.trim().toLowerCase());
@@ -1136,13 +1150,19 @@
                                 await addDoc(invRef, { desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
                             } else {
                                 productCatalog.push({ id: 'mem_' + Date.now(), desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
-                                renderCatalogTable();
-                                updateDatalist();
+                                isCatalogUpdated = true;
                             }
                             
                             await window.syncProductToGoogleSheets(item.desc.trim(), item.cost || 0, item.price || 0);
                         }
                     }
+                }
+                
+                // Si agregaste productos nuevos, guardamos la memoria local
+                if (isCatalogUpdated) {
+                    localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
+                    renderCatalogTable();
+                    updateDatalist();
                 }
 
                 btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Guardado';
@@ -1300,6 +1320,8 @@
                     await addDoc(colRef, { desc, cost, price });
                 } else {
                     productCatalog.push({ id: 'mem_' + Date.now(), desc, cost, price });
+                    // Guardar en memoria local
+                    localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
                     renderCatalogTable();
                     updateDatalist();
                 }
@@ -1315,6 +1337,8 @@
                     await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory', id));
                 } else {
                     productCatalog = productCatalog.filter(c => c.id !== id);
+                    // Actualizar memoria local al borrar
+                    localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
                     renderCatalogTable();
                     updateDatalist();
                 }
