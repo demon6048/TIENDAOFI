@@ -667,7 +667,7 @@
 
         // Función que busca el último número y TODO el catálogo desde Google Sheets
         window.fetchGoogleSheetsData = async () => {
-            const webhookUrl = "https://script.google.com/macros/s/AKfycbwxkzSNkxnoJKF8JrFrRDMMwf97vTRJlc-wWHC8epyL9Ix8fZ549edj-WiqtpqnqyKpYg/exec";
+            const webhookUrl = "https://script.google.com/macros/s/AKfycbxZVmLFEOB7f_hcyISHY-2gSGAlyrqp6PF6QCQZ2pyZo-_rhfnhrQ7nfXf-P6qAl-2DDQ/exec";
             const input = document.getElementById('f_profNumber');
             input.value = "..."; // Indicador de carga
             
@@ -1020,7 +1020,7 @@
 
         window.syncToGoogleSheets = async (proformaData, itemsArr) => {
             window.setCloudStatus('syncing');
-            const webhookUrl = "https://script.google.com/macros/s/AKfycbwxkzSNkxnoJKF8JrFrRDMMwf97vTRJlc-wWHC8epyL9Ix8fZ549edj-WiqtpqnqyKpYg/exec";
+            const webhookUrl = "https://script.google.com/macros/s/AKfycbxZVmLFEOB7f_hcyISHY-2gSGAlyrqp6PF6QCQZ2pyZo-_rhfnhrQ7nfXf-P6qAl-2DDQ/exec";
 
             const rowsToSync = [];
             itemsArr.forEach(item => {
@@ -1063,7 +1063,7 @@
 
         window.syncProductToGoogleSheets = async (desc, cost, price) => {
             window.setCloudStatus('syncing');
-            const webhookUrl = "https://script.google.com/macros/s/AKfycbwxkzSNkxnoJKF8JrFrRDMMwf97vTRJlc-wWHC8epyL9Ix8fZ549edj-WiqtpqnqyKpYg/exec";
+            const webhookUrl = "https://script.google.com/macros/s/AKfycbxZVmLFEOB7f_hcyISHY-2gSGAlyrqp6PF6QCQZ2pyZo-_rhfnhrQ7nfXf-P6qAl-2DDQ/exec";
             
             const payload = {
                 type: "producto", 
