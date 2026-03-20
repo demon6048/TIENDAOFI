@@ -8,7 +8,7 @@
     <!-- Fuentes: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,13 +28,16 @@
                     },
                     colors: {
                         brand: {
-                            dark: '#0f172a',    
-                            corp: '#1e3a8a',    
-                            tech: '#2563eb',    
-                            light: '#06b6d4',   
-                            accent: '#f97316',  
-                            bg: '#f8fafc',      
+                            dark: '#020617',    // Slate 950
+                            corp: '#1e1b4b',    // Indigo 950
+                            tech: '#3b82f6',    // Blue 500
+                            light: '#8b5cf6',   // Violet 500
+                            accent: '#06b6d4',  // Cyan 500
+                            bg: '#f8fafc',      // Slate 50
                         }
+                    },
+                    backgroundImage: {
+                        'tech-grid': 'radial-gradient(#cbd5e1 1px, transparent 1px)',
                     }
                 }
             }
@@ -42,7 +45,7 @@
     </script>
 
     <style>
-        body { background-color: #f8fafc; color: #0f172a; }
+        body { background-color: #f8fafc; color: #020617; }
 
         @page { size: A4 portrait; margin: 0; }
 
@@ -50,25 +53,33 @@
             width: 210mm; min-width: 210mm;
             height: 297mm; min-height: 297mm;
             background: transparent; 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             margin: 0 auto; padding: 16mm; 
             position: relative; z-index: 0;
             overflow: hidden; flex-shrink: 0; 
+            border-radius: 4px;
         }
 
         .hide-scrollbar::-webkit-scrollbar { width: 6px; }
         .hide-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .hide-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .hide-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
 
         @media print {
             body * { visibility: hidden; }
             #preview-section, #preview-section * { visibility: visible; }
-            #preview-section { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; }
+            #preview-section { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; border-radius: 0; }
             .a4-preview { box-shadow: none; padding: 0; min-height: auto; }
             .no-print { display: none !important; }
         }
 
-        input:focus, textarea:focus, select:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #06b6d4; box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15); transition: all 0.2s ease; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-sm">
@@ -77,168 +88,178 @@
     <datalist id="inventoryList"></datalist>
 
     <!-- Header / Navbar -->
-    <header class="bg-white border-b border-gray-200 h-16 flex items-center px-6 justify-between shrink-0 z-10">
+    <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 h-16 flex items-center px-6 justify-between shrink-0 z-20 shadow-sm relative">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-brand-corp flex items-center justify-center text-white">
-                <i data-lucide="cpu" class="w-5 h-5"></i>
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-corp to-brand-tech flex items-center justify-center text-white shadow-lg shadow-brand-tech/30">
+                <i data-lucide="cpu" class="w-6 h-6"></i>
             </div>
             <div class="flex flex-col">
-                <h1 class="font-bold text-lg text-brand-dark tracking-tight leading-none">Proforma<span class="text-brand-tech">Tech</span></h1>
+                <h1 class="font-black text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-brand-corp via-brand-tech to-brand-accent leading-none">ProformaTech</h1>
                 <!-- INDICADOR DE ESTADO DE NUBE -->
-                <div id="cloudSyncIndicator" class="flex items-center gap-1.5 mt-1 opacity-80 transition-all duration-300">
-                    <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.6)]"></div>
+                <div id="cloudSyncIndicator" class="flex items-center gap-1.5 mt-0.5 opacity-90 transition-all duration-300">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
                     <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Nube Conectada</span>
                 </div>
             </div>
         </div>
-        <div class="flex items-center gap-2 flex-wrap justify-end">
-            <button onclick="window.openCatalogModal()" class="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg transition-colors flex items-center gap-2 font-medium border border-purple-200 shadow-sm">
-                <i data-lucide="book-open" class="w-4 h-4"></i> Catálogo
+        <div class="flex items-center gap-2.5 flex-wrap justify-end">
+            <button onclick="window.openCatalogModal()" class="px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold border border-slate-200 shadow-sm hover:shadow">
+                <i data-lucide="layers" class="w-4 h-4 text-brand-light"></i> Catálogo
             </button>
-            <button onclick="window.openProfitModal()" class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg transition-colors flex items-center gap-2 font-medium border border-indigo-200 shadow-sm">
-                <i data-lucide="pie-chart" class="w-4 h-4"></i> Finanzas
+            <button onclick="window.openProfitModal()" class="px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold border border-slate-200 shadow-sm hover:shadow">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-brand-tech"></i> Finanzas
             </button>
-            <button onclick="window.openHistory()" class="px-3 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-colors flex items-center gap-2 font-medium shadow-sm">
-                <i data-lucide="database" class="w-4 h-4"></i> BD Proformas
+            <button onclick="window.openHistory()" class="px-3.5 py-2 bg-brand-dark hover:bg-slate-800 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold shadow-md hover:shadow-lg">
+                <i data-lucide="database" class="w-4 h-4 text-brand-accent"></i> BD Proformas
             </button>
-            <div class="hidden md:block w-px h-6 bg-gray-300 mx-1"></div>
-            <button onclick="window.clearForm()" class="px-3 py-2 text-gray-600 hover:text-brand-accent hover:bg-orange-50 rounded-lg transition-colors flex items-center gap-2 font-medium">
-                <i data-lucide="trash-2" class="w-4 h-4"></i> Limpiar
+            
+            <div class="hidden md:block w-px h-6 bg-gray-200 mx-1"></div>
+            
+            <button onclick="window.clearForm()" class="px-3 py-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
-            <button onclick="window.saveProforma(this)" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center gap-2 font-medium shadow-sm">
-                <i data-lucide="save" class="w-4 h-4"></i> Guardar
+            
+            <button onclick="window.generatePDF(this)" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-bold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/40">
+                <i data-lucide="file-down" class="w-4 h-4"></i> PDF
             </button>
-            <button onclick="window.generatePDF(this)" class="px-4 py-2 bg-brand-accent hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center gap-2 font-medium shadow-sm">
-                <i data-lucide="download" class="w-4 h-4"></i> PDF
+            <button onclick="window.saveProforma(this)" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-bold shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/40">
+                <i data-lucide="cloud-upload" class="w-4 h-4"></i> Guardar
             </button>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 flex overflow-hidden relative">
+    <main class="flex-1 flex overflow-hidden relative bg-slate-50">
         
         <!-- LADO IZQUIERDO: Formulario -->
-        <section class="w-full lg:w-1/2 lg:min-w-[500px] xl:w-[45%] h-full overflow-y-auto hide-scrollbar bg-brand-bg p-6 border-r border-gray-200">
-            <div class="max-w-2xl mx-auto space-y-8 pb-20">
+        <section class="w-full lg:w-1/2 lg:min-w-[500px] xl:w-[45%] h-full overflow-y-auto hide-scrollbar p-6 border-r border-gray-200 z-10 bg-white shadow-[10px_0_15px_-3px_rgba(0,0,0,0.02)]">
+            <div class="max-w-2xl mx-auto space-y-6 pb-20">
 
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex gap-4">
-                    <div class="flex-1">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">N° Proforma</label>
-                        <div class="flex items-center bg-gray-50 border border-gray-200 rounded-md px-3 py-2">
-                            <span class="text-gray-400 mr-1 font-mono">PF-</span>
-                            <input type="text" id="f_profNumber" class="w-full bg-transparent font-mono font-bold text-brand-corp focus:outline-none" oninput="window.updatePreview()">
+                <!-- Fila 1: Cabecera de Proforma -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap gap-4 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-brand-tech"></div>
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">N° Proforma</label>
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 transition-colors focus-within:border-brand-tech focus-within:bg-white">
+                            <span class="text-slate-400 mr-1 font-mono font-bold">PF-</span>
+                            <input type="text" id="f_profNumber" class="w-full bg-transparent font-mono font-black text-brand-corp focus:outline-none" oninput="window.updatePreview()">
                         </div>
                     </div>
-                    <div class="flex-1">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Fecha</label>
-                        <input type="date" id="f_date" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700" onchange="window.updatePreview()">
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Fecha</label>
+                        <input type="date" id="f_date" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 font-medium focus:bg-white transition-colors" onchange="window.updatePreview()">
                     </div>
-                    <div class="flex-1">
-                        <label class="block text-xs font-bold text-gray-700 mb-1 text-brand-tech">Estado Actual</label>
-                        <select id="f_status" class="w-full bg-blue-50 border border-blue-200 rounded-md px-3 py-2 text-sm text-brand-corp font-bold focus:ring-1 focus:ring-brand-tech">
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block text-[11px] font-bold text-brand-tech mb-1.5 uppercase tracking-wider">Estado Actual</label>
+                        <select id="f_status" class="w-full bg-blue-50/50 border border-blue-200 rounded-lg px-3 py-2 text-sm text-brand-corp font-bold focus:ring-2 focus:ring-brand-tech/50 transition-colors cursor-pointer">
                             <option value="Solo Proforma">📝 Solo Proforma</option>
                             <option value="Aprobado">👍 Aprobado</option>
-                            <option value="Terminado">✅ Terminado (Ganancia)</option>
+                            <option value="Terminado">✅ Terminado</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <i data-lucide="user" class="w-4 h-4"></i> Datos del Cliente
+                <!-- Fila 2: Cliente -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <div class="p-1.5 bg-slate-100 rounded-md text-brand-tech"><i data-lucide="user" class="w-4 h-4"></i></div> Datos del Cliente
                     </h2>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2">
-                            <label class="block text-xs text-gray-500 mb-1">Nombre / Razón Social</label>
-                            <input type="text" id="f_clientName" placeholder="Ej. Juan Pérez" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-brand-tech transition-all" oninput="window.updatePreview()">
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Nombre / Razón Social</label>
+                            <input type="text" id="f_clientName" placeholder="Ej. Juan Pérez" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 font-medium focus:bg-white transition-all" oninput="window.updatePreview()">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Teléfono / Celular</label>
-                            <input type="text" id="f_clientPhone" placeholder="Ej. 987 654 321" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-brand-tech transition-all" oninput="window.updatePreview()">
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Teléfono / Celular</label>
+                            <input type="text" id="f_clientPhone" placeholder="Ej. 987 654 321" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 font-medium focus:bg-white transition-all" oninput="window.updatePreview()">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Dirección (Opcional)</label>
-                            <input type="text" id="f_clientAddress" placeholder="Dirección del cliente" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-brand-tech transition-all" oninput="window.updatePreview()">
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Dirección (Opcional)</label>
+                            <input type="text" id="f_clientAddress" placeholder="Dirección del cliente" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 font-medium focus:bg-white transition-all" oninput="window.updatePreview()">
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider flex items-center gap-2">
-                            <i data-lucide="layers" class="w-4 h-4"></i> Componentes / Productos
+                <!-- Fila 3: Productos -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-5">
+                        <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                            <div class="p-1.5 bg-slate-100 rounded-md text-brand-accent"><i data-lucide="cpu" class="w-4 h-4"></i></div> Componentes
                         </h2>
-                        <div class="flex items-center bg-gray-100 p-1 rounded-lg">
-                            <button id="btnModeDetalle" onclick="window.setMode('detalle')" class="px-3 py-1 text-xs font-medium rounded shadow-sm bg-white text-brand-tech">Detallado</button>
-                            <button id="btnModeFinal" onclick="window.setMode('final')" class="px-3 py-1 text-xs font-medium rounded text-gray-500 hover:text-gray-700">Precio Final</button>
+                        <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
+                            <button id="btnModeDetalle" onclick="window.setMode('detalle')" class="px-3 py-1.5 text-xs font-bold rounded-md shadow-sm bg-white text-brand-tech transition-all">Detallado</button>
+                            <button id="btnModeFinal" onclick="window.setMode('final')" class="px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all">Precio Final</button>
                         </div>
                     </div>
 
-                    <div id="generalDescContainer" class="hidden mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                        <label class="block text-xs font-bold text-brand-corp mb-1">Descripción General del Equipo</label>
-                        <input type="text" id="f_generalDesc" placeholder="Ej. PC Gamer Core i7" value="Computadora de Escritorio Alto Rendimiento" class="w-full border border-blue-200 rounded-md px-3 py-2 bg-white" oninput="window.updatePreview()">
+                    <div id="generalDescContainer" class="hidden mb-5 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
+                        <label class="block text-xs font-bold text-brand-corp mb-1.5">Descripción General del Equipo</label>
+                        <input type="text" id="f_generalDesc" placeholder="Ej. PC Gamer Core i7" value="Computadora de Escritorio Alto Rendimiento" class="w-full border border-blue-200 rounded-lg px-3 py-2.5 bg-white font-medium shadow-sm focus:border-brand-tech focus:ring-2 focus:ring-brand-tech/20 transition-all" oninput="window.updatePreview()">
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full mb-3">
+                        <table class="w-full mb-4">
                             <thead>
-                                <tr class="text-left text-[11px] text-gray-500 border-b border-gray-200 uppercase font-bold">
-                                    <th class="pb-2 w-12">Cant.</th>
-                                    <th class="pb-2">Descripción (Autocompletable)</th>
-                                    <th class="pb-2 w-20 text-orange-600">Costo U.</th>
-                                    <th class="pb-2 w-20 text-green-600">P. Venta</th>
-                                    <th class="pb-2 w-8"></th>
+                                <tr class="text-left text-[10px] text-slate-400 border-b border-slate-200 uppercase font-black tracking-wider">
+                                    <th class="pb-3 w-12 text-center">Cant</th>
+                                    <th class="pb-3">Descripción (Autocompletable)</th>
+                                    <th class="pb-3 w-20 text-orange-500 text-right pr-2">Costo U.</th>
+                                    <th class="pb-3 w-20 text-emerald-500 text-right pr-2">P. Venta</th>
+                                    <th class="pb-3 w-8"></th>
                                 </tr>
                             </thead>
-                            <tbody id="itemsBody">
+                            <tbody id="itemsBody" class="divide-y divide-slate-50">
                             </tbody>
                         </table>
                     </div>
                     
-                    <button onclick="window.addItemRow()" class="text-xs font-medium text-brand-tech flex items-center gap-1 hover:text-brand-corp transition-colors">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Agregar Fila
+                    <button onclick="window.addItemRow()" class="text-xs font-bold text-brand-tech flex items-center gap-1.5 hover:text-brand-corp bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Agregar Fila
                     </button>
                 </div>
 
-                <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 shadow-sm">
-                    <h2 class="text-xs font-bold text-brand-corp uppercase tracking-wider mb-2 flex items-center gap-2">
-                        <i data-lucide="calculator" class="w-4 h-4"></i> Precios para Combos / Paquetes
+                <!-- Fila 4: Combos / Precios Manuales -->
+                <div class="bg-gradient-to-br from-slate-800 to-brand-corp p-6 rounded-2xl shadow-md text-white relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-white rounded-full opacity-5 blur-2xl"></div>
+                    <h2 class="text-xs font-black text-blue-200 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <i data-lucide="calculator" class="w-4 h-4"></i> Precios de Paquete / Combo
                     </h2>
-                    <p class="text-[10px] text-gray-500 mb-3">Si armas un paquete y dejas los precios de arriba en 0, usa estos campos para definir tu inversión y venta total.</p>
+                    <p class="text-[11px] text-blue-100/70 mb-4">Si armas un paquete y dejas los precios de arriba en 0, usa estos campos para definir tu inversión y venta final.</p>
                     <div class="flex gap-4">
                         <div class="relative flex-1">
-                            <label class="block text-[10px] font-bold text-orange-600 mb-1 uppercase">Costo Total (Gasto)</label>
-                            <span class="absolute left-3 top-6 text-gray-500 font-bold">S/</span>
-                            <input type="number" min="0" step="0.01" id="f_manualCost" placeholder="Autocalculado" class="w-full bg-orange-50 border border-orange-200 rounded-md pl-8 pr-2 py-2 text-sm font-bold text-orange-800 focus:border-orange-400 focus:ring-1" oninput="window.updatePreview()">
+                            <label class="block text-[10px] font-bold text-orange-300 mb-1.5 uppercase tracking-wider">Costo Total (Gasto)</label>
+                            <span class="absolute left-3 top-[30px] text-orange-200/50 font-bold">S/</span>
+                            <input type="number" min="0" step="0.01" id="f_manualCost" placeholder="Auto" class="w-full bg-white/10 border border-white/20 rounded-xl pl-8 pr-3 py-2.5 text-sm font-bold text-white placeholder-white/30 focus:border-orange-400 focus:bg-white/20 transition-colors" oninput="window.updatePreview()">
                         </div>
                         <div class="relative flex-1">
-                            <label class="block text-[10px] font-bold text-green-600 mb-1 uppercase">Precio Final (Venta)</label>
-                            <span class="absolute left-3 top-6 text-gray-500 font-bold">S/</span>
-                            <input type="number" min="0" step="0.01" id="f_manualTotal" placeholder="Autocalculado" class="w-full bg-white border border-green-300 rounded-md pl-8 pr-2 py-2 text-sm font-bold text-brand-dark focus:border-brand-tech focus:ring-1" oninput="window.updatePreview()">
+                            <label class="block text-[10px] font-bold text-emerald-300 mb-1.5 uppercase tracking-wider">Precio Final (Venta)</label>
+                            <span class="absolute left-3 top-[30px] text-emerald-200/50 font-bold">S/</span>
+                            <input type="number" min="0" step="0.01" id="f_manualTotal" placeholder="Auto" class="w-full bg-white/10 border border-white/20 rounded-xl pl-8 pr-3 py-2.5 text-sm font-bold text-white placeholder-white/30 focus:border-emerald-400 focus:bg-white/20 transition-colors" oninput="window.updatePreview()">
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-xs font-bold text-brand-light uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <i data-lucide="clipboard-list" class="w-4 h-4"></i> Condiciones comerciales
+                <!-- Fila 5: Condiciones -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <div class="p-1.5 bg-slate-100 rounded-md text-brand-light"><i data-lucide="clipboard-list" class="w-4 h-4"></i></div> Condiciones
                     </h2>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Garantía</label>
-                            <input type="text" id="f_obsGarantia" value="12 meses contra defectos de fábrica" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="window.updatePreview()">
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Garantía</label>
+                            <input type="text" id="f_obsGarantia" value="12 meses contra defectos de fábrica" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium focus:bg-white transition-colors" oninput="window.updatePreview()">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Tiempo de Entrega</label>
-                            <input type="text" id="f_obsEntrega" value="24 a 48 horas tras confirmación" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="window.updatePreview()">
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Tiempo de Entrega</label>
+                            <input type="text" id="f_obsEntrega" value="24 a 48 horas tras confirmación" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium focus:bg-white transition-colors" oninput="window.updatePreview()">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Validez de Proforma</label>
-                            <input type="text" id="f_obsValidez" value="3 días útiles" class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="window.updatePreview()">
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Validez de Proforma</label>
+                            <input type="text" id="f_obsValidez" value="3 días útiles" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium focus:bg-white transition-colors" oninput="window.updatePreview()">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Otras Notas</label>
-                            <input type="text" id="f_obsNotas" placeholder="Opcional..." class="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm" oninput="window.updatePreview()">
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Otras Notas</label>
+                            <input type="text" id="f_obsNotas" placeholder="Opcional..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium focus:bg-white transition-colors" oninput="window.updatePreview()">
                         </div>
                     </div>
                 </div>
@@ -247,7 +268,9 @@
         </section>
 
         <!-- LADO DERECHO: Vista Previa -->
-        <section class="w-full lg:w-1/2 lg:flex-1 h-full overflow-auto bg-gray-200/50 p-4 lg:p-8 flex items-start justify-center">
+        <section class="w-full lg:w-1/2 lg:flex-1 h-full overflow-auto p-4 lg:p-8 flex items-start justify-center relative bg-slate-100">
+            <!-- Patrón de fondo tecnológico -->
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNjYmQ1ZTEiLz48L3N2Zz4=')] opacity-60 z-0"></div>
             
             <div id="preview-section" class="a4-preview flex flex-col transition-all duration-300">
                 
@@ -365,40 +388,39 @@
         </section>
 
         <!-- 📦 MODAL DE CATÁLOGO DE PRODUCTOS -->
-        <div id="catalogModal" class="hidden fixed inset-0 bg-brand-dark/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-purple-50">
-                    <h2 class="text-xl font-bold text-brand-dark flex items-center gap-2">
-                        <i data-lucide="book-open" class="w-5 h-5 text-purple-600"></i> Catálogo de Productos
+        <div id="catalogModal" class="hidden fixed inset-0 bg-brand-dark/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-200">
+                <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                    <h2 class="text-xl font-black text-brand-dark flex items-center gap-2 uppercase tracking-wide">
+                        <div class="p-1.5 bg-white rounded shadow-sm text-brand-light"><i data-lucide="layers" class="w-5 h-5"></i></div> Catálogo de Productos
                     </h2>
-                    <button onclick="window.closeCatalogModal()" class="p-2 text-gray-500 hover:text-red-500 rounded-lg transition-colors">
+                    <button onclick="window.closeCatalogModal()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
                 
-                <div class="p-5 bg-white border-b border-gray-100 shadow-sm flex gap-3 items-end">
-                    <div class="flex-1">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Descripción del Producto</label>
-                        <input type="text" id="cat_desc" placeholder="Ej. Monitor Samsung 24'' 144Hz" class="w-full bg-gray-50 border border-gray-300 rounded-md px-3 py-2 text-sm focus:border-purple-500 focus:ring-1">
+                <div class="p-5 bg-white border-b border-slate-100 shadow-sm flex flex-wrap gap-3 items-end">
+                    <div class="flex-1 min-w-[250px]">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Descripción del Producto</label>
+                        <input type="text" id="cat_desc" placeholder="Ej. Monitor Samsung 24'' 144Hz" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:bg-white transition-colors">
                     </div>
                     <div class="w-32">
-                        <label class="block text-xs font-bold text-orange-600 mb-1">Costo U. (S/)</label>
-                        <input type="number" step="0.01" id="cat_cost" placeholder="0.00" class="w-full bg-orange-50 border border-orange-200 rounded-md px-3 py-2 text-sm focus:border-orange-500 focus:ring-1">
+                        <label class="block text-[11px] font-bold text-orange-500 uppercase tracking-wider mb-1.5">Costo (S/)</label>
+                        <input type="number" step="0.01" id="cat_cost" placeholder="0.00" class="w-full bg-orange-50 border border-orange-200 rounded-lg px-3 py-2.5 text-sm focus:bg-white transition-colors text-orange-700 font-bold">
                     </div>
                     <div class="w-32">
-                        <label class="block text-xs font-bold text-green-600 mb-1">P. Venta (S/)</label>
-                        <input type="number" step="0.01" id="cat_price" placeholder="0.00" class="w-full bg-green-50 border border-green-200 rounded-md px-3 py-2 text-sm focus:border-green-500 focus:ring-1">
+                        <label class="block text-[11px] font-bold text-emerald-500 uppercase tracking-wider mb-1.5">Venta (S/)</label>
+                        <input type="number" step="0.01" id="cat_price" placeholder="0.00" class="w-full bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5 text-sm focus:bg-white transition-colors text-emerald-700 font-bold">
                     </div>
-                    <button onclick="window.addCatalogItem()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center gap-2 h-[38px]">
+                    <button onclick="window.addCatalogItem()" class="px-5 py-2.5 bg-brand-dark hover:bg-slate-800 text-white font-bold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 h-[42px]">
                         <i data-lucide="plus" class="w-4 h-4"></i> Guardar
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-5 bg-gray-50">
-                    <p class="text-xs text-gray-500 mb-3"><i data-lucide="info" class="w-3 h-3 inline"></i> Los productos de esta lista se autocompletarán cuando escribas en el formulario de la proforma.</p>
-                    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div class="flex-1 overflow-y-auto p-5 bg-slate-50">
+                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                         <table class="w-full text-left">
-                            <thead class="bg-gray-100 text-gray-600 text-xs uppercase font-bold border-b border-gray-200">
+                            <thead class="bg-slate-100 text-slate-500 text-[10px] uppercase font-black tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="py-3 px-4">Descripción</th>
                                     <th class="py-3 px-4 w-24 text-right">Costo</th>
@@ -406,7 +428,7 @@
                                     <th class="py-3 px-4 w-16 text-center">Acción</th>
                                 </tr>
                             </thead>
-                            <tbody id="catalogTableBody" class="text-sm divide-y divide-gray-100">
+                            <tbody id="catalogTableBody" class="text-sm divide-y divide-slate-100">
                             </tbody>
                         </table>
                     </div>
@@ -415,94 +437,95 @@
         </div>
 
         <!-- 💰 NUEVO MODAL DE DASHBOARD FINANCIERO -->
-        <div id="profitModal" class="hidden fixed inset-0 bg-brand-dark/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[95vh]">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-indigo-50">
-                    <h2 class="text-xl font-bold text-brand-dark flex items-center gap-2">
-                        <i data-lucide="pie-chart" class="w-5 h-5 text-indigo-600"></i> Dashboard de Finanzas
+        <div id="profitModal" class="hidden fixed inset-0 bg-brand-dark/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[95vh] border border-slate-200">
+                <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                    <h2 class="text-xl font-black text-brand-dark flex items-center gap-2 uppercase tracking-wide">
+                        <div class="p-1.5 bg-white rounded shadow-sm text-brand-tech"><i data-lucide="pie-chart" class="w-5 h-5"></i></div> Dashboard de Finanzas
                     </h2>
-                    <button onclick="window.closeProfitModal()" class="p-2 text-gray-500 hover:text-red-500 rounded-lg transition-colors">
+                    <button onclick="window.closeProfitModal()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
                 
-                <div class="p-6 bg-gray-50 flex flex-col gap-6 overflow-y-auto">
+                <div class="p-6 bg-slate-50 flex flex-col gap-6 overflow-y-auto">
                     
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <i data-lucide="target" class="w-4 h-4"></i> Proyección de Proforma Actual
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute left-0 top-0 w-1 h-full bg-brand-tech"></div>
+                        <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i data-lucide="target" class="w-4 h-4 text-brand-tech"></i> Proyección de Proforma Actual
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="flex flex-col justify-center p-4 bg-orange-50 rounded-xl border border-orange-100">
-                                <span class="font-bold text-orange-800 uppercase text-[10px] tracking-wider flex items-center gap-1 mb-1"><i data-lucide="trending-down" class="w-3 h-3"></i> Inversión (Gasto)</span>
+                            <div class="flex flex-col justify-center p-4 bg-orange-50/50 rounded-xl border border-orange-100">
+                                <span class="font-bold text-orange-600/80 uppercase text-[10px] tracking-widest flex items-center gap-1.5 mb-1"><i data-lucide="trending-down" class="w-3.5 h-3.5"></i> Inversión (Gasto)</span>
                                 <span id="m_inv" class="text-xl font-black font-mono text-orange-600">S/ 0.00</span>
                             </div>
-                            <div class="flex flex-col justify-center p-4 bg-blue-50 rounded-xl border border-blue-100">
-                                <span class="font-bold text-blue-800 uppercase text-[10px] tracking-wider flex items-center gap-1 mb-1"><i data-lucide="shopping-cart" class="w-3 h-3"></i> Total Venta</span>
+                            <div class="flex flex-col justify-center p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                <span class="font-bold text-blue-600/80 uppercase text-[10px] tracking-widest flex items-center gap-1.5 mb-1"><i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> Total Venta</span>
                                 <span id="m_ven" class="text-xl font-black font-mono text-blue-600">S/ 0.00</span>
                             </div>
-                            <div class="flex flex-col justify-center p-4 bg-brand-corp rounded-xl shadow-md relative overflow-hidden">
-                                <div class="absolute -right-2 -top-2 w-12 h-12 bg-white rounded-full opacity-10"></div>
-                                <span class="font-bold text-blue-200 uppercase text-[10px] tracking-wider z-10 mb-1">Ganancia Libre</span>
-                                <span id="m_gan" class="text-2xl font-black font-mono text-white z-10">S/ 0.00</span>
+                            <div class="flex flex-col justify-center p-4 bg-gradient-to-br from-brand-tech to-brand-corp rounded-xl shadow-md relative overflow-hidden text-white">
+                                <div class="absolute -right-4 -top-4 w-16 h-16 bg-white rounded-full opacity-10"></div>
+                                <span class="font-bold text-blue-200 uppercase text-[10px] tracking-widest z-10 mb-1">Ganancia Libre</span>
+                                <span id="m_gan" class="text-2xl font-black font-mono relative z-10">S/ 0.00</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                                <i data-lucide="bar-chart-2" class="w-4 h-4 text-green-500"></i> Ingresos Reales <span class="text-gray-400 font-normal normal-case">(Solo proformas marcadas como 'Terminado')</span>
+                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="bar-chart-2" class="w-4 h-4 text-emerald-500"></i> Ingresos Reales <span class="text-slate-400 font-normal normal-case tracking-normal">(Solo proformas en 'Terminado')</span>
                             </h3>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                             
-                            <div class="border border-gray-200 rounded-xl overflow-hidden">
-                                <div class="bg-gray-100 py-2.5 px-4 border-b border-gray-200">
-                                    <h4 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4"></i> Hoy</h4>
+                            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
+                                <div class="bg-slate-50 py-3 px-4 border-b border-slate-200">
+                                    <h4 class="font-black text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i> Hoy</h4>
                                 </div>
                                 <div class="p-4 space-y-4">
                                     <div>
-                                        <p class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Ingreso Bruto</p>
-                                        <p id="m_hoy_ingreso" class="text-lg font-mono font-bold text-gray-800">S/ 0.00</p>
+                                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Ingreso Bruto</p>
+                                        <p id="m_hoy_ingreso" class="text-lg font-mono font-bold text-slate-800">S/ 0.00</p>
                                     </div>
-                                    <div class="pt-3 border-t border-gray-100">
-                                        <p class="text-[10px] text-green-600 uppercase font-bold mb-0.5">Ganancia Neta</p>
-                                        <p id="m_hoy_ganancia" class="text-2xl font-mono font-black text-green-600">S/ 0.00</p>
+                                    <div class="pt-3 border-t border-slate-100">
+                                        <p class="text-[10px] text-emerald-500 uppercase font-bold tracking-wider mb-1">Ganancia Neta</p>
+                                        <p id="m_hoy_ganancia" class="text-2xl font-mono font-black text-emerald-500">S/ 0.00</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="border-2 border-brand-tech/30 rounded-xl overflow-hidden shadow-sm relative">
-                                <div class="bg-brand-tech/10 py-2.5 px-4 border-b border-brand-tech/20 flex justify-between items-center">
-                                    <h4 class="font-bold text-brand-dark text-sm flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4 text-brand-tech"></i> Este Mes</h4>
-                                    <span class="bg-brand-tech text-white text-[9px] px-2 py-0.5 rounded-full font-bold uppercase">Actual</span>
+                            <div class="border-2 border-brand-tech/30 rounded-xl overflow-hidden shadow-md relative bg-white transform scale-105 z-10">
+                                <div class="bg-blue-50 py-3 px-4 border-b border-blue-100 flex justify-between items-center">
+                                    <h4 class="font-black text-brand-corp text-xs uppercase tracking-wider flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4 text-brand-tech"></i> Este Mes</h4>
+                                    <span class="bg-brand-tech text-white text-[9px] px-2 py-0.5 rounded shadow-sm font-bold uppercase tracking-wider">Actual</span>
                                 </div>
-                                <div class="p-4 space-y-4">
+                                <div class="p-5 space-y-4">
                                     <div>
-                                        <p class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Ingreso Bruto</p>
-                                        <p id="m_mes_ingreso" class="text-xl font-mono font-bold text-gray-800">S/ 0.00</p>
+                                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Ingreso Bruto</p>
+                                        <p id="m_mes_ingreso" class="text-xl font-mono font-bold text-slate-800">S/ 0.00</p>
                                     </div>
-                                    <div class="pt-3 border-t border-gray-100">
-                                        <p class="text-[10px] text-green-600 uppercase font-bold mb-0.5">Ganancia Neta</p>
-                                        <p id="m_mes_ganancia" class="text-3xl font-mono font-black text-green-600">S/ 0.00</p>
+                                    <div class="pt-4 border-t border-slate-100">
+                                        <p class="text-[10px] text-emerald-500 uppercase font-bold tracking-wider mb-1">Ganancia Neta</p>
+                                        <p id="m_mes_ganancia" class="text-3xl font-mono font-black text-emerald-500 drop-shadow-sm">S/ 0.00</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="border border-gray-200 rounded-xl overflow-hidden">
-                                <div class="bg-gray-100 py-2.5 px-4 border-b border-gray-200">
-                                    <h4 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i data-lucide="calendar-check" class="w-4 h-4"></i> Este Año</h4>
+                            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
+                                <div class="bg-slate-50 py-3 px-4 border-b border-slate-200">
+                                    <h4 class="font-black text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2"><i data-lucide="calendar-check" class="w-4 h-4 text-slate-400"></i> Este Año</h4>
                                 </div>
                                 <div class="p-4 space-y-4">
                                     <div>
-                                        <p class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Ingreso Bruto</p>
-                                        <p id="m_ano_ingreso" class="text-lg font-mono font-bold text-gray-800">S/ 0.00</p>
+                                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Ingreso Bruto</p>
+                                        <p id="m_ano_ingreso" class="text-lg font-mono font-bold text-slate-800">S/ 0.00</p>
                                     </div>
-                                    <div class="pt-3 border-t border-gray-100">
-                                        <p class="text-[10px] text-green-600 uppercase font-bold mb-0.5">Ganancia Neta</p>
-                                        <p id="m_ano_ganancia" class="text-2xl font-mono font-black text-green-600">S/ 0.00</p>
+                                    <div class="pt-3 border-t border-slate-100">
+                                        <p class="text-[10px] text-emerald-500 uppercase font-bold tracking-wider mb-1">Ganancia Neta</p>
+                                        <p id="m_ano_ganancia" class="text-2xl font-mono font-black text-emerald-500">S/ 0.00</p>
                                     </div>
                                 </div>
                             </div>
@@ -515,46 +538,43 @@
         </div>
 
         <!-- MODAL DE HISTORIAL Y BASE DE DATOS -->
-        <div id="historyModal" class="hidden fixed inset-0 bg-brand-dark/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-6xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 flex-wrap gap-2">
-                    <h2 class="text-xl font-bold text-brand-dark flex items-center gap-2">
-                        <i data-lucide="database" class="w-5 h-5 text-brand-tech"></i> Base de Datos & Finanzas
+        <div id="historyModal" class="hidden fixed inset-0 bg-brand-dark/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-6xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-200">
+                <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 flex-wrap gap-2">
+                    <h2 class="text-xl font-black text-brand-dark flex items-center gap-2 uppercase tracking-wide">
+                        <div class="p-1.5 bg-white rounded shadow-sm text-brand-accent"><i data-lucide="database" class="w-5 h-5"></i></div> Base de Datos & Historial
                     </h2>
                     <div class="flex gap-3 flex-wrap">
-                        <button onclick="window.exportToCSV()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                            <i data-lucide="sheet" class="w-4 h-4"></i> Exportar a Excel
-                        </button>
-                        <button onclick="window.closeHistory()" class="p-2 text-gray-500 hover:text-red-500 rounded-lg transition-colors">
+                        <button onclick="window.closeHistory()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                             <i data-lucide="x" class="w-6 h-6"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-4 gap-4 p-6 bg-white border-b border-gray-100">
-                    <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl text-center">
-                        <p class="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-1">Total Cotizado</p>
+                <div class="grid grid-cols-4 gap-4 p-6 bg-white border-b border-slate-100">
+                    <div class="bg-blue-50/50 border border-blue-100 p-4 rounded-xl text-center shadow-sm">
+                        <p class="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-1.5">Total Cotizado</p>
                         <p id="h_totalCount" class="text-2xl font-black text-brand-corp">0</p>
                     </div>
-                    <div class="bg-gray-50 border border-gray-200 p-4 rounded-xl text-center">
-                        <p class="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">Ventas por Cobrar</p>
-                        <p id="h_totalPendiente" class="text-xl font-black text-gray-700">S/ 0.00</p>
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl text-center shadow-sm">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">Ventas por Cobrar</p>
+                        <p id="h_totalPendiente" class="text-xl font-black font-mono text-slate-700">S/ 0.00</p>
                     </div>
-                    <div class="bg-green-50 border border-green-200 p-4 rounded-xl text-center">
-                        <p class="text-[10px] text-green-700 font-bold uppercase tracking-wider mb-1">Ingreso Bruto (Ventas)</p>
-                        <p id="h_totalIngreso" class="text-xl font-black text-green-600">S/ 0.00</p>
+                    <div class="bg-emerald-50/50 border border-emerald-100 p-4 rounded-xl text-center shadow-sm">
+                        <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mb-1.5">Ingreso Bruto</p>
+                        <p id="h_totalIngreso" class="text-xl font-black font-mono text-emerald-600">S/ 0.00</p>
                     </div>
-                    <div class="bg-brand-corp border border-brand-corp p-4 rounded-xl text-center relative overflow-hidden shadow-md">
+                    <div class="bg-gradient-to-br from-brand-dark to-brand-corp border border-brand-corp p-4 rounded-xl text-center relative overflow-hidden shadow-md">
                         <div class="absolute -right-2 -top-2 w-10 h-10 bg-white rounded-full opacity-10"></div>
-                        <p class="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-1">Ganancia Neta Real</p>
-                        <p id="h_totalGanancia" class="text-xl font-black text-white">S/ 0.00</p>
+                        <p class="text-[10px] text-blue-200 font-bold uppercase tracking-widest mb-1.5">Ganancia Neta Real</p>
+                        <p id="h_totalGanancia" class="text-xl font-black font-mono text-white">S/ 0.00</p>
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
-                    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                         <table class="w-full text-left">
-                            <thead class="bg-gray-100 text-gray-600 text-xs uppercase font-bold border-b border-gray-200">
+                            <thead class="bg-slate-100 text-slate-500 text-[10px] uppercase font-black tracking-wider border-b border-slate-200">
                                 <tr>
                                     <th class="py-3 px-4">Fecha</th>
                                     <th class="py-3 px-4">Proforma</th>
@@ -566,7 +586,7 @@
                                     <th class="py-3 px-4 text-center">Acción</th>
                                 </tr>
                             </thead>
-                            <tbody id="dbTableBody" class="text-sm divide-y divide-gray-100">
+                            <tbody id="dbTableBody" class="text-sm divide-y divide-slate-50">
                             </tbody>
                         </table>
                     </div>
@@ -623,8 +643,17 @@
                 // Entorno Externo (GitHub Pages)
                 console.log("Modo Externo (GitHub): Firebase omitido. Usando memoria temporal y Google Sheets.");
                 currentUser = { uid: 'github_user' };
+                
+                // Recuperar historial guardado en la memoria del navegador
+                const savedProformas = localStorage.getItem('proformasList_kgb');
+                if (savedProformas) {
+                    try {
+                        proformasList = JSON.parse(savedProformas);
+                    } catch(e) { console.error("Error cargando historial local", e); }
+                }
+
                 setTimeout(() => {
-                    renderHistoryTable(); // Carga tabla vacía
+                    renderHistoryTable(); // Carga tabla con los datos recuperados
                 }, 500);
             }
         } catch(error) {
@@ -636,7 +665,7 @@
         ];
         let viewMode = 'detalle';
 
-        // NUEVO: Función que busca el último número y TODO el catálogo desde Google Sheets
+        // Función que busca el último número y TODO el catálogo desde Google Sheets
         window.fetchGoogleSheetsData = async () => {
             const webhookUrl = "https://script.google.com/macros/s/AKfycbwxkzSNkxnoJKF8JrFrRDMMwf97vTRJlc-wWHC8epyL9Ix8fZ549edj-WiqtpqnqyKpYg/exec";
             const input = document.getElementById('f_profNumber');
@@ -698,12 +727,12 @@
             const descContainer = document.getElementById('generalDescContainer');
 
             if (mode === 'detalle') {
-                btnDetalle.className = "px-3 py-1 text-xs font-medium rounded shadow-sm bg-white text-brand-tech";
-                btnFinal.className = "px-3 py-1 text-xs font-medium rounded text-gray-500 hover:text-gray-700 bg-transparent";
+                btnDetalle.className = "px-3 py-1.5 text-xs font-bold rounded-md shadow-sm bg-white text-brand-tech transition-all";
+                btnFinal.className = "px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all bg-transparent";
                 descContainer.classList.add('hidden');
             } else {
-                btnFinal.className = "px-3 py-1 text-xs font-medium rounded shadow-sm bg-white text-brand-tech";
-                btnDetalle.className = "px-3 py-1 text-xs font-medium rounded text-gray-500 hover:text-gray-700 bg-transparent";
+                btnFinal.className = "px-3 py-1.5 text-xs font-bold rounded-md shadow-sm bg-white text-brand-tech transition-all";
+                btnDetalle.className = "px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all bg-transparent";
                 descContainer.classList.remove('hidden');
             }
             window.updatePreview();
@@ -715,26 +744,26 @@
             items.forEach((item) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="pr-1 pb-2">
-                        <input type="number" min="1" value="${item.qty}" onchange="window.updateItem(${item.id}, 'qty', this.value)" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:border-brand-tech focus:ring-1">
+                    <td class="pr-2 pb-3">
+                        <input type="number" min="1" value="${item.qty}" onchange="window.updateItem(${item.id}, 'qty', this.value)" class="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-lg px-2 py-2 text-sm text-center font-bold focus:border-brand-tech transition-colors">
                     </td>
-                    <td class="pr-1 pb-2">
-                        <input type="text" list="inventoryList" placeholder="Descripción" value="${item.desc}" oninput="window.updateItem(${item.id}, 'desc', this.value)" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:border-brand-tech focus:ring-1">
+                    <td class="pr-2 pb-3">
+                        <input type="text" list="inventoryList" placeholder="Descripción" value="${item.desc}" oninput="window.updateItem(${item.id}, 'desc', this.value)" class="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-lg px-3 py-2 text-sm font-medium focus:border-brand-tech transition-colors">
                     </td>
-                    <td class="pr-1 pb-2">
+                    <td class="pr-2 pb-3">
                         <div class="relative">
-                            <span class="absolute left-2 top-1.5 text-gray-400">S/</span>
-                            <input type="number" id="cost_${item.id}" min="0" step="0.01" placeholder="Costo" value="${item.cost || ''}" oninput="window.updateItem(${item.id}, 'cost', this.value)" class="w-full bg-orange-50 border border-orange-200 text-orange-800 rounded pl-7 pr-1 py-1.5 text-sm focus:border-orange-500 focus:ring-1">
+                            <span class="absolute left-2.5 top-2 text-slate-400 font-bold">S/</span>
+                            <input type="number" id="cost_${item.id}" min="0" step="0.01" placeholder="Costo" value="${item.cost || ''}" oninput="window.updateItem(${item.id}, 'cost', this.value)" class="w-full bg-orange-50 border border-orange-200 text-orange-700 font-bold rounded-lg pl-8 pr-2 py-2 text-sm focus:bg-white focus:border-orange-500 transition-colors">
                         </div>
                     </td>
-                    <td class="pr-1 pb-2">
+                    <td class="pr-2 pb-3">
                         <div class="relative">
-                            <span class="absolute left-2 top-1.5 text-gray-400">S/</span>
-                            <input type="number" id="price_${item.id}" min="0" step="0.01" placeholder="Venta" value="${item.price || ''}" oninput="window.updateItem(${item.id}, 'price', this.value)" class="w-full bg-white border border-green-300 text-brand-dark rounded pl-7 pr-1 py-1.5 text-sm focus:border-green-500 focus:ring-1">
+                            <span class="absolute left-2.5 top-2 text-slate-400 font-bold">S/</span>
+                            <input type="number" id="price_${item.id}" min="0" step="0.01" placeholder="Venta" value="${item.price || ''}" oninput="window.updateItem(${item.id}, 'price', this.value)" class="w-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold rounded-lg pl-8 pr-2 py-2 text-sm focus:bg-white focus:border-emerald-500 transition-colors">
                         </div>
                     </td>
-                    <td class="pb-2 text-right">
-                        <button onclick="window.removeItem(${item.id})" class="text-red-400 hover:text-red-600 p-1 bg-red-50 hover:bg-red-100 rounded transition-colors" title="Eliminar">
+                    <td class="pb-3 text-right">
+                        <button onclick="window.removeItem(${item.id})" class="text-red-400 hover:text-red-600 p-1.5 bg-red-50 hover:bg-red-100 rounded-md transition-colors" title="Eliminar">
                             <i data-lucide="x" class="w-4 h-4"></i>
                         </button>
                     </td>
@@ -798,7 +827,6 @@
             syncText('f_clientPhone', 'p_clientPhone', 'Sin teléfono');
             syncText('f_clientAddress', 'p_clientAddress', 'Sin dirección registrada');
             
-            // Corrección aquí: ya no sobreescribir con "00000", usar el input
             const num = document.getElementById('f_profNumber').value.trim();
             document.getElementById('p_profNumber').innerText = num || '0000';
             
@@ -892,7 +920,9 @@
         window.generatePDF = (btn) => {
             const element = document.getElementById('preview-section');
             const originalShadow = element.style.boxShadow;
+            const originalRadius = element.style.borderRadius;
             element.style.boxShadow = 'none';
+            element.style.borderRadius = '0px';
 
             const opt = {
                 margin: 0,
@@ -912,6 +942,7 @@
             }).save().then(() => {
                 btn.innerHTML = originalText;
                 element.style.boxShadow = originalShadow;
+                element.style.borderRadius = originalRadius;
                 lucide.createIcons();
             });
         };
@@ -976,9 +1007,9 @@
             if(status === 'syncing') {
                 ind.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3 text-blue-500 animate-spin"></i> <span class="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Sincronizando...</span>`;
             } else if(status === 'success') {
-                ind.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500"></i> <span class="text-[10px] text-green-600 font-bold uppercase tracking-wider">Sincronizado</span>`;
+                ind.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i> <span class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Sincronizado</span>`;
                 setTimeout(() => {
-                    ind.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.6)]"></div> <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Nube Conectada</span>`;
+                    ind.innerHTML = `<div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div> <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Nube Conectada</span>`;
                     lucide.createIcons();
                 }, 3000);
             } else if(status === 'error') {
@@ -1084,10 +1115,13 @@
                 } else {
                     data.id = 'mem_' + Date.now();
                     proformasList.unshift(data);
+                    
+                    // Guardar en la memoria del navegador
+                    localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
                     renderHistoryTable();
                 }
 
-                // 1. DISPARAR PROFORMA A GOOGLE SHEETS (Esto SIEMPRE funciona, incluso en GitHub)
+                // 1. DISPARAR PROFORMA A GOOGLE SHEETS
                 let itemsArrToSync = data.items && data.items.length > 0 ? data.items : [{qty: 1, desc: 'Sin detalle', cost: data.cost||0, price: data.total}];
                 await window.syncToGoogleSheets(data, itemsArrToSync);
 
@@ -1112,11 +1146,9 @@
                 }
 
                 btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Guardado';
-                btn.classList.replace('bg-green-600', 'bg-blue-600');
                 lucide.createIcons();
                 setTimeout(() => {
                     btn.innerHTML = originalText;
-                    btn.classList.replace('bg-blue-600', 'bg-green-600');
                     lucide.createIcons();
                 }, 2000);
             } catch (error) { 
@@ -1147,26 +1179,26 @@
                 if(prof.status === 'Solo Proforma' || prof.status === 'Aprobado') tPendiente += prof.total; 
                 if(prof.status === 'Terminado') { tIngresoTotal += prof.total; tGananciaLibre += prof.profit || 0; }
 
-                let statusColors = prof.status === 'Solo Proforma' ? "bg-blue-100 text-blue-700" : 
-                                   prof.status === 'Aprobado' ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-700";
+                let statusColors = prof.status === 'Solo Proforma' ? "bg-blue-50 text-blue-600 border border-blue-200" : 
+                                   prof.status === 'Aprobado' ? "bg-yellow-50 text-yellow-600 border border-yellow-200" : "bg-emerald-50 text-emerald-600 border border-emerald-200";
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="py-3 px-4 text-gray-500 font-medium">${prof.date}</td>
-                    <td class="py-3 px-4 font-bold text-brand-corp">${prof.profNumber}</td>
-                    <td class="py-3 px-4 font-medium text-gray-800 truncate max-w-[150px]">${prof.clientName}</td>
-                    <td class="py-3 px-4 text-right font-mono font-bold text-orange-600">S/ ${(prof.cost||0).toFixed(2)}</td>
-                    <td class="py-3 px-4 text-right font-mono font-bold text-brand-dark">S/ ${prof.total.toFixed(2)}</td>
-                    <td class="py-3 px-4 text-right font-mono font-bold text-brand-tech">S/ ${(prof.profit||0).toFixed(2)}</td>
+                    <td class="py-3 px-4 text-slate-500 font-semibold">${prof.date}</td>
+                    <td class="py-3 px-4 font-black text-brand-corp">${prof.profNumber}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800 truncate max-w-[150px]">${prof.clientName}</td>
+                    <td class="py-3 px-4 text-right font-mono font-bold text-orange-500">S/ ${(prof.cost||0).toFixed(2)}</td>
+                    <td class="py-3 px-4 text-right font-mono font-black text-slate-800">S/ ${prof.total.toFixed(2)}</td>
+                    <td class="py-3 px-4 text-right font-mono font-black text-emerald-500">S/ ${(prof.profit||0).toFixed(2)}</td>
                     <td class="py-3 px-4 text-center">
-                        <select onchange="window.updateStatus('${prof.id}', this.value)" class="text-[10px] font-bold px-2 py-1 rounded-full outline-none cursor-pointer ${statusColors}">
+                        <select onchange="window.updateStatus('${prof.id}', this.value)" class="text-[10px] font-bold px-2.5 py-1.5 rounded-md outline-none cursor-pointer shadow-sm ${statusColors} transition-colors">
                             <option value="Solo Proforma" ${prof.status === 'Solo Proforma' ? 'selected' : ''}>📝 Proforma</option>
                             <option value="Aprobado" ${prof.status === 'Aprobado' ? 'selected' : ''}>👍 Aprobado</option>
                             <option value="Terminado" ${prof.status === 'Terminado' ? 'selected' : ''}>✅ Terminado</option>
                         </select>
                     </td>
                     <td class="py-3 px-4 text-center">
-                        <button onclick="window.deleteProforma('${prof.id}')" class="text-red-400 hover:text-red-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="window.deleteProforma('${prof.id}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1187,6 +1219,9 @@
                     const idx = proformasList.findIndex(p => p.id === id);
                     if(idx > -1) {
                         proformasList[idx].status = newStatus;
+                        
+                        // Actualizar la memoria local con el nuevo estado
+                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
                         renderHistoryTable();
                     }
                 }
@@ -1206,6 +1241,9 @@
                     await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', id));
                 } else {
                     proformasList = proformasList.filter(p => p.id !== id);
+                    
+                    // Actualizar la memoria local tras borrar la proforma
+                    localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
                     renderHistoryTable();
                 }
             }
@@ -1213,31 +1251,6 @@
 
         window.openHistory = () => document.getElementById('historyModal').classList.remove('hidden');
         window.closeHistory = () => document.getElementById('historyModal').classList.add('hidden');
-
-        window.exportToCSV = () => {
-            if (proformasList.length === 0) return alert("No hay datos para exportar.");
-            let csvContent = "Fecha,Numero_Proforma,Cliente,Estado,Modo_Vista,Desc_General_Combo,Item_Cant,Item_Descripcion,Item_Costo_U,Item_Precio_U,Item_Importe_Total,Item_Ganancia,Proforma_Inversion_Total,Proforma_Venta_Total,Proforma_Ganancia_Neta\n";
-            
-            proformasList.forEach(p => {
-                let client = `"${(p.clientName || 'Sin Nombre').replace(/"/g, '""')}"`;
-                let genDesc = `"${(p.generalDesc || '').replace(/"/g, '""')}"`;
-                let viewMode = p.viewMode || 'detalle';
-                let itemsArr = p.items && p.items.length > 0 ? p.items : [{qty: 1, desc: 'Sin detalle', cost: p.cost||0, price: p.total}];
-                
-                itemsArr.forEach(item => {
-                    let itemDesc = `"${(item.desc || '').replace(/"/g, '""')}"`;
-                    let itemCostoU = item.cost || 0; let itemPrecioU = item.price || 0;
-                    let itemImporte = item.qty * itemPrecioU; let itemGanancia = itemImporte - (item.qty * itemCostoU);
-                    csvContent += `${p.date},${p.profNumber},${client},${p.status},${viewMode},${genDesc},${item.qty},${itemDesc},${itemCostoU.toFixed(2)},${itemPrecioU.toFixed(2)},${itemImporte.toFixed(2)},${itemGanancia.toFixed(2)},${(p.cost||0).toFixed(2)},${p.total.toFixed(2)},${(p.profit||0).toFixed(2)}\n`;
-                });
-            });
-
-            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.setAttribute("href", URL.createObjectURL(blob));
-            link.setAttribute("download", `Data_Finanzas_KGB_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        };
 
         // ---------------------------------------------------------
         // CATÁLOGO DE PRODUCTOS (AUTOCOMPLETADO)
@@ -1248,11 +1261,11 @@
             productCatalog.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="py-2 px-4 font-medium text-gray-800">${p.desc}</td>
-                    <td class="py-2 px-4 text-right text-orange-600 font-mono">S/ ${p.cost.toFixed(2)}</td>
-                    <td class="py-2 px-4 text-right text-green-600 font-mono">S/ ${p.price.toFixed(2)}</td>
-                    <td class="py-2 px-4 text-center">
-                        <button onclick="window.deleteCatalogItem('${p.id}')" class="text-red-400 hover:text-red-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <td class="py-2.5 px-4 font-semibold text-slate-800">${p.desc}</td>
+                    <td class="py-2.5 px-4 text-right text-orange-600 font-mono font-bold">S/ ${p.cost.toFixed(2)}</td>
+                    <td class="py-2.5 px-4 text-right text-emerald-600 font-mono font-bold">S/ ${p.price.toFixed(2)}</td>
+                    <td class="py-2.5 px-4 text-center">
+                        <button onclick="window.deleteCatalogItem('${p.id}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
