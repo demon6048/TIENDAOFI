@@ -684,13 +684,13 @@
             </div>
 
             <div class="mt-24 pt-8 flex justify-around items-end pb-10">
-                <div class="w-64 text-center">
-                    <div class="border-t border-gray-800 pt-2 font-bold text-sm">KGB DISTRIBUIDORES</div>
-                    <div class="text-xs text-gray-500">EL PROVEEDOR</div>
+                <div class="w-64 text-center mt-6">
+                    <div class="border-t border-gray-800 pt-2 font-bold text-sm">José Leonaldo Vizcarra Ramirez</div>
+                    <div class="text-xs text-gray-500">DNI: 44865369<br>Gerente General - KGB DISTRIBUIDORES</div>
                 </div>
-                <div class="w-64 text-center">
+                <div class="w-64 text-center mt-6">
                     <div class="border-t border-gray-800 pt-2 font-bold text-sm uppercase truncate"><span id="c_clientName_sign"></span></div>
-                    <div class="text-xs text-gray-500">EL CLIENTE</div>
+                    <div class="text-xs text-gray-500">DNI/RUC: <span id="c_clientDoc_sign"></span><br>EL CLIENTE</div>
                 </div>
             </div>
             
@@ -793,16 +793,18 @@
         window.fetchGoogleSheetsData = async () => {
             window.currentEditId = null; // Reseteamos modo edición
             const input = document.getElementById('f_profNumber');
-            input.value = "..."; 
+            if (input.value === "") input.value = "..."; 
             
             try {
                 const response = await fetch(window.WEBHOOK_URL);
                 const data = await response.json();
                 
+                // 1. Cargar número consecutivo
                 const nextNum = data.next || 1;
                 input.value = String(nextNum).padStart(4, '0');
                 window.updatePreview();
 
+                // 2. Cargar Catálogo de Productos (Eliminamos la lectura del historial para no corromper la memoria local)
                 if (data.products && data.products.length > 0) {
                     const uniqueProducts = [...productCatalog]; 
                     const descSet = new Set(productCatalog.map(p => (p.desc || '').toLowerCase()));
@@ -825,10 +827,13 @@
                     renderCatalogTable();
                     updateDatalist();
                 }
+
+                window.setCloudStatus('success'); 
             } catch (error) {
                 console.error("Error obteniendo datos:", error);
+                window.setCloudStatus('error'); 
                 const randomNum = Math.floor(Math.random() * 9000) + 1000;
-                input.value = randomNum.toString();
+                if (input.value === "...") input.value = randomNum.toString();
                 window.updatePreview();
             }
         };
@@ -1329,18 +1334,20 @@
             tbody.innerHTML = '';
             let tPendiente = 0; let tIngresoTotal = 0; let tGananciaLibre = 0;
 
-            // Obtener texto del buscador
-            const searchTerm = (document.getElementById('searchHistory')?.value || '').toLowerCase();
+            // Obtener texto del buscador de forma segura
+            const searchInput = document.getElementById('searchHistory');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
 
-            // Filtrar proformas según la búsqueda
+            // Filtrar proformas de forma súper segura (evita errores si algún dato está vacío)
             const filteredProformas = proformasList.filter(prof => {
-                const searchStr = `${prof.clientName} ${prof.profNumber} ${prof.clientAddress || ''} ${prof.date}`.toLowerCase();
+                if (!prof) return false;
+                const searchStr = `${prof.clientName || ''} ${prof.profNumber || ''} ${prof.clientDoc || ''} ${prof.date || ''}`.toLowerCase();
                 return searchStr.includes(searchTerm);
             });
 
             filteredProformas.forEach(prof => {
-                if(prof.status === 'Solo Proforma' || prof.status === 'Aprobado') tPendiente += prof.total; 
-                if(prof.status === 'Terminado') { tIngresoTotal += prof.total; tGananciaLibre += prof.profit || 0; }
+                if(prof.status === 'Solo Proforma' || prof.status === 'Aprobado') tPendiente += (prof.total || 0); 
+                if(prof.status === 'Terminado') { tIngresoTotal += (prof.total || 0); tGananciaLibre += (prof.profit || 0); }
 
                 let statusColors = prof.status === 'Solo Proforma' ? "bg-blue-50 text-blue-600 border border-blue-200" : 
                                    prof.status === 'Aprobado' ? "bg-yellow-50 text-yellow-600 border border-yellow-200" : "bg-emerald-50 text-emerald-600 border border-emerald-200";
@@ -1529,7 +1536,13 @@
             document.getElementById('c_clientName').innerText = prof.clientName;
             document.getElementById('c_clientDoc').innerText = prof.clientDoc || '___________';
             document.getElementById('c_clientName_sign').innerText = prof.clientName;
-            document.getElementById('c_date').innerText = prof.date;
+            document.getElementById('c_clientDoc_sign').innerText = prof.clientDoc || '___________';
+            
+            // Formatear fecha a DD/MM/YYYY
+            const dateParts = prof.date.split('-');
+            const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : prof.date;
+            document.getElementById('c_date').innerText = formattedDate;
+            
             document.getElementById('c_total').innerText = total.toFixed(2);
 
             const termsContainer = document.getElementById('c_payment_terms');
