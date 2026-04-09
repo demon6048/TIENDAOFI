@@ -176,10 +176,14 @@
                             <input type="text" id="f_clientName" placeholder="Ej. Juan Pérez" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 font-medium focus:bg-white transition-all" oninput="window.updatePreview()">
                         </div>
                         <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">DNI / RUC</label>
+                            <input type="text" id="f_clientDoc" placeholder="Ej. 12345678" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 font-medium focus:bg-white transition-all" oninput="window.updatePreview()">
+                        </div>
+                        <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1.5">Teléfono / Celular</label>
                             <input type="text" id="f_clientPhone" placeholder="Ej. 987 654 321" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 font-medium focus:bg-white transition-all" oninput="window.updatePreview()">
                         </div>
-                        <div>
+                        <div class="col-span-2">
                             <label class="block text-xs font-medium text-slate-500 mb-1.5">Dirección (Opcional)</label>
                             <input type="text" id="f_clientAddress" placeholder="Dirección del cliente" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 font-medium focus:bg-white transition-all" oninput="window.updatePreview()">
                         </div>
@@ -316,10 +320,16 @@
                     <div class="space-y-1 flex-1">
                         <p class="text-[10px] text-brand-light font-bold uppercase tracking-wider mb-0.5">Cliente</p>
                         <h3 id="p_clientName" class="text-sm font-bold text-brand-dark uppercase truncate pr-4">--------------------</h3>
-                        <p class="text-xs text-gray-800 font-medium flex items-center gap-1.5">
-                            <i data-lucide="smartphone" class="w-3.5 h-3.5 text-brand-tech"></i> 
-                            <span id="p_clientPhone">--</span>
-                        </p>
+                        <div class="flex items-center gap-4 mt-1">
+                            <p class="text-xs text-gray-800 font-medium flex items-center gap-1.5">
+                                <i data-lucide="credit-card" class="w-3.5 h-3.5 text-brand-tech"></i> 
+                                <span id="p_clientDoc">--</span>
+                            </p>
+                            <p class="text-xs text-gray-800 font-medium flex items-center gap-1.5">
+                                <i data-lucide="smartphone" class="w-3.5 h-3.5 text-brand-tech"></i> 
+                                <span id="p_clientPhone">--</span>
+                            </p>
+                        </div>
                     </div>
                     <div class="flex-1 border-l border-brand-corp/20 pl-4 h-full flex flex-col justify-center">
                         <p class="text-[10px] text-brand-light font-bold uppercase mb-0.5">Dirección</p>
@@ -656,7 +666,7 @@
             </div>
 
             <div class="text-sm text-justify space-y-5 leading-relaxed text-gray-800 flex-1">
-                <p>Conste por el presente documento, el <strong>CONTRATO DE COMPRAVENTA Y PRESTACIÓN DE SERVICIOS</strong>, que celebran de una parte <strong>KGB DISTRIBUIDORES</strong> con RUC 20600094719, con domicilio en Jr. 2 de mayo. 477 Int 201, a quien en adelante se le denominará <strong>EL PROVEEDOR</strong>; y de la otra parte <strong><span id="c_clientName" class="uppercase"></span></strong>, a quien en adelante se le denominará <strong>EL CLIENTE</strong>; en los términos y condiciones siguientes:</p>
+                <p>Conste por el presente documento, el <strong>CONTRATO DE COMPRAVENTA Y PRESTACIÓN DE SERVICIOS</strong>, que celebran de una parte <strong>KGB DISTRIBUIDORES</strong> con RUC 20600094719, con domicilio en Jr. 2 de mayo. 477 Int 201, a quien en adelante se le denominará <strong>EL PROVEEDOR</strong>; y de la otra parte <strong><span id="c_clientName" class="uppercase"></span></strong>, identificado con DNI/RUC N° <strong><span id="c_clientDoc"></span></strong>, a quien en adelante se le denominará <strong>EL CLIENTE</strong>; en los términos y condiciones siguientes:</p>
 
                 <p><strong>PRIMERA: OBJETO DEL CONTRATO</strong><br>
                 EL PROVEEDOR se compromete a entregar los equipos de cómputo y/o prestar los servicios técnicos detallados estrictamente en la <strong>Proforma N° <span id="c_profNumber_2"></span></strong>, de fecha <span id="c_date"></span>, la cual ha sido aprobada y forma parte integral de este contrato.</p>
@@ -938,6 +948,7 @@
             };
 
             syncText('f_clientName', 'p_clientName', '--------------------');
+            syncText('f_clientDoc', 'p_clientDoc', 'Sin DNI/RUC');
             syncText('f_clientPhone', 'p_clientPhone', 'Sin teléfono');
             syncText('f_clientAddress', 'p_clientAddress', 'Sin dirección registrada');
             
@@ -1017,6 +1028,7 @@
         window.clearForm = () => {
             if(confirm('¿Estás seguro de limpiar todo el formulario?')) {
                 document.getElementById('f_clientName').value = '';
+                document.getElementById('f_clientDoc').value = '';
                 document.getElementById('f_clientPhone').value = '';
                 document.getElementById('f_clientAddress').value = '';
                 document.getElementById('f_obsNotas').value = '';
@@ -1082,6 +1094,7 @@
                     profNumber: rawProfNum.startsWith('PF-') ? rawProfNum : "PF-" + rawProfNum,
                     date: document.getElementById('f_date').value,
                     clientName: document.getElementById('f_clientName').value || 'Sin Nombre',
+                    clientDoc: document.getElementById('f_clientDoc').value || '',
                     clientPhone: document.getElementById('f_clientPhone').value || '',
                     clientAddress: document.getElementById('f_clientAddress').value || '',
                     cost: totals.cost,       
@@ -1376,6 +1389,7 @@
             document.getElementById('f_date').value = prof.date || '';
             document.getElementById('f_status').value = prof.status || 'Solo Proforma';
             document.getElementById('f_clientName').value = prof.clientName === 'Sin Nombre' ? '' : prof.clientName;
+            document.getElementById('f_clientDoc').value = prof.clientDoc || '';
             document.getElementById('f_clientPhone').value = prof.clientPhone || '';
             document.getElementById('f_clientAddress').value = prof.clientAddress || '';
             
@@ -1513,6 +1527,7 @@
             document.getElementById('c_profNumber').innerText = prof.profNumber;
             document.getElementById('c_profNumber_2').innerText = prof.profNumber;
             document.getElementById('c_clientName').innerText = prof.clientName;
+            document.getElementById('c_clientDoc').innerText = prof.clientDoc || '___________';
             document.getElementById('c_clientName_sign').innerText = prof.clientName;
             document.getElementById('c_date').innerText = prof.date;
             document.getElementById('c_total').innerText = total.toFixed(2);
