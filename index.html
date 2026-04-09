@@ -103,6 +103,12 @@
             </div>
         </div>
         <div class="flex items-center gap-2.5 flex-wrap justify-end">
+            <!-- BOTÓN CONTRATOS -->
+            <button onclick="window.openContractModal()" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold border border-rose-200 shadow-sm hover:shadow">
+                <i data-lucide="file-signature" class="w-4 h-4"></i> Contratos
+            </button>
+            <div class="hidden md:block w-px h-6 bg-gray-200 mx-1"></div>
+
             <button onclick="window.openCatalogModal()" class="px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold border border-slate-200 shadow-sm hover:shadow">
                 <i data-lucide="layers" class="w-4 h-4 text-brand-light"></i> Catálogo
             </button>
@@ -122,7 +128,7 @@
             <button onclick="window.generatePDF(this)" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-bold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/40">
                 <i data-lucide="file-down" class="w-4 h-4"></i> PDF
             </button>
-            <button onclick="window.saveProforma(this)" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-bold shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/40">
+            <button id="btnGuardarApp" onclick="window.saveProforma(this)" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-bold shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/40">
                 <i data-lucide="cloud-upload" class="w-4 h-4"></i> Guardar
             </button>
         </div>
@@ -387,6 +393,44 @@
             </div>
         </section>
 
+        <!-- 📦 MODAL DE CONTRATOS -->
+        <div id="contractModal" class="hidden fixed inset-0 bg-brand-dark/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-200">
+                <div class="px-6 py-4 border-b border-rose-100 flex justify-between items-center bg-rose-50">
+                    <h2 class="text-xl font-black text-brand-dark flex items-center gap-2 uppercase tracking-wide">
+                        <div class="p-1.5 bg-white rounded shadow-sm text-rose-500"><i data-lucide="file-signature" class="w-5 h-5"></i></div> Generación de Contratos
+                    </h2>
+                    <button onclick="window.closeContractModal()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <div class="p-5 bg-white border-b border-slate-100 shadow-sm">
+                    <p class="text-sm text-slate-600 font-medium"><i data-lucide="info" class="w-4 h-4 inline text-blue-500 mr-1"></i> Aquí solo aparecen las proformas aprobadas o terminadas. <strong>Edita el porcentaje (%) de adelanto</strong> según lo acordado con el cliente.</p>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-100 text-slate-500 text-[10px] uppercase font-black tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="py-3 px-4">Fecha</th>
+                                    <th class="py-3 px-4">N° Proforma</th>
+                                    <th class="py-3 px-4">Cliente</th>
+                                    <th class="py-3 px-4 text-right">Venta Total</th>
+                                    <th class="py-3 px-4 text-center text-rose-600">% Adelanto</th>
+                                    <th class="py-3 px-4 text-right text-rose-600">A Pagar (S/)</th>
+                                    <th class="py-3 px-4 text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contractTableBody" class="text-sm divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 📦 MODAL DE CATÁLOGO DE PRODUCTOS -->
         <div id="catalogModal" class="hidden fixed inset-0 bg-brand-dark/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-200">
@@ -540,13 +584,17 @@
         <!-- MODAL DE HISTORIAL Y BASE DE DATOS -->
         <div id="historyModal" class="hidden fixed inset-0 bg-brand-dark/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-6xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-200">
-                <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 flex-wrap gap-2">
+                <div class="px-6 py-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center bg-slate-50 gap-4">
                     <h2 class="text-xl font-black text-brand-dark flex items-center gap-2 uppercase tracking-wide">
                         <div class="p-1.5 bg-white rounded shadow-sm text-brand-accent"><i data-lucide="database" class="w-5 h-5"></i></div> Base de Datos & Historial
                     </h2>
-                    <div class="flex gap-3 flex-wrap">
-                        <button onclick="window.closeHistory()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                            <i data-lucide="x" class="w-6 h-6"></i>
+                    <div class="flex items-center gap-3 w-full md:w-auto">
+                        <div class="relative flex-1 md:w-64">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+                            <input type="text" id="searchHistory" oninput="window.renderHistoryTable()" placeholder="Buscar cliente o N°..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-brand-tech focus:ring-2 focus:ring-brand-tech/20 outline-none transition-all shadow-sm">
+                        </div>
+                        <button onclick="window.closeHistory()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors bg-white border border-slate-200 shadow-sm">
+                            <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
@@ -596,27 +644,89 @@
 
     </main>
 
+    <!-- 📄 PLANTILLA OCULTA PARA IMPRIMIR EL CONTRATO PDF -->
+    <div id="contract-hidden-container" class="fixed -left-[9999px] top-0">
+        <div id="contract-template" class="a4-preview bg-white flex flex-col" style="padding: 20mm; color: black; border-radius: 0;">
+            <div class="flex justify-between items-center mb-8 border-b-2 border-gray-800 pb-4">
+                <img src="https://i.imgur.com/Dla3rBv.png" alt="Logo" class="h-16 object-contain">
+                <div class="text-right">
+                    <h2 class="text-xl font-black uppercase tracking-widest text-gray-800">CONTRATO DE SERVICIOS</h2>
+                    <p class="text-sm font-bold text-gray-600 mt-1">Ref: <span id="c_profNumber" class="text-brand-tech"></span></p>
+                </div>
+            </div>
+
+            <div class="text-sm text-justify space-y-5 leading-relaxed text-gray-800 flex-1">
+                <p>Conste por el presente documento, el <strong>CONTRATO DE COMPRAVENTA Y PRESTACIÓN DE SERVICIOS</strong>, que celebran de una parte <strong>KGB DISTRIBUIDORES</strong> con RUC 20600094719, con domicilio en Jr. 2 de mayo. 477 Int 201, a quien en adelante se le denominará <strong>EL PROVEEDOR</strong>; y de la otra parte <strong><span id="c_clientName" class="uppercase"></span></strong>, a quien en adelante se le denominará <strong>EL CLIENTE</strong>; en los términos y condiciones siguientes:</p>
+
+                <p><strong>PRIMERA: OBJETO DEL CONTRATO</strong><br>
+                EL PROVEEDOR se compromete a entregar los equipos de cómputo y/o prestar los servicios técnicos detallados estrictamente en la <strong>Proforma N° <span id="c_profNumber_2"></span></strong>, de fecha <span id="c_date"></span>, la cual ha sido aprobada y forma parte integral de este contrato.</p>
+
+                <p><strong>SEGUNDA: CONTRAPRESTACIÓN Y FORMA DE PAGO</strong><br>
+                El precio total acordado por los bienes y servicios descritos asciende a la suma de <strong>S/ <span id="c_total"></span></strong> (Soles).</p>
+
+                <!-- ESTE CONTENEDOR SE LLENA DINÁMICAMENTE CON LOS PORCENTAJES CORRECTOS -->
+                <div id="c_payment_terms"></div>
+
+                <p><strong>TERCERA: GARANTÍA Y CONDICIONES</strong><br>
+                Los equipos cuentan con una garantía contra defectos de fábrica. El tiempo estimado de entrega y validez del acuerdo se rige estrictamente por lo indicado en la proforma original. Toda modificación al requerimiento inicial solicitada por EL CLIENTE generará un reajuste en los costos y tiempos de entrega.</p>
+
+                <p>En señal de conformidad absoluta con todos los términos del presente contrato, ambas partes proceden a firmar el presente documento.</p>
+            </div>
+
+            <div class="mt-24 pt-8 flex justify-around items-end pb-10">
+                <div class="w-64 text-center">
+                    <div class="border-t border-gray-800 pt-2 font-bold text-sm">KGB DISTRIBUIDORES</div>
+                    <div class="text-xs text-gray-500">EL PROVEEDOR</div>
+                </div>
+                <div class="w-64 text-center">
+                    <div class="border-t border-gray-800 pt-2 font-bold text-sm uppercase truncate"><span id="c_clientName_sign"></span></div>
+                    <div class="text-xs text-gray-500">EL CLIENTE</div>
+                </div>
+            </div>
+            
+            <div class="mt-auto text-center border-t border-gray-300 pt-4 text-xs text-gray-400">
+                Documento generado automáticamente por ProformaTech - KGB Distribuidores
+            </div>
+        </div>
+    </div>
+
     <!-- FIREBASE & LÓGICA DE LA APLICACIÓN -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // URL ÚNICA DE GOOGLE SHEETS PARA EVITAR ERRORES DE SINCRONIZACIÓN
+        window.WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwxkzSNkxnoJKF8JrFrRDMMwf97vTRJlc-wWHC8epyL9Ix8fZ549edj-WiqtpqnqyKpYg/exec";
+
+        // CONFIGURACIÓN MANUAL DE FIREBASE (Por si quieres enlazar tu propia base de datos en GitHub)
+        const customFirebaseConfig = {
+            // apiKey: "TU_API_KEY",
+            // authDomain: "TU_AUTH_DOMAIN",
+            // projectId: "TU_PROJECT_ID",
+            // storageBucket: "TU_STORAGE_BUCKET",
+            // messagingSenderId: "TU_MESSAGING_SENDER_ID",
+            // appId: "TU_APP_ID"
+        };
+
         lucide.createIcons();
 
-        // MOTOR DE ADAPTABILIDAD (Soluciona el problema de GitHub Pages)
+        // MOTOR DE ADAPTABILIDAD
         let isConnectedToFirebase = false;
         let app, auth, db;
         let currentUser = null;
         let proformasList = []; 
         let productCatalog = []; 
+        
+        // Variable para saber si estamos editando una proforma antigua
+        window.currentEditId = null;
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-proforma-app';
 
         try {
-            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                // Entorno Gemini
-                const firebaseConfig = JSON.parse(__firebase_config);
+            if (customFirebaseConfig.apiKey || (typeof __firebase_config !== 'undefined' && __firebase_config)) {
+                // Entorno Firebase (Manual o Gemini)
+                const firebaseConfig = customFirebaseConfig.apiKey ? customFirebaseConfig : JSON.parse(__firebase_config);
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
@@ -644,26 +754,20 @@
                 console.log("Modo Externo (GitHub): Firebase omitido. Usando memoria temporal y Google Sheets.");
                 currentUser = { uid: 'github_user' };
                 
-                // Recuperar historial guardado en la memoria del navegador
                 const savedProformas = localStorage.getItem('proformasList_kgb');
                 if (savedProformas) {
-                    try {
-                        proformasList = JSON.parse(savedProformas);
-                    } catch(e) { console.error("Error cargando historial local", e); }
+                    try { proformasList = JSON.parse(savedProformas); } catch(e) { }
                 }
 
-                // NUEVO: Recuperar catálogo guardado en la memoria del navegador
                 const savedCatalog = localStorage.getItem('productCatalog_kgb');
                 if (savedCatalog) {
-                    try {
-                        productCatalog = JSON.parse(savedCatalog);
-                    } catch(e) { console.error("Error cargando catálogo local", e); }
+                    try { productCatalog = JSON.parse(savedCatalog); } catch(e) { }
                 }
 
                 setTimeout(() => {
-                    renderHistoryTable(); // Carga tabla con los datos recuperados
-                    renderCatalogTable(); // Carga catálogo visual
-                    updateDatalist();     // Activa el autocompletado inmediatamente
+                    renderHistoryTable(); 
+                    renderCatalogTable(); 
+                    updateDatalist();     
                 }, 500);
             }
         } catch(error) {
@@ -675,40 +779,38 @@
         ];
         let viewMode = 'detalle';
 
-        // Función que busca el último número y TODO el catálogo desde Google Sheets
+        // LECTURA DESDE GOOGLE SHEETS
         window.fetchGoogleSheetsData = async () => {
-            const webhookUrl = "https://script.google.com/macros/s/AKfycbxZVmLFEOB7f_hcyISHY-2gSGAlyrqp6PF6QCQZ2pyZo-_rhfnhrQ7nfXf-P6qAl-2DDQ/exec";
+            window.currentEditId = null; // Reseteamos modo edición
             const input = document.getElementById('f_profNumber');
-            input.value = "..."; // Indicador de carga
+            input.value = "..."; 
             
             try {
-                const response = await fetch(webhookUrl);
+                const response = await fetch(window.WEBHOOK_URL);
                 const data = await response.json();
                 
-                // 1. Cargar número consecutivo
                 const nextNum = data.next || 1;
                 input.value = String(nextNum).padStart(4, '0');
                 window.updatePreview();
 
-                // 2. Cargar Catálogo de Productos desde la hoja "Productos"
                 if (data.products && data.products.length > 0) {
-                    const uniqueProducts = [...productCatalog]; // Empezamos con lo local
-                    const descSet = new Set(productCatalog.map(p => p.desc.toLowerCase()));
+                    const uniqueProducts = [...productCatalog]; 
+                    const descSet = new Set(productCatalog.map(p => (p.desc || '').toLowerCase()));
                     
                     data.products.forEach((p, i) => {
-                        if(!descSet.has(p.desc.toLowerCase())) {
-                            descSet.add(p.desc.toLowerCase());
+                        const safeDesc = p.desc || '';
+                        if(!descSet.has(safeDesc.toLowerCase())) {
+                            descSet.add(safeDesc.toLowerCase());
                             uniqueProducts.push({
                                 id: 'gs_' + i,
-                                desc: p.desc,
-                                cost: p.cost,
-                                price: p.price
+                                desc: safeDesc,
+                                cost: p.cost || 0,
+                                price: p.price || 0
                             });
                         }
                     });
                     
                     productCatalog = uniqueProducts;
-                    // Guardar los nuevos en la memoria local
                     localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
                     renderCatalogTable();
                     updateDatalist();
@@ -728,7 +830,6 @@
             const dd = String(now.getDate()).padStart(2, '0');
             document.getElementById('f_date').value = `${yyyy}-${mm}-${dd}`;
             
-            // Llama a Google Sheets para traer correlativo y catálogo
             window.fetchGoogleSheetsData();
             window.renderItems();
         };
@@ -792,7 +893,7 @@
             if (item) {
                 if (field === 'desc') {
                     item[field] = value;
-                    const foundProd = productCatalog.find(p => p.desc.toLowerCase() === value.trim().toLowerCase());
+                    const foundProd = productCatalog.find(p => (p.desc || '').toLowerCase() === value.trim().toLowerCase());
                     if (foundProd) {
                         item.cost = foundProd.cost;
                         item.price = foundProd.price;
@@ -923,8 +1024,8 @@
                 if(document.getElementById('f_manualCost')) document.getElementById('f_manualCost').value = '';
                 document.getElementById('f_status').value = 'Solo Proforma';
                 
+                window.currentEditId = null; // Salimos de modo edición
                 items = [{ id: 1, qty: 1, desc: '', cost: 0, price: 0 }];
-                // Refresca catálogo y consecutivo desde Google Sheets
                 window.fetchGoogleSheetsData();
                 window.renderItems();
             }
@@ -939,7 +1040,7 @@
 
             const opt = {
                 margin: 0,
-                filename: `Proforma_PF-${document.getElementById('f_profNumber').value}.pdf`,
+                filename: `Proforma_${document.getElementById('f_profNumber').value || 'Nueva'}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -958,6 +1059,190 @@
                 element.style.borderRadius = originalRadius;
                 lucide.createIcons();
             });
+        };
+
+        // ---------------------------------------------------------
+        // FUNCIÓN GUARDAR COMPLETAMENTE A PRUEBA DE FALLOS
+        // ---------------------------------------------------------
+        window.saveProforma = async (btn) => {
+            if (btn.disabled) return; // Evita clics dobles
+            const originalText = btn.innerHTML;
+            
+            try {
+                // 1. Mostrar estado de carga inmediatamente
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...';
+                btn.disabled = true;
+                btn.classList.add('opacity-75', 'cursor-wait');
+                lucide.createIcons();
+
+                // 2. Recopilar información completa (incluyendo notas y direcciones)
+                const totals = window.getCalculatedTotals();
+                const rawProfNum = document.getElementById('f_profNumber').value.trim();
+                const data = {
+                    profNumber: rawProfNum.startsWith('PF-') ? rawProfNum : "PF-" + rawProfNum,
+                    date: document.getElementById('f_date').value,
+                    clientName: document.getElementById('f_clientName').value || 'Sin Nombre',
+                    clientPhone: document.getElementById('f_clientPhone').value || '',
+                    clientAddress: document.getElementById('f_clientAddress').value || '',
+                    cost: totals.cost,       
+                    total: totals.venta,     
+                    profit: totals.ganancia, 
+                    status: document.getElementById('f_status').value, 
+                    viewMode: viewMode,
+                    generalDesc: document.getElementById('f_generalDesc').value || '',
+                    manualCost: document.getElementById('f_manualCost').value || '',
+                    manualTotal: document.getElementById('f_manualTotal').value || '',
+                    obsGarantia: document.getElementById('f_obsGarantia').value || '',
+                    obsEntrega: document.getElementById('f_obsEntrega').value || '',
+                    obsValidez: document.getElementById('f_obsValidez').value || '',
+                    obsNotas: document.getElementById('f_obsNotas').value || '',
+                    items: items.map(i => ({ qty: i.qty, desc: i.desc || '', cost: i.cost || 0, price: i.price || 0 }))
+                };
+
+                // 3. Guardar Localmente (Update o Create)
+                if (window.currentEditId) {
+                    // Modo Edición / Actualización
+                    if (isConnectedToFirebase && currentUser) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', window.currentEditId), data);
+                        data.id = window.currentEditId;
+                    } else {
+                        data.id = window.currentEditId;
+                        const idx = proformasList.findIndex(p => p.id === window.currentEditId);
+                        if (idx > -1) proformasList[idx] = data;
+                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
+                        renderHistoryTable();
+                    }
+                } else {
+                    // Modo Nuevo
+                    if (isConnectedToFirebase && currentUser) {
+                        const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
+                        const docRef = await addDoc(colRef, data);
+                        data.id = docRef.id;
+                    } else {
+                        data.id = 'mem_' + Date.now();
+                        proformasList.unshift(data);
+                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
+                        renderHistoryTable();
+                    }
+                }
+
+                // 4. Enviar a Google Sheets
+                let itemsArrToSync = data.items && data.items.length > 0 ? data.items : [{qty: 1, desc: 'Sin detalle', cost: data.cost||0, price: data.total}];
+                await window.syncToGoogleSheets(data, itemsArrToSync);
+
+                // 5. Autoguardar productos en Catálogo
+                let isCatalogUpdated = false;
+                for (const item of data.items) {
+                    if (item.desc && item.desc.trim() !== '') {
+                        const exists = productCatalog.some(p => (p.desc || '').toLowerCase() === item.desc.trim().toLowerCase());
+                        
+                        if (!exists) {
+                            if (isConnectedToFirebase && currentUser) {
+                                const invRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
+                                await addDoc(invRef, { desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
+                            } else {
+                                productCatalog.push({ id: 'mem_' + Date.now(), desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
+                                isCatalogUpdated = true;
+                            }
+                            await window.syncProductToGoogleSheets(item.desc.trim(), item.cost || 0, item.price || 0);
+                        }
+                    }
+                }
+                
+                if (isCatalogUpdated) {
+                    localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
+                    renderCatalogTable();
+                    updateDatalist();
+                }
+
+                // 6. Éxito
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> ¡Guardado!';
+                lucide.createIcons();
+                
+            } catch (error) { 
+                // En caso de que ABSOLUTAMENTE cualquier cosa falle, te lo dirá.
+                alert("Error técnico al guardar. Intenta nuevamente."); 
+                console.error(error);
+                btn.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i> Error';
+                lucide.createIcons();
+            } finally {
+                // Devolver el botón a la normalidad después de 2.5 segundos
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-wait');
+                    lucide.createIcons();
+                }, 2500);
+            }
+        };
+
+        // ---------------------------------------------------------
+        // SINCRONIZACIÓN GOOGLE SHEETS
+        // ---------------------------------------------------------
+        window.setCloudStatus = (status) => {
+            const ind = document.getElementById('cloudSyncIndicator');
+            if(status === 'syncing') {
+                ind.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3 text-blue-500 animate-spin"></i> <span class="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Sincronizando...</span>`;
+            } else if(status === 'success') {
+                ind.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i> <span class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Sincronizado</span>`;
+                setTimeout(() => {
+                    ind.innerHTML = `<div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div> <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Nube Conectada</span>`;
+                    lucide.createIcons();
+                }, 3000);
+            } else if(status === 'error') {
+                ind.innerHTML = `<i data-lucide="cloud-off" class="w-3 h-3 text-red-500"></i> <span class="text-[10px] text-red-600 font-bold uppercase tracking-wider">Error de Red</span>`;
+            }
+            lucide.createIcons();
+        };
+
+        window.syncToGoogleSheets = async (proformaData, itemsArr) => {
+            window.setCloudStatus('syncing');
+            const rowsToSync = [];
+            itemsArr.forEach(item => {
+                let itemCostoU = item.cost || 0;
+                let itemPrecioU = item.price || 0;
+                let itemImporte = item.qty * itemPrecioU;
+                let itemGanancia = itemImporte - (item.qty * itemCostoU);
+
+                rowsToSync.push({
+                    Fecha: proformaData.date,
+                    Numero_Proforma: proformaData.profNumber,
+                    Cliente: proformaData.clientName || 'Sin Nombre',
+                    Estado: proformaData.status,
+                    Modo_Vista: proformaData.viewMode || 'detalle',
+                    Desc_General_Combo: proformaData.generalDesc || '',
+                    Item_Cant: item.qty,
+                    Item_Descripcion: item.desc || 'Sin detalle',
+                    Item_Costo_U: itemCostoU,
+                    Item_Precio_U: itemPrecioU,
+                    Item_Importe_Total: itemImporte,
+                    Item_Ganancia: itemGanancia,
+                    Proforma_Inversion_Total: proformaData.cost || 0,
+                    Proforma_Venta_Total: proformaData.total || 0,
+                    Proforma_Ganancia_Neta: proformaData.profit || 0
+                });
+            });
+
+            try {
+                await fetch(window.WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    body: JSON.stringify(rowsToSync)
+                });
+                window.setCloudStatus('success');
+            } catch (e) { 
+                console.error("Error sync Sheets:", e); 
+                window.setCloudStatus('error');
+            }
+        };
+
+        window.syncProductToGoogleSheets = async (desc, cost, price) => {
+            window.setCloudStatus('syncing');
+            const payload = { type: "producto", data: { Descripcion: desc, Costo: cost, Precio: price } };
+            try {
+                await fetch(window.WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                window.setCloudStatus('success');
+            } catch (e) { window.setCloudStatus('error'); }
         };
 
         // ---------------------------------------------------------
@@ -1015,170 +1300,6 @@
         
         window.closeProfitModal = () => { document.getElementById('profitModal').classList.add('hidden'); };
 
-        window.setCloudStatus = (status) => {
-            const ind = document.getElementById('cloudSyncIndicator');
-            if(status === 'syncing') {
-                ind.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3 text-blue-500 animate-spin"></i> <span class="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Sincronizando...</span>`;
-            } else if(status === 'success') {
-                ind.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i> <span class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Sincronizado</span>`;
-                setTimeout(() => {
-                    ind.innerHTML = `<div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div> <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Nube Conectada</span>`;
-                    lucide.createIcons();
-                }, 3000);
-            } else if(status === 'error') {
-                ind.innerHTML = `<i data-lucide="cloud-off" class="w-3 h-3 text-red-500"></i> <span class="text-[10px] text-red-600 font-bold uppercase tracking-wider">Error de Red</span>`;
-            }
-            lucide.createIcons();
-        };
-
-        window.syncToGoogleSheets = async (proformaData, itemsArr) => {
-            window.setCloudStatus('syncing');
-            const webhookUrl = "https://script.google.com/macros/s/AKfycbxZVmLFEOB7f_hcyISHY-2gSGAlyrqp6PF6QCQZ2pyZo-_rhfnhrQ7nfXf-P6qAl-2DDQ/exec";
-
-            const rowsToSync = [];
-            itemsArr.forEach(item => {
-                let itemCostoU = item.cost || 0;
-                let itemPrecioU = item.price || 0;
-                let itemImporte = item.qty * itemPrecioU;
-                let itemGanancia = itemImporte - (item.qty * itemCostoU);
-
-                rowsToSync.push({
-                    Fecha: proformaData.date,
-                    Numero_Proforma: proformaData.profNumber,
-                    Cliente: proformaData.clientName || 'Sin Nombre',
-                    Estado: proformaData.status,
-                    Modo_Vista: proformaData.viewMode || 'detalle',
-                    Desc_General_Combo: proformaData.generalDesc || '',
-                    Item_Cant: item.qty,
-                    Item_Descripcion: item.desc || 'Sin detalle',
-                    Item_Costo_U: itemCostoU,
-                    Item_Precio_U: itemPrecioU,
-                    Item_Importe_Total: itemImporte,
-                    Item_Ganancia: itemGanancia,
-                    Proforma_Inversion_Total: proformaData.cost || 0,
-                    Proforma_Venta_Total: proformaData.total || 0,
-                    Proforma_Ganancia_Neta: proformaData.profit || 0
-                });
-            });
-
-            try {
-                await fetch(webhookUrl, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    body: JSON.stringify(rowsToSync)
-                });
-                window.setCloudStatus('success');
-            } catch (e) { 
-                console.error("Error sync Sheets:", e); 
-                window.setCloudStatus('error');
-            }
-        };
-
-        window.syncProductToGoogleSheets = async (desc, cost, price) => {
-            window.setCloudStatus('syncing');
-            const webhookUrl = "https://script.google.com/macros/s/AKfycbxZVmLFEOB7f_hcyISHY-2gSGAlyrqp6PF6QCQZ2pyZo-_rhfnhrQ7nfXf-P6qAl-2DDQ/exec";
-            
-            const payload = {
-                type: "producto", 
-                data: {
-                    Descripcion: desc,
-                    Costo: cost,
-                    Precio: price
-                }
-            };
-
-            try {
-                await fetch(webhookUrl, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    body: JSON.stringify(payload)
-                });
-                window.setCloudStatus('success');
-            } catch (e) { 
-                console.error("Error sync Product:", e); 
-                window.setCloudStatus('error');
-            }
-        };
-
-        window.saveProforma = async (btn) => {
-            const totals = window.getCalculatedTotals();
-            const data = {
-                profNumber: "PF-" + document.getElementById('f_profNumber').value,
-                date: document.getElementById('f_date').value,
-                clientName: document.getElementById('f_clientName').value || 'Sin Nombre',
-                cost: totals.cost,       
-                total: totals.venta,     
-                profit: totals.ganancia, 
-                status: document.getElementById('f_status').value, 
-                viewMode: viewMode,
-                generalDesc: document.getElementById('f_generalDesc').value || '',
-                items: items.map(i => ({ qty: i.qty, desc: i.desc, cost: i.cost, price: i.price }))
-            };
-
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...';
-            lucide.createIcons();
-
-            try {
-                // Si está conectado a Firebase (Entorno Canvas) lo guarda ahí, sino usa memoria temporal (GitHub)
-                if (isConnectedToFirebase && currentUser) {
-                    const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
-                    const docRef = await addDoc(colRef, data);
-                    data.id = docRef.id;
-                } else {
-                    data.id = 'mem_' + Date.now();
-                    proformasList.unshift(data);
-                    
-                    // Guardar en la memoria del navegador
-                    localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
-                    renderHistoryTable();
-                }
-
-                // 1. DISPARAR PROFORMA A GOOGLE SHEETS
-                let itemsArrToSync = data.items && data.items.length > 0 ? data.items : [{qty: 1, desc: 'Sin detalle', cost: data.cost||0, price: data.total}];
-                await window.syncToGoogleSheets(data, itemsArrToSync);
-
-                // 2. AUTO-GUARDAR PRODUCTOS NUEVOS EN EL CATÁLOGO Y EN GOOGLE SHEETS
-                let isCatalogUpdated = false;
-                for (const item of data.items) {
-                    if (item.desc && item.desc.trim() !== '') {
-                        const exists = productCatalog.some(p => p.desc.toLowerCase() === item.desc.trim().toLowerCase());
-                        
-                        if (!exists) {
-                            if (isConnectedToFirebase && currentUser) {
-                                const invRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
-                                await addDoc(invRef, { desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
-                            } else {
-                                productCatalog.push({ id: 'mem_' + Date.now(), desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
-                                isCatalogUpdated = true;
-                            }
-                            
-                            await window.syncProductToGoogleSheets(item.desc.trim(), item.cost || 0, item.price || 0);
-                        }
-                    }
-                }
-                
-                // Si agregaste productos nuevos, guardamos la memoria local
-                if (isCatalogUpdated) {
-                    localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
-                    renderCatalogTable();
-                    updateDatalist();
-                }
-
-                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Guardado';
-                lucide.createIcons();
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    lucide.createIcons();
-                }, 2000);
-            } catch (error) { 
-                alert("Error guardando."); 
-                console.error(error);
-                btn.innerHTML = originalText; 
-                lucide.createIcons();
-            }
-        };
-
         function loadHistoryData() {
             if (!currentUser || !isConnectedToFirebase) return;
             const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
@@ -1195,7 +1316,16 @@
             tbody.innerHTML = '';
             let tPendiente = 0; let tIngresoTotal = 0; let tGananciaLibre = 0;
 
-            proformasList.forEach(prof => {
+            // Obtener texto del buscador
+            const searchTerm = (document.getElementById('searchHistory')?.value || '').toLowerCase();
+
+            // Filtrar proformas según la búsqueda
+            const filteredProformas = proformasList.filter(prof => {
+                const searchStr = `${prof.clientName} ${prof.profNumber} ${prof.clientAddress || ''} ${prof.date}`.toLowerCase();
+                return searchStr.includes(searchTerm);
+            });
+
+            filteredProformas.forEach(prof => {
                 if(prof.status === 'Solo Proforma' || prof.status === 'Aprobado') tPendiente += prof.total; 
                 if(prof.status === 'Terminado') { tIngresoTotal += prof.total; tGananciaLibre += prof.profit || 0; }
 
@@ -1217,19 +1347,63 @@
                             <option value="Terminado" ${prof.status === 'Terminado' ? 'selected' : ''}>✅ Terminado</option>
                         </select>
                     </td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="window.deleteProforma('${prof.id}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <td class="py-3 px-4 text-center whitespace-nowrap">
+                        <button onclick="window.loadProforma('${prof.id}')" title="Editar/Cargar Proforma" class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1.5 rounded transition-colors mr-1"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                        <button onclick="window.deleteProforma('${prof.id}')" title="Eliminar" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('h_totalCount').innerText = proformasList.length;
+            document.getElementById('h_totalCount').innerText = filteredProformas.length; // Muestra la cantidad filtrada o total
             document.getElementById('h_totalPendiente').innerText = `S/ ${tPendiente.toFixed(2)}`;
             document.getElementById('h_totalIngreso').innerText = `S/ ${tIngresoTotal.toFixed(2)}`;
             document.getElementById('h_totalGanancia').innerText = `S/ ${tGananciaLibre.toFixed(2)}`;
             lucide.createIcons();
         }
+
+        // CARGAR PROFORMA AL FORMULARIO PRINCIPAL (REAJUSTE)
+        window.loadProforma = (id) => {
+            const prof = proformasList.find(p => p.id === id);
+            if (!prof) return;
+
+            window.currentEditId = id; // Entramos en modo edición
+
+            let rawNum = prof.profNumber;
+            if(rawNum.startsWith('PF-')) rawNum = rawNum.substring(3);
+            
+            document.getElementById('f_profNumber').value = rawNum;
+            document.getElementById('f_date').value = prof.date || '';
+            document.getElementById('f_status').value = prof.status || 'Solo Proforma';
+            document.getElementById('f_clientName').value = prof.clientName === 'Sin Nombre' ? '' : prof.clientName;
+            document.getElementById('f_clientPhone').value = prof.clientPhone || '';
+            document.getElementById('f_clientAddress').value = prof.clientAddress || '';
+            
+            document.getElementById('f_generalDesc').value = prof.generalDesc || '';
+            document.getElementById('f_manualCost').value = prof.manualCost || '';
+            document.getElementById('f_manualTotal').value = prof.manualTotal || '';
+            
+            document.getElementById('f_obsGarantia').value = prof.obsGarantia || '12 meses contra defectos de fábrica';
+            document.getElementById('f_obsEntrega').value = prof.obsEntrega || '24 a 48 horas tras confirmación';
+            document.getElementById('f_obsValidez').value = prof.obsValidez || '3 días útiles';
+            document.getElementById('f_obsNotas').value = prof.obsNotas || '';
+
+            if (prof.items && prof.items.length > 0) {
+                items = prof.items.map((i, index) => ({ id: index + 1, qty: i.qty, desc: i.desc, cost: i.cost, price: i.price }));
+            } else {
+                items = [{ id: 1, qty: 1, desc: '', cost: 0, price: 0 }];
+            }
+
+            window.setMode(prof.viewMode || 'detalle');
+            window.renderItems();
+            window.updatePreview();
+            window.closeHistory();
+            
+            // Destello amarillo para avisar que se cargó con éxito
+            const numInput = document.getElementById('f_profNumber');
+            numInput.classList.add('bg-yellow-100', 'text-yellow-800');
+            setTimeout(() => numInput.classList.remove('bg-yellow-100', 'text-yellow-800'), 1500);
+        };
 
         window.updateStatus = async (id, newStatus) => {
             try {
@@ -1239,8 +1413,6 @@
                     const idx = proformasList.findIndex(p => p.id === id);
                     if(idx > -1) {
                         proformasList[idx].status = newStatus;
-                        
-                        // Actualizar la memoria local con el nuevo estado
                         localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
                         renderHistoryTable();
                     }
@@ -1261,8 +1433,6 @@
                     await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', id));
                 } else {
                     proformasList = proformasList.filter(p => p.id !== id);
-                    
-                    // Actualizar la memoria local tras borrar la proforma
                     localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
                     renderHistoryTable();
                 }
@@ -1273,7 +1443,121 @@
         window.closeHistory = () => document.getElementById('historyModal').classList.add('hidden');
 
         // ---------------------------------------------------------
-        // CATÁLOGO DE PRODUCTOS (AUTOCOMPLETADO)
+        // GESTIÓN DE CONTRATOS EDITABLES
+        // ---------------------------------------------------------
+        window.openContractModal = () => {
+            renderContractTable();
+            document.getElementById('contractModal').classList.remove('hidden');
+        };
+        
+        window.closeContractModal = () => document.getElementById('contractModal').classList.add('hidden');
+
+        window.updateContractAmount = (id, total) => {
+            let pct = parseFloat(document.getElementById(`c_pct_${id}`).value) || 0;
+            if(pct > 100) pct = 100;
+            if(pct < 0) pct = 0;
+            const amount = (total * (pct / 100)).toFixed(2);
+            document.getElementById(`c_amt_${id}`).innerText = `S/ ${amount}`;
+        };
+
+        function renderContractTable() {
+            const tbody = document.getElementById('contractTableBody');
+            tbody.innerHTML = '';
+            
+            const eligibleProformas = proformasList.filter(p => p.status === 'Aprobado' || p.status === 'Terminado');
+
+            if(eligibleProformas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400 font-medium">No hay proformas aprobadas para generar contratos.</td></tr>`;
+                return;
+            }
+
+            eligibleProformas.forEach(prof => {
+                const mitad = (prof.total / 2);
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-slate-500 font-semibold">${prof.date}</td>
+                    <td class="py-3 px-4 font-black text-brand-corp">${prof.profNumber}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800">${prof.clientName}</td>
+                    <td class="py-3 px-4 text-right font-mono font-black text-slate-800">S/ ${prof.total.toFixed(2)}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <input type="number" id="c_pct_${prof.id}" value="50" min="0" max="100" class="w-16 bg-white border border-rose-200 rounded-md px-1 py-1.5 text-center text-rose-700 font-black focus:border-rose-500 focus:ring-1 outline-none transition-colors" oninput="window.updateContractAmount('${prof.id}', ${prof.total})">
+                            <span class="text-rose-500 font-bold text-xs">%</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-right font-mono font-black text-rose-600 bg-rose-50/50" id="c_amt_${prof.id}">S/ ${mitad.toFixed(2)}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="window.generateContractPDF('${prof.id}', this)" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-200 font-bold transition-all shadow-sm hover:shadow flex items-center gap-1.5 mx-auto">
+                            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Imprimir
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        window.generateContractPDF = (id, btn) => {
+            const prof = proformasList.find(p => p.id === id);
+            if (!prof) return alert("Error: Proforma no encontrada.");
+
+            let pct = parseFloat(document.getElementById(`c_pct_${id}`).value);
+            if (isNaN(pct) || pct < 0) pct = 0;
+            if (pct > 100) pct = 100;
+
+            const total = prof.total;
+            const adelanto = total * (pct / 100);
+            const saldo = total - adelanto;
+
+            document.getElementById('c_profNumber').innerText = prof.profNumber;
+            document.getElementById('c_profNumber_2').innerText = prof.profNumber;
+            document.getElementById('c_clientName').innerText = prof.clientName;
+            document.getElementById('c_clientName_sign').innerText = prof.clientName;
+            document.getElementById('c_date').innerText = prof.date;
+            document.getElementById('c_total').innerText = total.toFixed(2);
+
+            const termsContainer = document.getElementById('c_payment_terms');
+            if (pct === 100) {
+                termsContainer.innerHTML = `<p>EL CLIENTE abonará dicho monto bajo la siguiente modalidad:<br>
+                1. <strong>Pago Total (100%):</strong> A la firma del presente documento, EL CLIENTE abona la suma de <strong>S/ ${adelanto.toFixed(2)}</strong> (Soles), cancelando el total de los equipos y/o servicios acordados.</p>`;
+            } else if (pct === 0) {
+                 termsContainer.innerHTML = `<p>EL CLIENTE abonará dicho monto bajo la siguiente modalidad:<br>
+                1. <strong>Pago al Finalizar (100%):</strong> El monto total de <strong>S/ ${saldo.toFixed(2)}</strong> (Soles) será cancelado íntegramente contra entrega y conformidad de los equipos y/o servicios brindados.</p>`;
+            } else {
+                const remainderPct = (100 - pct).toFixed(2).replace(/\.00$/, ''); 
+                const formattedPct = pct.toFixed(2).replace(/\.00$/, '');
+                termsContainer.innerHTML = `<p>EL CLIENTE abonará dicho monto bajo la siguiente modalidad:<br>
+                1. <strong>Pago de Adelanto (${formattedPct}%):</strong> A la firma del presente documento, EL CLIENTE abona la suma de <strong>S/ ${adelanto.toFixed(2)}</strong> (Soles), en calidad de anticipo para el inicio del servicio y adquisición de componentes.<br>
+                2. <strong>Pago de Saldo (${remainderPct}%):</strong> El saldo restante de <strong>S/ ${saldo.toFixed(2)}</strong> (Soles) será cancelado contra entrega y conformidad de los equipos y/o servicios brindados.</p>`;
+            }
+
+            const element = document.getElementById('contract-template');
+            const opt = {
+                margin: 0,
+                filename: `Contrato_${prof.profNumber}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Generando...';
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+            lucide.createIcons();
+
+            html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
+                const totalPages = pdf.internal.getNumberOfPages();
+                for (let i = totalPages; i > 1; i--) { pdf.deletePage(i); }
+            }).save().then(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+                lucide.createIcons();
+            });
+        };
+
+        // ---------------------------------------------------------
+        // CATÁLOGO DE PRODUCTOS 
         // ---------------------------------------------------------
         function renderCatalogTable() {
             const tbody = document.getElementById('catalogTableBody');
@@ -1282,8 +1566,8 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="py-2.5 px-4 font-semibold text-slate-800">${p.desc}</td>
-                    <td class="py-2.5 px-4 text-right text-orange-600 font-mono font-bold">S/ ${p.cost.toFixed(2)}</td>
-                    <td class="py-2.5 px-4 text-right text-emerald-600 font-mono font-bold">S/ ${p.price.toFixed(2)}</td>
+                    <td class="py-2.5 px-4 text-right text-orange-600 font-mono font-bold">S/ ${(p.cost||0).toFixed(2)}</td>
+                    <td class="py-2.5 px-4 text-right text-emerald-600 font-mono font-bold">S/ ${(p.price||0).toFixed(2)}</td>
                     <td class="py-2.5 px-4 text-center">
                         <button onclick="window.deleteCatalogItem('${p.id}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
@@ -1320,14 +1604,11 @@
                     await addDoc(colRef, { desc, cost, price });
                 } else {
                     productCatalog.push({ id: 'mem_' + Date.now(), desc, cost, price });
-                    // Guardar en memoria local
                     localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
                     renderCatalogTable();
                     updateDatalist();
                 }
-
                 await window.syncProductToGoogleSheets(desc, cost, price);
-
             } catch (error) { console.error("Error guardando producto:", error); }
         };
 
@@ -1337,7 +1618,6 @@
                     await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory', id));
                 } else {
                     productCatalog = productCatalog.filter(c => c.id !== id);
-                    // Actualizar memoria local al borrar
                     localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
                     renderCatalogTable();
                     updateDatalist();
