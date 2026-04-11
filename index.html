@@ -128,6 +128,13 @@
             <button onclick="window.generatePDF(this)" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-bold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/40">
                 <i data-lucide="file-down" class="w-4 h-4"></i> PDF
             </button>
+            
+            <!-- NUEVO BOTÓN DE WHATSAPP -->
+            <button onclick="window.sendWhatsApp(this)" class="px-4 py-2 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#075E54] text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-bold shadow-md shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                WhatsApp
+            </button>
+
             <button id="btnGuardarApp" onclick="window.saveProforma(this)" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-bold shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/40">
                 <i data-lucide="cloud-upload" class="w-4 h-4"></i> Guardar
             </button>
@@ -1079,119 +1086,40 @@
         };
 
         // ---------------------------------------------------------
-        // FUNCIÓN GUARDAR COMPLETAMENTE A PRUEBA DE FALLOS
+        // NUEVO: ENVIAR A WHATSAPP
         // ---------------------------------------------------------
-        window.saveProforma = async (btn) => {
-            if (btn.disabled) return; // Evita clics dobles
-            const originalText = btn.innerHTML;
-            
-            try {
-                // 1. Mostrar estado de carga inmediatamente
-                btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...';
-                btn.disabled = true;
-                btn.classList.add('opacity-75', 'cursor-wait');
-                lucide.createIcons();
-
-                // 2. Recopilar información completa (incluyendo notas y direcciones)
-                const totals = window.getCalculatedTotals();
-                const rawProfNum = document.getElementById('f_profNumber').value.trim();
-                const data = {
-                    profNumber: rawProfNum.startsWith('PF-') ? rawProfNum : "PF-" + rawProfNum,
-                    date: document.getElementById('f_date').value,
-                    clientName: document.getElementById('f_clientName').value || 'Sin Nombre',
-                    clientDoc: document.getElementById('f_clientDoc').value || '',
-                    clientPhone: document.getElementById('f_clientPhone').value || '',
-                    clientAddress: document.getElementById('f_clientAddress').value || '',
-                    cost: totals.cost,       
-                    total: totals.venta,     
-                    profit: totals.ganancia, 
-                    status: document.getElementById('f_status').value, 
-                    viewMode: viewMode,
-                    generalDesc: document.getElementById('f_generalDesc').value || '',
-                    manualCost: document.getElementById('f_manualCost').value || '',
-                    manualTotal: document.getElementById('f_manualTotal').value || '',
-                    obsGarantia: document.getElementById('f_obsGarantia').value || '',
-                    obsEntrega: document.getElementById('f_obsEntrega').value || '',
-                    obsValidez: document.getElementById('f_obsValidez').value || '',
-                    obsNotas: document.getElementById('f_obsNotas').value || '',
-                    items: items.map(i => ({ qty: i.qty, desc: i.desc || '', cost: i.cost || 0, price: i.price || 0 }))
-                };
-
-                // 3. Guardar Localmente (Update o Create)
-                if (window.currentEditId) {
-                    // Modo Edición / Actualización
-                    if (isConnectedToFirebase && currentUser) {
-                        await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', window.currentEditId), data);
-                        data.id = window.currentEditId;
-                    } else {
-                        data.id = window.currentEditId;
-                        const idx = proformasList.findIndex(p => p.id === window.currentEditId);
-                        if (idx > -1) proformasList[idx] = data;
-                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
-                        renderHistoryTable();
-                    }
-                } else {
-                    // Modo Nuevo
-                    if (isConnectedToFirebase && currentUser) {
-                        const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
-                        const docRef = await addDoc(colRef, data);
-                        data.id = docRef.id;
-                    } else {
-                        data.id = 'mem_' + Date.now();
-                        proformasList.unshift(data);
-                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
-                        renderHistoryTable();
-                    }
-                }
-
-                // 4. Enviar a Google Sheets
-                let itemsArrToSync = data.items && data.items.length > 0 ? data.items : [{qty: 1, desc: 'Sin detalle', cost: data.cost||0, price: data.total}];
-                await window.syncToGoogleSheets(data, itemsArrToSync);
-
-                // 5. Autoguardar productos en Catálogo
-                let isCatalogUpdated = false;
-                for (const item of data.items) {
-                    if (item.desc && item.desc.trim() !== '') {
-                        const exists = productCatalog.some(p => (p.desc || '').toLowerCase() === item.desc.trim().toLowerCase());
-                        
-                        if (!exists) {
-                            if (isConnectedToFirebase && currentUser) {
-                                const invRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
-                                await addDoc(invRef, { desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
-                            } else {
-                                productCatalog.push({ id: 'mem_' + Date.now(), desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
-                                isCatalogUpdated = true;
-                            }
-                            await window.syncProductToGoogleSheets(item.desc.trim(), item.cost || 0, item.price || 0);
-                        }
-                    }
-                }
-                
-                if (isCatalogUpdated) {
-                    localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
-                    renderCatalogTable();
-                    updateDatalist();
-                }
-
-                // 6. Éxito
-                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> ¡Guardado!';
-                lucide.createIcons();
-                
-            } catch (error) { 
-                // En caso de que ABSOLUTAMENTE cualquier cosa falle, te lo dirá.
-                alert("Error técnico al guardar. Intenta nuevamente."); 
-                console.error(error);
-                btn.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i> Error';
-                lucide.createIcons();
-            } finally {
-                // Devolver el botón a la normalidad después de 2.5 segundos
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-75', 'cursor-wait');
-                    lucide.createIcons();
-                }, 2500);
+        window.sendWhatsApp = (btn) => {
+            const phoneRaw = document.getElementById('f_clientPhone').value.trim();
+            if (!phoneRaw) {
+                alert("Por favor, ingresa el número de teléfono en los 'Datos del Cliente' para poder enviarlo por WhatsApp.");
+                return;
             }
+            
+            // Limpiar el número (quitar espacios o guiones)
+            let phone = phoneRaw.replace(/\D/g, '');
+            
+            // Asumir código de Perú (+51) automáticamente si tiene 9 dígitos y empieza con 9
+            if (phone.length === 9 && phone.startsWith('9')) {
+                phone = '51' + phone;
+            }
+
+            const clientName = document.getElementById('f_clientName').value.trim() || 'Estimado Cliente';
+            const rawProfNum = document.getElementById('f_profNumber').value.trim();
+            const profNum = rawProfNum.startsWith('PF-') ? rawProfNum : "PF-" + rawProfNum;
+            const totals = window.getCalculatedTotals();
+            const totalStr = totals.venta.toFixed(2);
+
+            // Mensaje resumido, profesional y amigable
+            const message = `Hola *${clientName}*, te saluda el equipo de *KGB Distribuidores*. 👋\n\nAdjunto enviamos tu cotización (*Ref: ${profNum}*) por una inversión de *S/ ${totalStr}*.\n\nEl PDF contiene todo el detalle técnico y nuestra garantía. 📄✨ Quedamos atentos para cualquier consulta o ajuste. 🤝`;
+
+            const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            
+            // Abrir WhatsApp en una nueva pestaña
+            window.open(waUrl, '_blank');
+
+            // Hacer clic automáticamente en el botón PDF para descargar la proforma
+            const pdfBtn = document.querySelector('button[onclick="window.generatePDF(this)"]');
+            if (pdfBtn) window.generatePDF(pdfBtn);
         };
 
         // ---------------------------------------------------------
@@ -1261,6 +1189,112 @@
                 await fetch(window.WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
                 window.setCloudStatus('success');
             } catch (e) { window.setCloudStatus('error'); }
+        };
+
+        // ---------------------------------------------------------
+        // FUNCIÓN GUARDAR COMPLETAMENTE A PRUEBA DE FALLOS
+        // ---------------------------------------------------------
+        window.saveProforma = async (btn) => {
+            if (btn.disabled) return;
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...';
+                btn.disabled = true;
+                btn.classList.add('opacity-75', 'cursor-wait');
+                lucide.createIcons();
+
+                const totals = window.getCalculatedTotals();
+                const rawProfNum = document.getElementById('f_profNumber').value.trim();
+                const data = {
+                    profNumber: rawProfNum.startsWith('PF-') ? rawProfNum : "PF-" + rawProfNum,
+                    date: document.getElementById('f_date').value,
+                    clientName: document.getElementById('f_clientName').value || 'Sin Nombre',
+                    clientDoc: document.getElementById('f_clientDoc').value || '',
+                    clientPhone: document.getElementById('f_clientPhone').value || '',
+                    clientAddress: document.getElementById('f_clientAddress').value || '',
+                    cost: totals.cost,       
+                    total: totals.venta,     
+                    profit: totals.ganancia, 
+                    status: document.getElementById('f_status').value, 
+                    viewMode: viewMode,
+                    generalDesc: document.getElementById('f_generalDesc').value || '',
+                    manualCost: document.getElementById('f_manualCost').value || '',
+                    manualTotal: document.getElementById('f_manualTotal').value || '',
+                    obsGarantia: document.getElementById('f_obsGarantia').value || '',
+                    obsEntrega: document.getElementById('f_obsEntrega').value || '',
+                    obsValidez: document.getElementById('f_obsValidez').value || '',
+                    obsNotas: document.getElementById('f_obsNotas').value || '',
+                    items: items.map(i => ({ qty: i.qty, desc: i.desc || '', cost: i.cost || 0, price: i.price || 0 }))
+                };
+
+                if (window.currentEditId) {
+                    if (isConnectedToFirebase && currentUser) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', window.currentEditId), data);
+                        data.id = window.currentEditId;
+                    } else {
+                        data.id = window.currentEditId;
+                        const idx = proformasList.findIndex(p => p.id === window.currentEditId);
+                        if (idx > -1) proformasList[idx] = data;
+                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
+                        renderHistoryTable();
+                    }
+                } else {
+                    if (isConnectedToFirebase && currentUser) {
+                        const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
+                        const docRef = await addDoc(colRef, data);
+                        data.id = docRef.id;
+                    } else {
+                        data.id = 'mem_' + Date.now();
+                        proformasList.unshift(data);
+                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
+                        renderHistoryTable();
+                    }
+                }
+
+                let itemsArrToSync = data.items && data.items.length > 0 ? data.items : [{qty: 1, desc: 'Sin detalle', cost: data.cost||0, price: data.total}];
+                await window.syncToGoogleSheets(data, itemsArrToSync);
+
+                let isCatalogUpdated = false;
+                for (const item of data.items) {
+                    if (item.desc && item.desc.trim() !== '') {
+                        const exists = productCatalog.some(p => (p.desc || '').toLowerCase() === item.desc.trim().toLowerCase());
+                        
+                        if (!exists) {
+                            if (isConnectedToFirebase && currentUser) {
+                                const invRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
+                                await addDoc(invRef, { desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
+                            } else {
+                                productCatalog.push({ id: 'mem_' + Date.now(), desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
+                                isCatalogUpdated = true;
+                            }
+                            await window.syncProductToGoogleSheets(item.desc.trim(), item.cost || 0, item.price || 0);
+                        }
+                    }
+                }
+                
+                if (isCatalogUpdated) {
+                    localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
+                    renderCatalogTable();
+                    updateDatalist();
+                }
+
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> ¡Guardado!';
+                lucide.createIcons();
+                
+            } catch (error) { 
+                alert("Error técnico al guardar. Intenta nuevamente."); 
+                console.error(error);
+                btn.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i> Error';
+                lucide.createIcons();
+            } finally {
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-wait');
+                    lucide.createIcons();
+                }, 2500);
+            }
         };
 
         // ---------------------------------------------------------
