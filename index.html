@@ -1117,7 +1117,7 @@
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // URL ÚNICA DE GOOGLE SHEETS PARA EVITAR ERRORES DE SINCRONIZACIÓN
-        window.WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzUjJqBg7NMvcQQO-2nAfd7WRPfet4YR5Dh9ZQkIjYHCz-N0BjUeMhjOq7B0B3oiyKfaA/exec";
+        window.WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxDS72lbhu1xkRnb5MI5Ll3UCDyHabe2pkj5tjQcGtnBNGOSgXBX2r5bH329xKme5qLFg/exec";
 
         // CONFIGURACIÓN MANUAL DE FIREBASE (Por si quieres enlazar tu propia base de datos en GitHub)
         const customFirebaseConfig = {
@@ -1223,19 +1223,27 @@
         // LECTURA DESDE GOOGLE SHEETS
         window.fetchGoogleSheetsData = async () => {
             window.currentEditId = null; // Reseteamos modo edición
-            const input = document.getElementById('f_profNumber');
-            if (input.value === "") input.value = "..."; 
+            const inputProf = document.getElementById('f_profNumber');
+            const inputRep = document.getElementById('r_num');
+            if (inputProf.value === "") inputProf.value = "..."; 
             
             try {
                 const response = await fetch(window.WEBHOOK_URL);
                 const data = await response.json();
                 
-                // 1. Cargar número consecutivo
+                // 1. Cargar número consecutivo PROFORMAS
                 const nextNum = data.nextProfNum || data.next || 1;
-                input.value = String(nextNum).padStart(4, '0');
+                inputProf.value = String(nextNum).padStart(4, '0');
                 window.updatePreview();
 
-                // 2. RECUPERAR HISTORIAL DESDE LA NUBE (Vuelven a aparecer tus contratos)
+                // 2. Cargar número consecutivo INFORMES TÉCNICOS
+                const nextRep = data.nextRepNum || data.nextReport || 1;
+                if(inputRep) {
+                    inputRep.value = String(nextRep).padStart(4, '0');
+                    window.updateReportPreview();
+                }
+
+                // 3. RECUPERAR TODO EL HISTORIAL Y CONTRATOS (DE LA FOTO)
                 if (data.history && data.history.length > 0) {
                     const localHistory = JSON.parse(localStorage.getItem('proformasList_kgb') || '[]');
                     const localMap = {};
@@ -1244,25 +1252,32 @@
                     const cloudHistory = data.history.map(cloudProf => {
                         const localProf = localMap[cloudProf.profNumber];
                         if (localProf) {
-                            cloudProf.clientDoc = localProf.clientDoc || cloudProf.clientDoc || '';
-                            cloudProf.clientPhone = localProf.clientPhone || cloudProf.clientPhone || '';
-                            cloudProf.clientAddress = localProf.clientAddress || cloudProf.clientAddress || '';
-                            cloudProf.yape = localProf.yape || cloudProf.yape || '917 309 964';
-                            cloudProf.yapeQrUrl = localProf.yapeQrUrl || cloudProf.yapeQrUrl || '';
-                            cloudProf.obsGarantia = localProf.obsGarantia || cloudProf.obsGarantia || '';
-                            cloudProf.obsEntrega = localProf.obsEntrega || cloudProf.obsEntrega || '';
-                            cloudProf.obsValidez = localProf.obsValidez || cloudProf.obsValidez || '';
-                            cloudProf.obsNotas = localProf.obsNotas || cloudProf.obsNotas || '';
+                            // Preservar datos extra que solo están en tu navegador (DNI, Teléfono, Notas)
+                            cloudProf.clientDoc = localProf.clientDoc || '';
+                            cloudProf.clientPhone = localProf.clientPhone || '';
+                            cloudProf.clientAddress = localProf.clientAddress || '';
+                            cloudProf.yape = localProf.yape || '917 309 964';
+                            cloudProf.yapeQrUrl = localProf.yapeQrUrl || '';
+                            cloudProf.obsGarantia = localProf.obsGarantia || '';
+                            cloudProf.obsEntrega = localProf.obsEntrega || '';
+                            cloudProf.obsValidez = localProf.obsValidez || '';
+                            cloudProf.obsNotas = localProf.obsNotas || '';
+                            cloudProf.items = localProf.items || [];
                         }
                         return cloudProf;
                     });
 
-                    proformasList = cloudHistory;
+                    // Fusionar y ordenar (la más nueva arriba)
+                    proformasList = cloudHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
                     localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
-                    renderHistoryTable();
+                    
+                    renderHistoryTable(); // Refrescar Base de datos
+                    if (document.getElementById('contractModal') && !document.getElementById('contractModal').classList.contains('hidden')) {
+                        renderContractTable(); // Refrescar Contratos
+                    }
                 }
 
-                // 3. Cargar Catálogo de Productos
+                // 4. Cargar Catálogo de Productos
                 if (data.products && data.products.length > 0) {
                     const uniqueProducts = [...productCatalog]; 
                     const descSet = new Set(productCatalog.map(p => (p.desc || '').toLowerCase()));
@@ -1291,7 +1306,7 @@
                 console.error("Error obteniendo datos:", error);
                 window.setCloudStatus('error'); 
                 const randomNum = Math.floor(Math.random() * 9000) + 1000;
-                if (input.value === "...") input.value = randomNum.toString();
+                if (inputProf.value === "...") inputProf.value = randomNum.toString();
                 window.updatePreview();
             }
         };
@@ -2325,6 +2340,14 @@
 
                 btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> ¡Guardado!';
                 lucide.createIcons();
+
+                // Sumar 1 automáticamente para dejar la ventana lista para el siguiente informe
+                const currentRepNum = parseInt(rawNum.replace(/\D/g, ''), 10);
+                if (!isNaN(currentRepNum)) {
+                    document.getElementById('r_num').value = String(currentRepNum + 1).padStart(4, '0');
+                    window.updateReportPreview();
+                }
+
             } catch (error) {
                 alert("Error al guardar el informe.");
                 console.error(error);
