@@ -70,6 +70,8 @@
             body * { visibility: hidden; }
             #preview-section, #preview-section * { visibility: visible; }
             #preview-section { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; border-radius: 0; transform: none !important; }
+            #report-preview-section, #report-preview-section * { visibility: visible; }
+            #report-preview-section { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; border-radius: 0; transform: none !important; }
             .a4-preview { box-shadow: none; padding: 0; min-height: auto; }
             .no-print { display: none !important; }
         }
@@ -107,6 +109,11 @@
             <!-- BOTÓN CONTRATOS -->
             <button onclick="window.openContractModal()" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold border border-rose-200 shadow-sm hover:shadow">
                 <i data-lucide="file-signature" class="w-4 h-4"></i> Contratos
+            </button>
+            
+            <!-- NUEVO BOTÓN INFORMES TÉCNICOS -->
+            <button onclick="window.openReportModal()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-brand-tech rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold border border-blue-200 shadow-sm hover:shadow">
+                <i data-lucide="wrench" class="w-4 h-4"></i> Informes
             </button>
             <div class="hidden md:block w-px h-6 bg-gray-200 mx-1"></div>
 
@@ -291,6 +298,13 @@
                     </div>
                 </div>
 
+                <!-- FIRMA DEL CREADOR -->
+                <div class="pt-6 pb-2 flex justify-center lg:justify-start w-full no-print">
+                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest cursor-default hover:text-slate-400 transition-colors flex items-center gap-1.5">
+                        <i data-lucide="code-2" class="w-3 h-3"></i> Desarrollado por JVIZCARRA
+                    </p>
+                </div>
+
             </div>
         </section>
 
@@ -429,8 +443,10 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 text-center bg-white/40 backdrop-blur-sm py-1.5 rounded-lg border border-white/30">
+                    <div class="mt-4 text-center bg-white/40 backdrop-blur-sm py-1.5 rounded-lg border border-white/30 relative">
                         <p class="text-base font-bold text-brand-corp italic shadow-white">¡Gracias por su compra y confianza!</p>
+                        <!-- FIRMA SUTIL EN EL PDF DE LA PROFORMA -->
+                        <p class="absolute -bottom-6 right-2 text-[8px] font-black text-brand-tech opacity-70 uppercase tracking-widest">Creado por JVIZCARRA</p>
                     </div>
                     
                 </div> 
@@ -686,6 +702,187 @@
             </div>
         </div>
 
+        <!-- 🛠️ NUEVO MODAL DE INFORMES TÉCNICOS -->
+        <div id="reportModal" class="hidden fixed inset-0 bg-brand-dark/80 backdrop-blur-sm z-50 flex items-center justify-center p-2 lg:p-4">
+            <div class="bg-white w-full h-[98vh] max-w-[1500px] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+                <!-- Cabecera del Modal -->
+                <div class="px-6 py-4 border-b border-blue-100 flex justify-between items-center bg-blue-50/50 shrink-0">
+                    <h2 class="text-xl font-black text-brand-dark flex items-center gap-2 uppercase tracking-wide">
+                        <div class="p-1.5 bg-white rounded shadow-sm text-brand-tech"><i data-lucide="wrench" class="w-5 h-5"></i></div> Generador de Informes Técnicos
+                    </h2>
+                    <div class="flex gap-3">
+                        <!-- NUEVO BOTÓN DE GUARDAR EN LA NUBE PARA INFORMES -->
+                        <button onclick="window.saveReportToCloud(this)" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-bold shadow-md shadow-emerald-500/20 flex items-center gap-2 transition-all">
+                            <i data-lucide="cloud-upload" class="w-4 h-4"></i> Guardar
+                        </button>
+                        
+                        <!-- NUEVO BOTÓN DE WHATSAPP PARA INFORMES -->
+                        <button onclick="window.sendReportWhatsApp(this)" class="px-5 py-2 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#075E54] text-white rounded-xl font-bold shadow-md shadow-green-500/20 flex items-center gap-2 transition-all">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                            WhatsApp
+                        </button>
+                        <button onclick="window.generateReportPDF(this)" class="px-5 py-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white rounded-xl font-bold shadow-md shadow-orange-500/20 flex items-center gap-2 transition-all">
+                            <i data-lucide="file-down" class="w-4 h-4"></i> Descargar PDF
+                        </button>
+                        <button onclick="window.closeReportModal()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors bg-white border border-slate-200 shadow-sm">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cuerpo del Modal (Split Screen) -->
+                <div class="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-50">
+                    
+                    <!-- LADO IZQUIERDO: Formulario del Informe -->
+                    <div class="w-full lg:w-[55%] h-full overflow-y-auto p-6 border-r border-slate-200 bg-white shadow-inner">
+                        <div class="max-w-2xl mx-auto space-y-5">
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">N° Informe</label>
+                                    <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                                        <span class="text-slate-400 mr-1 font-mono font-bold">IT-</span>
+                                        <input type="text" id="r_num" value="0001" class="w-full bg-transparent font-mono font-black text-brand-tech focus:outline-none" oninput="window.updateReportPreview()">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Fecha</label>
+                                    <input type="date" id="r_date" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium focus:bg-white" onchange="window.updateReportPreview()">
+                                </div>
+                            </div>
+
+                            <div class="bg-blue-50/30 p-5 rounded-2xl border border-blue-100">
+                                <h3 class="text-xs font-black text-brand-tech uppercase tracking-widest mb-3 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Datos del Cliente</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="col-span-2">
+                                        <input type="text" id="r_clientName" placeholder="Nombre o Razón Social" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                    </div>
+                                    <div>
+                                        <input type="text" id="r_clientDoc" placeholder="DNI / RUC" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                    </div>
+                                    <div>
+                                        <input type="text" id="r_clientPhone" placeholder="Teléfono / WhatsApp" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-100 p-5 rounded-2xl border border-slate-200">
+                                <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2"><i data-lucide="monitor" class="w-4 h-4"></i> Datos del Equipo</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="col-span-2">
+                                        <input type="text" id="r_equipment" placeholder="Tipo de Equipo (Ej. DVR 8 Canales, Laptop, PC Gamer)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                    </div>
+                                    <div>
+                                        <input type="text" id="r_brand" placeholder="Marca / Modelo" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                    </div>
+                                    <div>
+                                        <input type="text" id="r_serial" placeholder="Número de Serie (S/N)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-black text-red-500 mb-1.5 uppercase tracking-wider flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Falla Reportada / Motivo</label>
+                                    <textarea id="r_issue" rows="2" placeholder="¿Qué reportó el cliente que fallaba?" class="w-full bg-red-50/30 border border-red-100 rounded-xl px-3 py-2.5 font-medium resize-none focus:border-red-400" oninput="window.updateReportPreview()"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-black text-brand-tech mb-1.5 uppercase tracking-wider flex items-center gap-1.5"><i data-lucide="search" class="w-4 h-4"></i> Diagnóstico Técnico</label>
+                                    <textarea id="r_diagnosis" rows="4" placeholder="Detalle técnico del análisis realizado..." class="w-full bg-blue-50/30 border border-blue-100 rounded-xl px-3 py-2.5 font-medium resize-none focus:border-blue-400" oninput="window.updateReportPreview()"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-black text-emerald-600 mb-1.5 uppercase tracking-wider flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4"></i> Conclusión / Recomendación</label>
+                                    <textarea id="r_solution" rows="3" placeholder="Acciones sugeridas o soluciones a aplicar..." class="w-full bg-emerald-50/30 border border-emerald-100 rounded-xl px-3 py-2.5 font-medium resize-none focus:border-emerald-400" oninput="window.updateReportPreview()"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LADO DERECHO: Vista Previa del Informe -->
+                    <div id="report-preview-wrapper" class="w-full lg:w-[45%] h-full overflow-y-auto bg-slate-200 p-4 flex justify-center items-start shadow-inner">
+                        
+                        <div id="report-preview-scaler" class="origin-top transition-transform duration-200 z-10" style="width: 210mm;">
+                            <div id="report-preview-section" class="a4-preview bg-white flex flex-col relative z-0">
+                                
+                                <img src="https://i.imgur.com/fObiYn6.png" alt="Fondo" class="absolute inset-0 w-full h-full object-cover -z-10 opacity-70">
+                                
+                                <!-- Header Informe -->
+                                <div class="flex justify-between items-start mb-6 pb-4 border-b-2 border-brand-corp/30">
+                                    <div class="flex items-center gap-6 flex-1 min-w-0">
+                                        <div class="w-40 bg-transparent flex items-center justify-center shrink-0">
+                                            <img src="https://i.imgur.com/Dla3rBv.png" alt="Logo" class="max-w-full max-h-20 object-contain">
+                                        </div>
+                                        <div class="flex-1 min-w-0 flex flex-col justify-center">
+                                            <div class="text-gray-800 text-xs space-y-0.5 font-medium">
+                                                <p><strong class="text-gray-900">KGB DISTRIBUIDORES</strong></p>
+                                                <p><strong class="text-gray-900">RUC:</strong> 20600094719</p>
+                                                <p>Jr. 2 de mayo. 477 Int 201</p>
+                                                <p class="font-bold text-brand-tech">917 309 964</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right shrink-0 ml-4">
+                                        <div class="bg-brand-dark text-white px-5 py-2 rounded-l-full -mr-16 shadow-md border-l-4 border-brand-accent">
+                                            <h2 class="text-xl font-black tracking-widest uppercase">INFORME TÉCNICO</h2>
+                                        </div>
+                                        <div class="mt-3 pr-2">
+                                            <p class="text-sm font-bold text-gray-800">N° <span class="text-brand-tech text-lg">IT-<span id="pr_num">0000</span></span></p>
+                                            <p class="text-xs text-gray-600 mt-1 font-medium">Fecha: <span id="pr_date" class="text-gray-800">--/--/----</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Datos -->
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <div class="bg-white/80 backdrop-blur-md rounded-lg p-3 border border-brand-corp/20 shadow-sm">
+                                        <h4 class="text-[10px] text-brand-corp font-black uppercase tracking-widest mb-2 border-b border-brand-corp/10 pb-1"><i data-lucide="user" class="w-3 h-3 inline"></i> Cliente</h4>
+                                        <p class="text-sm font-bold text-slate-800 uppercase" id="pr_clientName">----------------</p>
+                                        <p class="text-[11px] text-slate-600 font-medium mt-1">DNI/RUC: <span id="pr_clientDoc">--</span> | Tel: <span id="pr_clientPhone">--</span></p>
+                                    </div>
+                                    <div class="bg-white/80 backdrop-blur-md rounded-lg p-3 border border-brand-corp/20 shadow-sm">
+                                        <h4 class="text-[10px] text-brand-corp font-black uppercase tracking-widest mb-2 border-b border-brand-corp/10 pb-1"><i data-lucide="monitor" class="w-3 h-3 inline"></i> Equipo</h4>
+                                        <p class="text-sm font-bold text-brand-tech uppercase" id="pr_equipment">----------------</p>
+                                        <p class="text-xs text-slate-600 font-medium mt-1">Marca/Mod: <span id="pr_brand">--</span> | S/N: <span id="pr_serial">--</span></p>
+                                    </div>
+                                </div>
+
+                                <!-- Contenido Técnico -->
+                                <div class="flex-1 space-y-5">
+                                    <div>
+                                        <div class="bg-red-500 text-white text-xs font-black uppercase px-3 py-1.5 rounded-t-lg inline-block shadow-sm">Motivo de Ingreso</div>
+                                        <div class="bg-white/70 backdrop-blur-sm border border-red-200 rounded-b-lg rounded-tr-lg p-4 text-sm text-gray-800 leading-relaxed min-h-[60px]" id="pr_issue">...</div>
+                                    </div>
+                                    <div>
+                                        <div class="bg-brand-tech text-white text-xs font-black uppercase px-3 py-1.5 rounded-t-lg inline-block shadow-sm">Diagnóstico Técnico</div>
+                                        <div class="bg-white/70 backdrop-blur-sm border border-blue-200 rounded-b-lg rounded-tr-lg p-4 text-sm text-gray-800 leading-relaxed min-h-[120px] text-justify whitespace-pre-wrap" id="pr_diagnosis">...</div>
+                                    </div>
+                                    <div>
+                                        <div class="bg-emerald-500 text-white text-xs font-black uppercase px-3 py-1.5 rounded-t-lg inline-block shadow-sm">Conclusión / Recomendación</div>
+                                        <div class="bg-white/70 backdrop-blur-sm border border-emerald-200 rounded-b-lg rounded-tr-lg p-4 text-sm text-gray-800 leading-relaxed min-h-[80px]" id="pr_solution">...</div>
+                                    </div>
+                                </div>
+
+                                <!-- Firmas Informe -->
+                                <div class="mt-12 flex justify-center items-end pb-8">
+                                    <div class="w-72 text-center flex flex-col items-center">
+                                        <img src="https://i.imgur.com/R2Wi8kr.png" alt="Firma Autorizada" class="h-24 object-contain z-10 -mb-3">
+                                        <div class="border-t-2 border-brand-corp/60 w-full pt-2 font-bold text-sm text-slate-800">José Leonaldo Vizcarra Ramirez</div>
+                                        <div class="text-xs text-slate-500 font-medium mt-1">DNI: 44865269<br><span class="font-bold text-brand-tech">Técnico Especialista - KGB Distribuidores</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-auto text-center border-t border-brand-corp/20 pt-3 relative">
+                                    <p class="text-[10px] font-bold text-brand-corp/60 uppercase">Este documento certifica el estado técnico del equipo al momento de la revisión.</p>
+                                    <p class="absolute bottom-1 right-2 text-[8px] font-black text-brand-tech opacity-70 uppercase tracking-widest">Creado por JVIZCARRA</p>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- 📄 PLANTILLA OCULTA PARA IMPRIMIR EL CONTRATO PDF -->
@@ -718,8 +915,9 @@
             </div>
 
             <div class="mt-24 pt-8 flex justify-around items-end pb-10">
-                <div class="w-64 text-center mt-6">
-                    <div class="border-t border-gray-800 pt-2 font-bold text-sm">José Leonaldo Vizcarra Ramirez</div>
+                <div class="w-64 text-center mt-6 flex flex-col items-center">
+                    <img src="https://i.imgur.com/R2Wi8kr.png" alt="Firma Autorizada" class="h-24 object-contain z-10 -mb-3">
+                    <div class="border-t border-gray-800 w-full pt-2 font-bold text-sm">José Leonaldo Vizcarra Ramirez</div>
                     <div class="text-xs text-gray-500">DNI: 44865369<br>Gerente General - KGB DISTRIBUIDORES</div>
                 </div>
                 <div class="w-64 text-center mt-6">
@@ -728,8 +926,186 @@
                 </div>
             </div>
             
-            <div class="mt-auto text-center border-t border-gray-300 pt-4 text-xs text-gray-400">
+            <div class="mt-auto text-center border-t border-gray-300 pt-4 text-[9px] text-gray-400 relative">
                 Documento generado automáticamente por ProformaTech - KGB Distribuidores
+                <!-- FIRMA SUTIL EN EL PDF DEL CONTRATO -->
+                <p class="absolute bottom-0 right-0 text-[8px] font-black text-brand-tech opacity-70 uppercase tracking-widest">Creado por JVIZCARRA</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 🛠️ NUEVO MODAL DE INFORMES TÉCNICOS -->
+    <div id="reportModal" class="hidden fixed inset-0 bg-brand-dark/80 backdrop-blur-sm z-50 flex items-center justify-center p-2 lg:p-4">
+        <div class="bg-white w-full h-[98vh] max-w-[1500px] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+            <!-- Cabecera del Modal -->
+            <div class="px-6 py-4 border-b border-blue-100 flex justify-between items-center bg-blue-50/50 shrink-0">
+                <h2 class="text-xl font-black text-brand-dark flex items-center gap-2 uppercase tracking-wide">
+                    <div class="p-1.5 bg-white rounded shadow-sm text-brand-tech"><i data-lucide="wrench" class="w-5 h-5"></i></div> Generador de Informes Técnicos
+                </h2>
+                <div class="flex gap-3">
+                    <button onclick="window.saveReportToCloud(this)" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-bold shadow-md shadow-emerald-500/20 flex items-center gap-2 transition-all">
+                        <i data-lucide="cloud-upload" class="w-4 h-4"></i> Guardar
+                    </button>
+                    <button onclick="window.sendReportWhatsApp(this)" class="px-5 py-2 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#128C7E] hover:to-[#075E54] text-white rounded-xl font-bold shadow-md shadow-green-500/20 flex items-center gap-2 transition-all">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                        WhatsApp
+                    </button>
+                    <button onclick="window.generateReportPDF(this)" class="px-5 py-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white rounded-xl font-bold shadow-md shadow-orange-500/20 flex items-center gap-2 transition-all">
+                        <i data-lucide="file-down" class="w-4 h-4"></i> Descargar PDF
+                    </button>
+                    <button onclick="window.closeReportModal()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors bg-white border border-slate-200 shadow-sm">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cuerpo del Modal -->
+            <div class="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-50">
+                <!-- LADO IZQUIERDO -->
+                <div class="w-full lg:w-[55%] h-full overflow-y-auto p-6 border-r border-slate-200 bg-white shadow-inner">
+                    <div class="max-w-2xl mx-auto space-y-5">
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">N° Informe</label>
+                                <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                                    <span class="text-slate-400 mr-1 font-mono font-bold">IT-</span>
+                                    <input type="text" id="r_num" value="0001" class="w-full bg-transparent font-mono font-black text-brand-tech focus:outline-none" oninput="window.updateReportPreview()">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Fecha</label>
+                                <input type="date" id="r_date" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium focus:bg-white" onchange="window.updateReportPreview()">
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50/30 p-5 rounded-2xl border border-blue-100">
+                            <h3 class="text-xs font-black text-brand-tech uppercase tracking-widest mb-3 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Datos del Cliente</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="col-span-2">
+                                    <input type="text" id="r_clientName" placeholder="Nombre o Razón Social" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                </div>
+                                <div>
+                                    <input type="text" id="r_clientDoc" placeholder="DNI / RUC" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                </div>
+                                <div>
+                                    <input type="text" id="r_clientPhone" placeholder="Teléfono / WhatsApp" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-100 p-5 rounded-2xl border border-slate-200">
+                            <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2"><i data-lucide="monitor" class="w-4 h-4"></i> Datos del Equipo</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="col-span-2">
+                                    <input type="text" id="r_equipment" placeholder="Tipo de Equipo (Ej. DVR 8 Canales, Laptop, PC Gamer)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                </div>
+                                <div>
+                                    <input type="text" id="r_brand" placeholder="Marca / Modelo" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                </div>
+                                <div>
+                                    <input type="text" id="r_serial" placeholder="Número de Serie (S/N)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium" oninput="window.updateReportPreview()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-black text-red-500 mb-1.5 uppercase tracking-wider flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Falla Reportada / Motivo</label>
+                                <textarea id="r_issue" rows="2" placeholder="¿Qué reportó el cliente que fallaba?" class="w-full bg-red-50/30 border border-red-100 rounded-xl px-3 py-2.5 font-medium resize-none focus:border-red-400" oninput="window.updateReportPreview()"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black text-brand-tech mb-1.5 uppercase tracking-wider flex items-center gap-1.5"><i data-lucide="search" class="w-4 h-4"></i> Diagnóstico Técnico</label>
+                                <textarea id="r_diagnosis" rows="4" placeholder="Detalle técnico del análisis realizado..." class="w-full bg-blue-50/30 border border-blue-100 rounded-xl px-3 py-2.5 font-medium resize-none focus:border-blue-400" oninput="window.updateReportPreview()"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black text-emerald-600 mb-1.5 uppercase tracking-wider flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4"></i> Conclusión / Recomendación</label>
+                                <textarea id="r_solution" rows="3" placeholder="Acciones sugeridas o soluciones a aplicar..." class="w-full bg-emerald-50/30 border border-emerald-100 rounded-xl px-3 py-2.5 font-medium resize-none focus:border-emerald-400" oninput="window.updateReportPreview()"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LADO DERECHO: Vista Previa -->
+                <div id="report-preview-wrapper" class="w-full lg:w-[45%] h-full overflow-y-auto bg-slate-200 p-4 flex justify-center items-start shadow-inner">
+                    <div id="report-preview-scaler" class="origin-top transition-transform duration-200 z-10" style="width: 210mm;">
+                        <div id="report-preview-section" class="a4-preview bg-white flex flex-col relative z-0">
+                            
+                            <img src="https://i.imgur.com/fObiYn6.png" alt="Fondo" class="absolute inset-0 w-full h-full object-cover -z-10 opacity-70">
+                            
+                            <!-- Header Informe -->
+                            <div class="flex justify-between items-start mb-6 pb-4 border-b-2 border-brand-corp/30">
+                                <div class="flex items-center gap-6 flex-1 min-w-0">
+                                    <div class="w-40 bg-transparent flex items-center justify-center shrink-0">
+                                        <img src="https://i.imgur.com/Dla3rBv.png" alt="Logo" class="max-w-full max-h-20 object-contain">
+                                    </div>
+                                    <div class="flex-1 min-w-0 flex flex-col justify-center">
+                                        <div class="text-gray-800 text-xs space-y-0.5 font-medium">
+                                            <p><strong class="text-gray-900">KGB DISTRIBUIDORES</strong></p>
+                                            <p><strong class="text-gray-900">RUC:</strong> 20600094719</p>
+                                            <p>Jr. 2 de mayo. 477 Int 201</p>
+                                            <p class="font-bold text-brand-tech">917 309 964</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right shrink-0 ml-4">
+                                    <div class="bg-brand-dark text-white px-5 py-2 rounded-l-full -mr-16 shadow-md border-l-4 border-brand-accent">
+                                        <h2 class="text-xl font-black tracking-widest uppercase">INFORME TÉCNICO</h2>
+                                    </div>
+                                    <div class="mt-3 pr-2">
+                                        <p class="text-sm font-bold text-gray-800">N° <span class="text-brand-tech text-lg">IT-<span id="pr_num">0000</span></span></p>
+                                        <p class="text-xs text-gray-600 mt-1 font-medium">Fecha: <span id="pr_date" class="text-gray-800">--/--/----</span></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Datos -->
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="bg-white/80 backdrop-blur-md rounded-lg p-3 border border-brand-corp/20 shadow-sm">
+                                    <h4 class="text-[10px] text-brand-corp font-black uppercase tracking-widest mb-2 border-b border-brand-corp/10 pb-1"><i data-lucide="user" class="w-3 h-3 inline"></i> Cliente</h4>
+                                    <p class="text-sm font-bold text-slate-800 uppercase" id="pr_clientName">----------------</p>
+                                    <p class="text-[11px] text-slate-600 font-medium mt-1">DNI/RUC: <span id="pr_clientDoc">--</span> | Tel: <span id="pr_clientPhone">--</span></p>
+                                </div>
+                                <div class="bg-white/80 backdrop-blur-md rounded-lg p-3 border border-brand-corp/20 shadow-sm">
+                                    <h4 class="text-[10px] text-brand-corp font-black uppercase tracking-widest mb-2 border-b border-brand-corp/10 pb-1"><i data-lucide="monitor" class="w-3 h-3 inline"></i> Equipo</h4>
+                                    <p class="text-sm font-bold text-brand-tech uppercase" id="pr_equipment">----------------</p>
+                                    <p class="text-xs text-slate-600 font-medium mt-1">Marca/Mod: <span id="pr_brand">--</span> | S/N: <span id="pr_serial">--</span></p>
+                                </div>
+                            </div>
+
+                            <!-- Contenido Técnico -->
+                            <div class="flex-1 space-y-5">
+                                <div>
+                                    <div class="bg-red-500 text-white text-xs font-black uppercase px-3 py-1.5 rounded-t-lg inline-block shadow-sm">Motivo de Ingreso</div>
+                                    <div class="bg-white/70 backdrop-blur-sm border border-red-200 rounded-b-lg rounded-tr-lg p-4 text-sm text-gray-800 leading-relaxed min-h-[60px]" id="pr_issue">...</div>
+                                </div>
+                                <div>
+                                    <div class="bg-brand-tech text-white text-xs font-black uppercase px-3 py-1.5 rounded-t-lg inline-block shadow-sm">Diagnóstico Técnico</div>
+                                    <div class="bg-white/70 backdrop-blur-sm border border-blue-200 rounded-b-lg rounded-tr-lg p-4 text-sm text-gray-800 leading-relaxed min-h-[120px] text-justify whitespace-pre-wrap" id="pr_diagnosis">...</div>
+                                </div>
+                                <div>
+                                    <div class="bg-emerald-500 text-white text-xs font-black uppercase px-3 py-1.5 rounded-t-lg inline-block shadow-sm">Conclusión / Recomendación</div>
+                                    <div class="bg-white/70 backdrop-blur-sm border border-emerald-200 rounded-b-lg rounded-tr-lg p-4 text-sm text-gray-800 leading-relaxed min-h-[80px]" id="pr_solution">...</div>
+                                </div>
+                            </div>
+
+                            <!-- Firmas Informe -->
+                            <div class="mt-12 flex justify-center items-end pb-8">
+                                <div class="w-72 text-center flex flex-col items-center">
+                                    <img src="https://i.imgur.com/R2Wi8kr.png" alt="Firma Autorizada" class="h-24 object-contain z-10 -mb-3">
+                                    <div class="border-t-2 border-brand-corp/60 w-full pt-2 font-bold text-sm text-slate-800">José Leonaldo Vizcarra Ramirez</div>
+                                    <div class="text-xs text-slate-500 font-medium mt-1">DNI: 44865269<br><span class="font-bold text-brand-tech">Técnico Especialista - KGB Distribuidores</span></div>
+                                </div>
+                            </div>
+
+                            <div class="mt-auto text-center border-t border-brand-corp/20 pt-3 relative">
+                                <p class="text-[10px] font-bold text-brand-corp/60 uppercase">Este documento certifica el estado técnico del equipo al momento de la revisión.</p>
+                                <p class="absolute bottom-1 right-2 text-[8px] font-black text-brand-tech opacity-70 uppercase tracking-widest">Creado por JVIZCARRA</p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -741,7 +1117,7 @@
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // URL ÚNICA DE GOOGLE SHEETS PARA EVITAR ERRORES DE SINCRONIZACIÓN
-        window.WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwxkzSNkxnoJKF8JrFrRDMMwf97vTRJlc-wWHC8epyL9Ix8fZ549edj-WiqtpqnqyKpYg/exec";
+        window.WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzUjJqBg7NMvcQQO-2nAfd7WRPfet4YR5Dh9ZQkIjYHCz-N0BjUeMhjOq7B0B3oiyKfaA/exec";
 
         // CONFIGURACIÓN MANUAL DE FIREBASE (Por si quieres enlazar tu propia base de datos en GitHub)
         const customFirebaseConfig = {
@@ -855,11 +1231,38 @@
                 const data = await response.json();
                 
                 // 1. Cargar número consecutivo
-                const nextNum = data.next || 1;
+                const nextNum = data.nextProfNum || data.next || 1;
                 input.value = String(nextNum).padStart(4, '0');
                 window.updatePreview();
 
-                // 2. Cargar Catálogo de Productos (Eliminamos la lectura del historial para no corromper la memoria local)
+                // 2. RECUPERAR HISTORIAL DESDE LA NUBE (Vuelven a aparecer tus contratos)
+                if (data.history && data.history.length > 0) {
+                    const localHistory = JSON.parse(localStorage.getItem('proformasList_kgb') || '[]');
+                    const localMap = {};
+                    localHistory.forEach(p => { localMap[p.profNumber] = p; });
+
+                    const cloudHistory = data.history.map(cloudProf => {
+                        const localProf = localMap[cloudProf.profNumber];
+                        if (localProf) {
+                            cloudProf.clientDoc = localProf.clientDoc || cloudProf.clientDoc || '';
+                            cloudProf.clientPhone = localProf.clientPhone || cloudProf.clientPhone || '';
+                            cloudProf.clientAddress = localProf.clientAddress || cloudProf.clientAddress || '';
+                            cloudProf.yape = localProf.yape || cloudProf.yape || '917 309 964';
+                            cloudProf.yapeQrUrl = localProf.yapeQrUrl || cloudProf.yapeQrUrl || '';
+                            cloudProf.obsGarantia = localProf.obsGarantia || cloudProf.obsGarantia || '';
+                            cloudProf.obsEntrega = localProf.obsEntrega || cloudProf.obsEntrega || '';
+                            cloudProf.obsValidez = localProf.obsValidez || cloudProf.obsValidez || '';
+                            cloudProf.obsNotas = localProf.obsNotas || cloudProf.obsNotas || '';
+                        }
+                        return cloudProf;
+                    });
+
+                    proformasList = cloudHistory;
+                    localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
+                    renderHistoryTable();
+                }
+
+                // 3. Cargar Catálogo de Productos
                 if (data.products && data.products.length > 0) {
                     const uniqueProducts = [...productCatalog]; 
                     const descSet = new Set(productCatalog.map(p => (p.desc || '').toLowerCase()));
@@ -1766,6 +2169,177 @@
 
         window.openCatalogModal = () => document.getElementById('catalogModal').classList.remove('hidden');
         window.closeCatalogModal = () => document.getElementById('catalogModal').classList.add('hidden');
+
+        // ---------------------------------------------------------
+        // LÓGICA DE INFORMES TÉCNICOS
+        // ---------------------------------------------------------
+        window.openReportModal = () => {
+            const now = new Date();
+            if(!document.getElementById('r_date').value) {
+                document.getElementById('r_date').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            }
+            document.getElementById('reportModal').classList.remove('hidden');
+            window.updateReportPreview();
+            setTimeout(window.adjustReportScale, 100);
+        };
+
+        window.closeReportModal = () => {
+            document.getElementById('reportModal').classList.add('hidden');
+        };
+
+        window.adjustReportScale = () => {
+            const wrapper = document.getElementById('report-preview-wrapper');
+            const scaler = document.getElementById('report-preview-scaler');
+            if(wrapper && scaler) {
+                const availableWidth = wrapper.clientWidth - 32;
+                let scale = availableWidth / 794; 
+                if(scale > 1) scale = 1;
+                scaler.style.transform = `scale(${scale})`;
+                scaler.style.height = `${1123 * scale}px`;
+            }
+        };
+        window.addEventListener('resize', window.adjustReportScale);
+
+        window.updateReportPreview = () => {
+            const syncText = (fromId, toId, defaultText = '') => {
+                const val = document.getElementById(fromId).value.trim();
+                const el = document.getElementById(toId);
+                if (el) el.innerText = val || defaultText;
+            };
+
+            syncText('r_num', 'pr_num', '0000');
+            syncText('r_clientName', 'pr_clientName', '----------------');
+            syncText('r_clientDoc', 'pr_clientDoc', '--');
+            syncText('r_clientPhone', 'pr_clientPhone', '--');
+            syncText('r_equipment', 'pr_equipment', '----------------');
+            syncText('r_brand', 'pr_brand', '--');
+            syncText('r_serial', 'pr_serial', '--');
+            
+            syncText('r_issue', 'pr_issue', 'No especificado.');
+            syncText('r_diagnosis', 'pr_diagnosis', 'En revisión...');
+            syncText('r_solution', 'pr_solution', 'Pendiente.');
+
+            const dateVal = document.getElementById('r_date').value;
+            if(dateVal) {
+                const [y, m, d] = dateVal.split('-');
+                document.getElementById('pr_date').innerText = `${d}/${m}/${y}`;
+            }
+        };
+
+        window.generateReportPDF = (btn) => {
+            const scaler = document.getElementById('report-preview-scaler');
+            scaler.style.transform = 'scale(1)'; 
+            scaler.style.height = 'auto';
+
+            const element = document.getElementById('report-preview-section');
+            const originalShadow = element.style.boxShadow;
+            element.style.boxShadow = 'none';
+
+            const opt = {
+                margin: 0,
+                filename: `Informe_Tecnico_IT-${document.getElementById('r_num').value || '0001'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Generando...';
+            lucide.createIcons();
+
+            html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
+                const totalPages = pdf.internal.getNumberOfPages();
+                for (let i = totalPages; i > 1; i--) { pdf.deletePage(i); } 
+            }).save().then(() => {
+                btn.innerHTML = originalText;
+                element.style.boxShadow = originalShadow;
+                lucide.createIcons();
+                window.adjustReportScale(); 
+            });
+        };
+
+        window.sendReportWhatsApp = (btn) => {
+            const phoneRaw = document.getElementById('r_clientPhone').value.trim();
+            if (!phoneRaw) {
+                alert("Por favor, ingresa el número de teléfono en los 'Datos del Cliente' del Informe Técnico para poder enviarlo.");
+                return;
+            }
+            
+            let phone = phoneRaw.replace(/\D/g, '');
+            if (phone.length === 9 && phone.startsWith('9')) {
+                phone = '51' + phone;
+            }
+
+            const clientName = document.getElementById('r_clientName').value.trim() || 'Estimado Cliente';
+            const rawNum = document.getElementById('r_num').value.trim();
+            const repNum = rawNum.startsWith('IT-') ? rawNum : "IT-" + rawNum;
+            const equipment = document.getElementById('r_equipment').value.trim() || 'equipo';
+
+            const message = `Hola *${clientName}*, te saluda el Dpto. Técnico de *KGB Distribuidores*. 👋\n\nTe enviamos adjunto el *Informe Técnico (${repNum})* con el diagnóstico de tu ${equipment}.\n\nEl PDF contiene el detalle de la revisión y nuestras recomendaciones. 📄✨ Quedamos a tu entera disposición. 🤝`;
+
+            const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(waUrl, '_blank');
+
+            const pdfBtn = document.querySelector('#reportModal button[onclick="window.generateReportPDF(this)"]');
+            if (pdfBtn) window.generateReportPDF(pdfBtn);
+        };
+
+        // NUEVO: GUARDAR INFORME EN GOOGLE SHEETS
+        window.saveReportToCloud = async (btn) => {
+            if (btn.disabled) return;
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...';
+                btn.disabled = true;
+                btn.classList.add('opacity-75', 'cursor-wait');
+                lucide.createIcons();
+
+                const rawNum = document.getElementById('r_num').value.trim();
+                const data = {
+                    num: rawNum.startsWith('IT-') ? rawNum : "IT-" + rawNum,
+                    date: document.getElementById('r_date').value,
+                    clientName: document.getElementById('r_clientName').value || 'Sin Nombre',
+                    clientDoc: document.getElementById('r_clientDoc').value || '',
+                    clientPhone: document.getElementById('r_clientPhone').value || '',
+                    equipment: document.getElementById('r_equipment').value || 'No especificado',
+                    brand: document.getElementById('r_brand').value || '',
+                    serial: document.getElementById('r_serial').value || '',
+                    issue: document.getElementById('r_issue').value || '',
+                    diagnosis: document.getElementById('r_diagnosis').value || '',
+                    solution: document.getElementById('r_solution').value || ''
+                };
+
+                const payload = {
+                    type: "informe",
+                    data: data
+                };
+
+                window.setCloudStatus('syncing');
+                await fetch(window.WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(payload)
+                });
+                window.setCloudStatus('success');
+
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> ¡Guardado!';
+                lucide.createIcons();
+            } catch (error) {
+                alert("Error al guardar el informe.");
+                console.error(error);
+                btn.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i> Error';
+                lucide.createIcons();
+                window.setCloudStatus('error');
+            } finally {
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-wait');
+                    lucide.createIcons();
+                }, 2500);
+            }
+        };
 
         window.onload = window.initDefaults;
 
