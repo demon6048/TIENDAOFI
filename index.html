@@ -1635,11 +1635,6 @@
         // BASE DE DATOS PROFORMAS Y DASHBOARD FINANCIERO
         // ---------------------------------------------------------
         window.openProfitModal = () => {
-            const t = window.getCalculatedTotals();
-            document.getElementById('m_inv').innerText = `S/ ${t.cost.toFixed(2)}`;
-            document.getElementById('m_ven').innerText = `S/ ${t.venta.toFixed(2)}`;
-            document.getElementById('m_gan').innerText = `S/ ${t.ganancia.toFixed(2)}`;
-            
             const now = new Date();
             const yyyy = now.getFullYear().toString();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -1649,16 +1644,26 @@
             const monthStr = `${yyyy}-${mm}`;
             const yearStr = `${yyyy}`;
 
+            let globalInv = 0, globalVen = 0, globalGan = 0;
+
             let hoyIngreso = 0, hoyGanancia = 0;
             let mesIngreso = 0, mesGanancia = 0;
             let anoIngreso = 0, anoGanancia = 0;
 
             proformasList.forEach(p => {
+                // Sumar ABSOLUTAMENTE TODO solo si está en estado 'Terminado'
                 if (p.status === 'Terminado') {
-                    const pDate = p.date; 
-                    const pProfit = p.profit || 0;
+                    const pCost = p.cost || 0;
                     const pTotal = p.total || 0;
+                    const pProfit = p.profit || 0;
+                    const pDate = p.date; 
 
+                    // Sumas Globales (El cuadro de arriba)
+                    globalInv += pCost;
+                    globalVen += pTotal;
+                    globalGan += pProfit;
+
+                    // Sumas por Fechas (Los cuadros de abajo)
                     if (pDate === todayStr) {
                         hoyIngreso += pTotal;
                         hoyGanancia += pProfit;
@@ -1674,6 +1679,12 @@
                 }
             });
 
+            // Actualizar cuadros superiores (Globales)
+            document.getElementById('m_inv').innerText = `S/ ${globalInv.toFixed(2)}`;
+            document.getElementById('m_ven').innerText = `S/ ${globalVen.toFixed(2)}`;
+            document.getElementById('m_gan').innerText = `S/ ${globalGan.toFixed(2)}`;
+
+            // Actualizar cuadros inferiores (Reales por fecha)
             document.getElementById('m_hoy_ingreso').innerText = `S/ ${hoyIngreso.toFixed(2)}`;
             document.getElementById('m_hoy_ganancia').innerText = `S/ ${hoyGanancia.toFixed(2)}`;
             document.getElementById('m_mes_ingreso').innerText = `S/ ${mesIngreso.toFixed(2)}`;
