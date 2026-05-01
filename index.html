@@ -49,7 +49,7 @@
 
         @page { size: A4 portrait; margin: 0; }
 
-        /* Estilo base de la proforma, su tamaño NUNCA cambia en código, solo se le hace zoom */
+        /* Estilo base de la proforma */
         .a4-preview {
             width: 210mm; min-width: 210mm; max-width: 210mm;
             height: 297mm; min-height: 297mm; max-height: 297mm;
@@ -87,7 +87,7 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-sm">
 
-    <!-- DATALIST PARA AUTOCOMPLETADO (Oculto) -->
+    <!-- DATALIST PARA AUTOCOMPLETADO -->
     <datalist id="inventoryList"></datalist>
 
     <!-- Header / Navbar -->
@@ -98,7 +98,6 @@
             </div>
             <div class="flex flex-col">
                 <h1 class="font-black text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-brand-corp via-brand-tech to-brand-accent leading-none">ProformaTech</h1>
-                <!-- INDICADOR DE ESTADO DE NUBE -->
                 <div id="cloudSyncIndicator" class="flex items-center gap-1.5 mt-0.5 opacity-90 transition-all duration-300">
                     <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
                     <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Nube Conectada</span>
@@ -111,7 +110,7 @@
                 <i data-lucide="file-signature" class="w-4 h-4"></i> Contratos
             </button>
             
-            <!-- NUEVO BOTÓN INFORMES TÉCNICOS -->
+            <!-- BOTÓN INFORMES TÉCNICOS -->
             <button onclick="window.openReportModal()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-brand-tech rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold border border-blue-200 shadow-sm hover:shadow">
                 <i data-lucide="wrench" class="w-4 h-4"></i> Informes
             </button>
@@ -129,8 +128,9 @@
             
             <div class="hidden md:block w-px h-6 bg-gray-200 mx-1"></div>
             
-            <button onclick="window.clearForm()" class="px-3 py-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <!-- BOTÓN NUEVA PROFORMA (Ex Tachito de basura) -->
+            <button onclick="window.clearForm()" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-semibold border border-indigo-200 shadow-sm hover:shadow">
+                <i data-lucide="file-plus" class="w-4 h-4"></i> Nueva Proforma
             </button>
             
             <button onclick="window.generatePDF(this)" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-bold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/40">
@@ -227,7 +227,7 @@
                             <thead>
                                 <tr class="text-left text-[10px] text-slate-400 border-b border-slate-200 uppercase font-black tracking-wider">
                                     <th class="pb-3 w-6 text-center"></th>
-                                    <th class="pb-3 w-12 text-center">Cant</th>
+                                    <th class="pb-3 w-16 text-center">Cant</th>
                                     <th class="pb-3 w-full">Descripción (Autocompletable)</th>
                                     <th class="pb-3 w-28 lg:w-32 text-orange-500 text-right pr-2">Costo U.</th>
                                     <th class="pb-3 w-28 lg:w-32 text-emerald-500 text-right pr-2">P. Venta</th>
@@ -298,7 +298,7 @@
                     </div>
                 </div>
 
-                <!-- Fila 6: EVIDENCIAS Y FOTOS (NUEVO) -->
+                <!-- Fila 6: EVIDENCIAS Y FOTOS -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <div class="p-1.5 bg-slate-100 rounded-md text-emerald-500"><i data-lucide="image" class="w-4 h-4"></i></div> Evidencias / Imágenes
@@ -308,7 +308,6 @@
                         <p class="text-xs font-bold text-center">Haz clic para subir o presiona <kbd class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-700 mx-1 border border-slate-300 shadow-sm">Ctrl+V</kbd> para pegar</p>
                         <input type="file" id="image-upload-input" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                     </div>
-                    <!-- Contenedor para mostrar miniaturas de las fotos subidas -->
                     <div id="image-thumbnails" class="grid grid-cols-4 gap-3 mt-4 hidden"></div>
                 </div>
 
@@ -329,10 +328,8 @@
             
             <div id="preview-scaler" class="origin-top flex justify-center transition-transform duration-200 z-10" style="width: 210mm;">
                 
-                <!-- WRAPPER PARA PODER GENERAR MÚLTIPLES HOJAS A4 EN EL PDF -->
                 <div id="proforma-pdf-wrapper" class="flex flex-col gap-6 w-full items-center">
                     
-                    <!-- HOJA 1: LA PROFORMA PRINCIPAL -->
                     <div id="preview-section" class="a4-preview flex flex-col transition-all duration-300 bg-white">
                         <img id="p_bgImage" src="https://i.imgur.com/fObiYn6.png" alt="Fondo Proforma" class="absolute inset-0 w-full h-full object-cover -z-10">
                         
@@ -465,7 +462,6 @@
                         </div> 
                     </div>
                     
-                    <!-- HOJAS 2+: CONTENEDOR PARA LAS IMÁGENES EXTRA -->
                     <div id="preview-images-section" class="w-full flex flex-col gap-6"></div>
 
                 </div>
@@ -559,7 +555,7 @@
             </div>
         </div>
 
-        <!-- 💰 NUEVO MODAL DE DASHBOARD FINANCIERO -->
+        <!-- 💰 MODAL DE DASHBOARD FINANCIERO -->
         <div id="profitModal" class="hidden fixed inset-0 bg-brand-dark/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[95vh] border border-slate-200">
                 <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
@@ -721,10 +717,9 @@
             </div>
         </div>
 
-        <!-- 🛠️ NUEVO MODAL DE INFORMES TÉCNICOS -->
+        <!-- 🛠️ MODAL DE INFORMES TÉCNICOS -->
         <div id="reportModal" class="hidden fixed inset-0 bg-brand-dark/80 backdrop-blur-sm z-50 flex items-center justify-center p-2 lg:p-4">
             <div class="bg-white w-full h-[98vh] max-w-[1500px] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
-                <!-- Cabecera del Modal -->
                 <div class="px-6 py-4 border-b border-blue-100 flex justify-between items-center bg-blue-50/50 shrink-0">
                     <h2 class="text-xl font-black text-brand-dark flex items-center gap-2 uppercase tracking-wide">
                         <div class="p-1.5 bg-white rounded shadow-sm text-brand-tech"><i data-lucide="wrench" class="w-5 h-5"></i></div> Generador de Informes Técnicos
@@ -746,13 +741,9 @@
                     </div>
                 </div>
 
-                <!-- Cuerpo del Modal (Split Screen) -->
                 <div class="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-50">
-                    
-                    <!-- LADO IZQUIERDO: Formulario del Informe -->
                     <div class="w-full lg:w-[55%] h-full overflow-y-auto p-6 border-r border-slate-200 bg-white shadow-inner">
                         <div class="max-w-2xl mx-auto space-y-5">
-                            
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">N° Informe</label>
@@ -814,15 +805,12 @@
                         </div>
                     </div>
 
-                    <!-- LADO DERECHO: Vista Previa del Informe -->
                     <div id="report-preview-wrapper" class="w-full lg:w-[45%] h-full overflow-y-auto bg-slate-200 p-4 flex justify-center items-start shadow-inner">
-                        
                         <div id="report-preview-scaler" class="origin-top transition-transform duration-200 z-10" style="width: 210mm;">
                             <div id="report-preview-section" class="a4-preview bg-white flex flex-col relative z-0">
                                 
                                 <img src="https://i.imgur.com/fObiYn6.png" alt="Fondo" class="absolute inset-0 w-full h-full object-cover -z-10 opacity-70">
                                 
-                                <!-- Header Informe -->
                                 <div class="flex justify-between items-start mb-6 pb-4 border-b-2 border-brand-corp/30">
                                     <div class="flex items-center gap-6 flex-1 min-w-0">
                                         <div class="w-40 bg-transparent flex items-center justify-center shrink-0">
@@ -848,7 +836,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Datos -->
                                 <div class="grid grid-cols-2 gap-4 mb-6">
                                     <div class="bg-white/80 backdrop-blur-md rounded-lg p-3 border border-brand-corp/20 shadow-sm">
                                         <h4 class="text-[10px] text-brand-corp font-black uppercase tracking-widest mb-2 border-b border-brand-corp/10 pb-1"><i data-lucide="user" class="w-3 h-3 inline"></i> Cliente</h4>
@@ -862,7 +849,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Contenido Técnico -->
                                 <div class="flex-1 space-y-5">
                                     <div>
                                         <div class="bg-red-500 text-white text-xs font-black uppercase px-3 py-1.5 rounded-t-lg inline-block shadow-sm">Motivo de Ingreso</div>
@@ -878,7 +864,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Firmas Informe -->
                                 <div class="mt-12 flex justify-center items-end pb-8">
                                     <div class="w-72 text-center flex flex-col items-center">
                                         <img src="https://i.imgur.com/R2Wi8kr.png" alt="Firma Autorizada" class="h-24 object-contain z-10 -mb-3">
@@ -904,15 +889,15 @@
     <!-- 📄 PLANTILLA OCULTA PARA IMPRIMIR EL CONTRATO PDF -->
     <div id="contract-hidden-container" class="fixed -left-[9999px] top-0">
         <div id="contract-template" class="a4-preview bg-white flex flex-col" style="padding: 20mm; color: black; border-radius: 0;">
-            <div class="flex justify-between items-center mb-8 border-b-2 border-gray-800 pb-4">
-                <img src="https://i.imgur.com/Dla3rBv.png" alt="Logo" class="h-16 object-contain">
+            <div class="flex justify-between items-center mb-6 border-b-2 border-gray-800 pb-4">
+                <img src="https://i.imgur.com/Dla3rBv.png" alt="Logo" class="h-14 object-contain">
                 <div class="text-right">
                     <h2 class="text-xl font-black uppercase tracking-widest text-gray-800">CONTRATO DE SERVICIOS</h2>
                     <p class="text-sm font-bold text-gray-600 mt-1">Ref: <span id="c_profNumber" class="text-brand-tech"></span></p>
                 </div>
             </div>
 
-            <div class="text-sm text-justify space-y-5 leading-relaxed text-gray-800 flex-1">
+            <div class="text-[13px] text-justify space-y-4 leading-relaxed text-gray-800 flex-1">
                 <p>Conste por el presente documento, el <strong>CONTRATO DE COMPRAVENTA Y PRESTACIÓN DE SERVICIOS</strong>, que celebran de una parte <strong>KGB DISTRIBUIDORES</strong> con RUC 20600094719, con domicilio en Jr. 2 de mayo. 477 Int 201, a quien en adelante se le denominará <strong>EL PROVEEDOR</strong>; y de la otra parte <strong><span id="c_clientName" class="uppercase"></span></strong>, identificado con DNI/RUC N° <strong><span id="c_clientDoc"></span></strong>, a quien en adelante se le denominará <strong>EL CLIENTE</strong>; en los términos y condiciones siguientes:</p>
 
                 <p><strong>PRIMERA: OBJETO DEL CONTRATO</strong><br>
@@ -921,7 +906,6 @@
                 <p><strong>SEGUNDA: CONTRAPRESTACIÓN Y FORMA DE PAGO</strong><br>
                 El precio total acordado por los bienes y servicios descritos asciende a la suma de <strong>S/ <span id="c_total"></span></strong> (Soles).</p>
 
-                <!-- ESTE CONTENEDOR SE LLENA DINÁMICAMENTE CON LOS PORCENTAJES CORRECTOS -->
                 <div id="c_payment_terms"></div>
 
                 <p><strong>TERCERA: GARANTÍA Y CONDICIONES</strong><br>
@@ -930,13 +914,13 @@
                 <p>En señal de conformidad absoluta con todos los términos del presente contrato, ambas partes proceden a firmar el presente documento.</p>
             </div>
 
-            <div class="mt-24 pt-8 flex justify-around items-end pb-10">
-                <div class="w-64 text-center mt-6 flex flex-col items-center">
-                    <img src="https://i.imgur.com/R2Wi8kr.png" alt="Firma Autorizada" class="h-24 object-contain z-10 -mb-3">
+            <div class="mt-8 pt-6 flex justify-around items-end pb-8">
+                <div class="w-64 text-center flex flex-col items-center">
+                    <img src="https://i.imgur.com/R2Wi8kr.png" alt="Firma Autorizada" class="h-20 object-contain z-10 -mb-2">
                     <div class="border-t border-gray-800 w-full pt-2 font-bold text-sm">José Leonaldo Vizcarra Ramirez</div>
                     <div class="text-xs text-gray-500">DNI: 44865369<br>Gerente General - KGB DISTRIBUIDORES</div>
                 </div>
-                <div class="w-64 text-center mt-6">
+                <div class="w-64 text-center">
                     <div class="border-t border-gray-800 pt-2 font-bold text-sm uppercase truncate"><span id="c_clientName_sign"></span></div>
                     <div class="text-xs text-gray-500">DNI/RUC: <span id="c_clientDoc_sign"></span><br>EL CLIENTE</div>
                 </div>
@@ -944,23 +928,26 @@
             
             <div class="mt-auto text-center border-t border-gray-300 pt-4 text-[9px] text-gray-400 relative">
                 Documento generado automáticamente por ProformaTech - KGB Distribuidores
-                <!-- FIRMA SUTIL EN EL PDF DEL CONTRATO -->
                 <p class="absolute bottom-0 right-0 text-[8px] font-black text-brand-tech opacity-70 uppercase tracking-widest">Creado por JVIZCARRA</p>
             </div>
         </div>
     </div>
     
-    <!-- FIREBASE & LÓGICA DE LA APLICACIÓN -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // URL ÚNICA DE GOOGLE SHEETS (EL NUEVO CEREBRO)
+        window.WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbw1I4Z1zPHqm0Xps9tFSAH7E0e9Y7eED1rsB3kdX2j3i42rGA1qAFkAi149tAG5wdc/exec";
 
-        // URL ÚNICA DE GOOGLE SHEETS PARA EVITAR ERRORES DE SINCRONIZACIÓN
-        window.WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxDS72lbhu1xkRnb5MI5Ll3UCDyHabe2pkj5tjQcGtnBNGOSgXBX2r5bH329xKme5qLFg/exec";
-
-        // CONFIGURACIÓN MANUAL DE FIREBASE (Por si quieres enlazar tu propia base de datos en GitHub)
-        const customFirebaseConfig = {};
+        // FORZAR MAYÚSCULAS EN TODOS LOS CAMPOS DE TEXTO
+        document.addEventListener('input', function(e) {
+            if ((e.target.tagName === 'INPUT' && e.target.type === 'text') || e.target.tagName === 'TEXTAREA') {
+                if (e.target.id === 'f_yape_qr_url' || e.target.id === 'searchHistory') return; // Excluir links y buscador
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                e.target.value = e.target.value.toUpperCase();
+                e.target.setSelectionRange(start, end);
+            }
+        });
 
         lucide.createIcons();
 
@@ -972,20 +959,16 @@
             const wrapper = document.getElementById('preview-wrapper-section');
             const scaler = document.getElementById('preview-scaler');
             if(wrapper && scaler) {
-                // Ancho real de A4 en px es aprox 794px. Damos un margen de 32px (16px por lado).
                 const availableWidth = wrapper.clientWidth - 32;
                 const a4Width = 794; 
                 let scale = availableWidth / a4Width;
-                
-                // No agrandar más del 100%
                 if(scale > 1) scale = 1;
 
                 scaler.style.transform = `scale(${scale})`;
                 scaler.style.width = `${a4Width}px`; 
                 
-                // Calcular altura total basada en la cantidad de páginas (1 principal + páginas de imágenes)
                 const numPages = 1 + Math.ceil(window.proformaImages.length / 2);
-                const gapPixels = 24 * (numPages - 1); // gap-6 = 24px
+                const gapPixels = 24 * (numPages - 1); 
                 const totalHeight = (1123 * numPages) + gapPixels;
                 
                 scaler.style.height = `${totalHeight * scale}px`;
@@ -993,140 +976,52 @@
         };
         window.addEventListener('resize', window.adjustPreviewScale);
 
-        // MOTOR DE ADAPTABILIDAD
-        let isConnectedToFirebase = false;
-        let app, auth, db;
-        let currentUser = null;
+        // ESTADO GLOBAL
         let proformasList = []; 
         let productCatalog = []; 
-        
-        // Variable para saber si estamos editando una proforma antigua
         window.currentEditId = null;
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-proforma-app';
-
-        try {
-            if (customFirebaseConfig.apiKey || (typeof __firebase_config !== 'undefined' && __firebase_config)) {
-                // Entorno Firebase
-                const firebaseConfig = customFirebaseConfig.apiKey ? customFirebaseConfig : JSON.parse(__firebase_config);
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                isConnectedToFirebase = true;
-
-                const initAuth = async () => {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch(e) { console.error("Auth error:", e); }
-                };
-                initAuth();
-
-                onAuthStateChanged(auth, (user) => {
-                    currentUser = user;
-                    if (user) { 
-                        loadHistoryData(); 
-                    }
-                });
-            } else {
-                // Entorno Externo (GitHub Pages)
-                console.log("Modo Externo (GitHub): Firebase omitido. Usando memoria temporal y Google Sheets.");
-                currentUser = { uid: 'github_user' };
-                
-                const savedProformas = localStorage.getItem('proformasList_kgb');
-                if (savedProformas) {
-                    try { proformasList = JSON.parse(savedProformas); } catch(e) { }
-                }
-
-                const savedCatalog = localStorage.getItem('productCatalog_kgb');
-                if (savedCatalog) {
-                    try { productCatalog = JSON.parse(savedCatalog); } catch(e) { }
-                }
-
-                setTimeout(() => {
-                    renderHistoryTable(); 
-                    renderCatalogTable(); 
-                    updateDatalist();     
-                }, 500);
-            }
-        } catch(error) {
-            console.error("Error Init:", error);
-        }
-
-        let items = [
-            { id: 1, qty: 1, desc: '', cost: 0, price: 0 } 
-        ];
+        let items = [{ id: 1, qty: 1, desc: '', cost: 0, price: 0 }];
         let viewMode = 'detalle';
 
-        // LECTURA DESDE GOOGLE SHEETS
+        // ==========================================
+        // 1. LECTURA MAESTRA DESDE GOOGLE SHEETS
+        // ==========================================
         window.fetchGoogleSheetsData = async () => {
-            window.currentEditId = null; // Reseteamos modo edición
+            window.currentEditId = null; 
             const inputProf = document.getElementById('f_profNumber');
             const inputRep = document.getElementById('r_num');
             if (inputProf.value === "") inputProf.value = "..."; 
             
             try {
+                window.setCloudStatus('syncing');
                 const response = await fetch(window.WEBHOOK_URL);
                 const data = await response.json();
                 
-                // 1. Cargar número consecutivo PROFORMAS
-                const nextNum = data.nextProfNum || data.next || 1;
-                inputProf.value = String(nextNum).padStart(4, '0');
-                window.updatePreview();
-
-                // 2. Cargar número consecutivo INFORMES TÉCNICOS
-                const nextRep = data.nextRepNum || data.nextReport || 1;
-                if(inputRep) {
-                    inputRep.value = String(nextRep).padStart(4, '0');
-                    window.updateReportPreview();
-                }
-
-                // 3. RECUPERAR TODO EL HISTORIAL Y CONTRATOS
-                if (data.history && data.history.length > 0) {
-                    const localHistory = JSON.parse(localStorage.getItem('proformasList_kgb') || '[]');
-                    const localMap = {};
-                    localHistory.forEach(p => { localMap[p.profNumber] = p; });
-
-                    const cloudHistory = data.history.map(cloudProf => {
-                        const localProf = localMap[cloudProf.profNumber];
-                        if (localProf) {
-                            cloudProf.clientDoc = localProf.clientDoc || '';
-                            cloudProf.clientPhone = localProf.clientPhone || '';
-                            cloudProf.clientAddress = localProf.clientAddress || '';
-                            cloudProf.yape = localProf.yape || '917 309 964';
-                            cloudProf.yapeQrUrl = localProf.yapeQrUrl || '';
-                            cloudProf.obsGarantia = localProf.obsGarantia || '';
-                            cloudProf.obsEntrega = localProf.obsEntrega || '';
-                            cloudProf.obsValidez = localProf.obsValidez || '';
-                            cloudProf.obsNotas = localProf.obsNotas || '';
-                            cloudProf.items = localProf.items || [];
-                        }
-                        return cloudProf;
-                    });
-
-                    proformasList = cloudHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
-                    
+                // Cargar números consecutivos
+                inputProf.value = String(data.nextProfNum || 1).padStart(4, '0');
+                if(inputRep) inputRep.value = String(data.nextRepNum || 1).padStart(4, '0');
+                
+                // Cargar el historial exacto desde la nube
+                if (data.proformas) {
+                    proformasList = data.proformas.sort((a, b) => new Date(b.date) - new Date(a.date));
                     renderHistoryTable(); 
                     if (document.getElementById('contractModal') && !document.getElementById('contractModal').classList.contains('hidden')) {
                         renderContractTable(); 
                     }
                 }
 
-                // 4. Cargar Catálogo de Productos
+                // Cargar el Catálogo
                 if (data.products && data.products.length > 0) {
                     const uniqueProducts = [...productCatalog]; 
-                    const descSet = new Set(productCatalog.map(p => (p.desc || '').toLowerCase()));
+                    const descSet = new Set(productCatalog.map(p => (p.desc || '').toUpperCase()));
                     
                     data.products.forEach((p, i) => {
-                        const safeDesc = p.desc || '';
-                        if(!descSet.has(safeDesc.toLowerCase())) {
-                            descSet.add(safeDesc.toLowerCase());
+                        const safeDesc = (p.desc || '').toUpperCase();
+                        if(!descSet.has(safeDesc)) {
+                            descSet.add(safeDesc);
                             uniqueProducts.push({
-                                id: 'gs_' + i,
+                                id: p.id || ('gs_' + i),
                                 desc: safeDesc,
                                 cost: p.cost || 0,
                                 price: p.price || 0
@@ -1136,17 +1031,18 @@
                     
                     productCatalog = uniqueProducts;
                     localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
-                    renderCatalogTable();
-                    updateDatalist();
                 }
 
+                // SIEMPRE ACTIVAR EL AUTOCOMPLETADO
+                renderCatalogTable();
+                updateDatalist();
+
                 window.setCloudStatus('success'); 
-            } catch (error) {
-                console.error("Error obteniendo datos:", error);
-                window.setCloudStatus('error'); 
-                const randomNum = Math.floor(Math.random() * 9000) + 1000;
-                if (inputProf.value === "...") inputProf.value = randomNum.toString();
                 window.updatePreview();
+                window.updateReportPreview();
+            } catch (error) {
+                console.error("Error sincronizando:", error);
+                window.setCloudStatus('error'); 
             }
         };
 
@@ -1248,8 +1144,9 @@
             const item = items.find(i => i.id === id);
             if (item) {
                 if (field === 'desc') {
-                    item[field] = value;
-                    const foundProd = productCatalog.find(p => (p.desc || '').toLowerCase() === value.trim().toLowerCase());
+                    item[field] = value.toUpperCase();
+                    // Buscar en el catálogo usando mayúsculas exactas
+                    const foundProd = productCatalog.find(p => (p.desc || '').toUpperCase() === value.trim().toUpperCase());
                     if (foundProd) {
                         item.cost = foundProd.cost;
                         item.price = foundProd.price;
@@ -1384,7 +1281,7 @@
         };
 
         window.clearForm = () => {
-            if(confirm('¿Estás seguro de limpiar todo el formulario?')) {
+            if(confirm('¿Deseas crear una nueva proforma en blanco?')) {
                 document.getElementById('f_clientName').value = '';
                 document.getElementById('f_clientDoc').value = '';
                 document.getElementById('f_clientPhone').value = '';
@@ -1412,7 +1309,6 @@
             const wrapper = document.getElementById('proforma-pdf-wrapper');
             const imagesWrapper = document.getElementById('preview-images-section');
             
-            // Eliminamos la separación visual para que html2pdf no genere hojas en blanco
             wrapper.classList.remove('gap-6'); 
             if (imagesWrapper) imagesWrapper.classList.remove('gap-6');
 
@@ -1440,7 +1336,6 @@
             html2pdf().set(opt).from(wrapper).save().then(() => {
                 btn.innerHTML = originalText;
                 
-                // Restauramos la separación en la pantalla
                 wrapper.classList.add('gap-6');
                 if (imagesWrapper) imagesWrapper.classList.add('gap-6');
                 
@@ -1455,7 +1350,7 @@
         };
 
         // ---------------------------------------------------------
-        // NUEVO: ENVIAR A WHATSAPP
+        // ENVIAR A WHATSAPP
         // ---------------------------------------------------------
         window.sendWhatsApp = (btn) => {
             const phoneRaw = document.getElementById('f_clientPhone').value.trim();
@@ -1485,7 +1380,7 @@
         };
 
         // ---------------------------------------------------------
-        // SINCRONIZACIÓN GOOGLE SHEETS
+        // INDICADOR DE NUBE
         // ---------------------------------------------------------
         window.setCloudStatus = (status) => {
             const ind = document.getElementById('cloudSyncIndicator');
@@ -1503,59 +1398,9 @@
             lucide.createIcons();
         };
 
-        window.syncToGoogleSheets = async (proformaData, itemsArr) => {
-            window.setCloudStatus('syncing');
-            const rowsToSync = [];
-            itemsArr.forEach(item => {
-                let itemCostoU = item.cost || 0;
-                let itemPrecioU = item.price || 0;
-                let itemImporte = item.qty * itemPrecioU;
-                let itemGanancia = itemImporte - (item.qty * itemCostoU);
-
-                rowsToSync.push({
-                    Fecha: proformaData.date,
-                    Numero_Proforma: proformaData.profNumber,
-                    Cliente: proformaData.clientName || 'Sin Nombre',
-                    Estado: proformaData.status,
-                    Modo_Vista: proformaData.viewMode || 'detalle',
-                    Desc_General_Combo: proformaData.generalDesc || '',
-                    Item_Cant: item.qty,
-                    Item_Descripcion: item.desc || 'Sin detalle',
-                    Item_Costo_U: itemCostoU,
-                    Item_Precio_U: itemPrecioU,
-                    Item_Importe_Total: itemImporte,
-                    Item_Ganancia: itemGanancia,
-                    Proforma_Inversion_Total: proformaData.cost || 0,
-                    Proforma_Venta_Total: proformaData.total || 0,
-                    Proforma_Ganancia_Neta: proformaData.profit || 0
-                });
-            });
-
-            try {
-                await fetch(window.WEBHOOK_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    body: JSON.stringify(rowsToSync)
-                });
-                window.setCloudStatus('success');
-            } catch (e) { 
-                console.error("Error sync Sheets:", e); 
-                window.setCloudStatus('error');
-            }
-        };
-
-        window.syncProductToGoogleSheets = async (desc, cost, price) => {
-            window.setCloudStatus('syncing');
-            const payload = { type: "producto", data: { Descripcion: desc, Costo: cost, Precio: price } };
-            try {
-                await fetch(window.WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                window.setCloudStatus('success');
-            } catch (e) { window.setCloudStatus('error'); }
-        };
-
-        // ---------------------------------------------------------
-        // FUNCIÓN GUARDAR COMPLETAMENTE A PRUEBA DE FALLOS
-        // ---------------------------------------------------------
+        // ==========================================
+        // 2. FUNCIÓN MAESTRA PARA GUARDAR TODO
+        // ==========================================
         window.saveProforma = async (btn) => {
             if (btn.disabled) return;
             const originalText = btn.innerHTML;
@@ -1568,7 +1413,9 @@
 
                 const totals = window.getCalculatedTotals();
                 const rawProfNum = document.getElementById('f_profNumber').value.trim();
-                const data = {
+                
+                const dataObj = {
+                    id: window.currentEditId || ("PF_" + new Date().getTime()),
                     profNumber: rawProfNum.startsWith('PF-') ? rawProfNum : "PF-" + rawProfNum,
                     date: document.getElementById('f_date').value,
                     clientName: document.getElementById('f_clientName').value || 'Sin Nombre',
@@ -1589,50 +1436,46 @@
                     obsEntrega: document.getElementById('f_obsEntrega').value || '',
                     obsValidez: document.getElementById('f_obsValidez').value || '',
                     obsNotas: document.getElementById('f_obsNotas').value || '',
-                    items: items.map(i => ({ qty: i.qty, desc: i.desc || '', cost: i.cost || 0, price: i.price || 0 }))
+                    items: items.map(i => ({ qty: i.qty, desc: (i.desc || '').toUpperCase(), cost: i.cost || 0, price: i.price || 0 }))
                 };
 
-                if (window.currentEditId) {
-                    if (isConnectedToFirebase && currentUser) {
-                        await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', window.currentEditId), data);
-                        data.id = window.currentEditId;
+                // Enviar al Servidor
+                window.setCloudStatus('syncing');
+                const response = await fetch(window.WEBHOOK_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "save_proforma", data: dataObj })
+                });
+                
+                if(response.ok) {
+                    window.setCloudStatus('success');
+                    window.currentEditId = dataObj.id; 
+                    
+                    const idx = proformasList.findIndex(p => p.id === dataObj.id);
+                    if (idx > -1) {
+                        proformasList[idx] = dataObj;
                     } else {
-                        data.id = window.currentEditId;
-                        const idx = proformasList.findIndex(p => p.id === window.currentEditId);
-                        if (idx > -1) proformasList[idx] = data;
-                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
-                        renderHistoryTable();
+                        proformasList.unshift(dataObj);
                     }
+                    localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
+                    renderHistoryTable();
                 } else {
-                    if (isConnectedToFirebase && currentUser) {
-                        const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
-                        const docRef = await addDoc(colRef, data);
-                        data.id = docRef.id;
-                    } else {
-                        data.id = 'mem_' + Date.now();
-                        proformasList.unshift(data);
-                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
-                        renderHistoryTable();
-                    }
+                    throw new Error("Fallo la comunicación con Google Sheets");
                 }
 
-                let itemsArrToSync = data.items && data.items.length > 0 ? data.items : [{qty: 1, desc: 'Sin detalle', cost: data.cost||0, price: data.total}];
-                await window.syncToGoogleSheets(data, itemsArrToSync);
-
+                // GUARDAR NUEVOS PRODUCTOS AL CATÁLOGO
                 let isCatalogUpdated = false;
-                for (const item of data.items) {
+                for (const item of dataObj.items) {
                     if (item.desc && item.desc.trim() !== '') {
-                        const exists = productCatalog.some(p => (p.desc || '').toLowerCase() === item.desc.trim().toLowerCase());
+                        const upperDesc = item.desc.trim().toUpperCase();
+                        const exists = productCatalog.some(p => (p.desc || '').toUpperCase() === upperDesc);
                         
                         if (!exists) {
-                            if (isConnectedToFirebase && currentUser) {
-                                const invRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
-                                await addDoc(invRef, { desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
-                            } else {
-                                productCatalog.push({ id: 'mem_' + Date.now(), desc: item.desc.trim(), cost: item.cost || 0, price: item.price || 0 });
-                                isCatalogUpdated = true;
-                            }
-                            await window.syncProductToGoogleSheets(item.desc.trim(), item.cost || 0, item.price || 0);
+                            productCatalog.push({ id: 'mem_' + Date.now(), desc: upperDesc, cost: item.cost || 0, price: item.price || 0 });
+                            isCatalogUpdated = true;
+                            fetch(window.WEBHOOK_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({ action: "save_producto", data: {desc: upperDesc, cost: item.cost, price: item.price} })
+                            }).catch(()=>{});
                         }
                     }
                 }
@@ -1647,9 +1490,10 @@
                 lucide.createIcons();
                 
             } catch (error) { 
-                alert("Error técnico al guardar. Intenta nuevamente."); 
+                alert("Error técnico al guardar en la nube. Verifica tu conexión."); 
                 console.error(error);
                 btn.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i> Error';
+                window.setCloudStatus('error');
                 lucide.createIcons();
             } finally {
                 setTimeout(() => {
@@ -1670,15 +1514,14 @@
         });
 
         document.addEventListener('paste', function(e) {
-            // Solo capturar imágenes si NO estamos escribiendo en un input de texto
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             
             if(e.clipboardData && e.clipboardData.items) {
-                const items = e.clipboardData.items;
+                const cb_items = e.clipboardData.items;
                 const imageFiles = [];
-                for (let i = 0; i < items.length; i++) {
-                    if (items[i].type.indexOf('image') !== -1) {
-                        imageFiles.push(items[i].getAsFile());
+                for (let i = 0; i < cb_items.length; i++) {
+                    if (cb_items[i].type.indexOf('image') !== -1) {
+                        imageFiles.push(cb_items[i].getAsFile());
                     }
                 }
                 if(imageFiles.length > 0) {
@@ -1705,7 +1548,6 @@
         };
 
         window.renderProformaImages = () => {
-            // 1. Actualizar Miniaturas en el Formulario
             const thumbContainer = document.getElementById('image-thumbnails');
             if (window.proformaImages.length === 0) {
                 thumbContainer.classList.add('hidden');
@@ -1723,7 +1565,6 @@
                 lucide.createIcons();
             }
 
-            // 2. Actualizar las Páginas A4 del PDF
             const imagesWrapper = document.getElementById('preview-images-section');
             if(!imagesWrapper) return;
             imagesWrapper.innerHTML = '';
@@ -1734,10 +1575,9 @@
             let imageGrid = null;
 
             window.proformaImages.forEach((imgSrc, index) => {
-                // Creamos una nueva página A4 cada 2 imágenes
                 if (index % 2 === 0) {
                     currentPage = document.createElement('div');
-                    currentPage.className = 'a4-preview bg-white flex flex-col relative z-0 transition-all duration-300';
+                    currentPage.className = 'a4-preview page-break bg-white flex flex-col relative z-0 transition-all duration-300';
                     currentPage.innerHTML = `
                         <img src="https://i.imgur.com/fObiYn6.png" alt="Fondo" class="absolute inset-0 w-full h-full object-cover -z-10 opacity-40">
                         <div class="flex justify-between items-end mb-6 pb-4 border-b-2 border-brand-corp/30 shrink-0">
@@ -1819,17 +1659,6 @@
         };
         
         window.closeProfitModal = () => { document.getElementById('profitModal').classList.add('hidden'); };
-
-        function loadHistoryData() {
-            if (!currentUser || !isConnectedToFirebase) return;
-            const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas');
-            onSnapshot(colRef, (snapshot) => {
-                proformasList = [];
-                snapshot.forEach(doc => { proformasList.push({ id: doc.id, ...doc.data() }); });
-                proformasList.sort((a, b) => new Date(b.date) - new Date(a.date));
-                renderHistoryTable();
-            });
-        }
 
         function renderHistoryTable() {
             const tbody = document.getElementById('dbTableBody');
@@ -1929,34 +1758,39 @@
 
         window.updateStatus = async (id, newStatus) => {
             try {
-                if (isConnectedToFirebase && currentUser) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', id), { status: newStatus });
-                } else {
-                    const idx = proformasList.findIndex(p => p.id === id);
-                    if(idx > -1) {
-                        proformasList[idx].status = newStatus;
-                        localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
-                        renderHistoryTable();
-                    }
-                }
-                
                 const profToSync = proformasList.find(p => p.id === id);
                 if (profToSync) {
                     profToSync.status = newStatus;
-                    let itemsArr = profToSync.items && profToSync.items.length > 0 ? profToSync.items : [{qty: 1, desc: 'Sin detalle', cost: profToSync.cost||0, price: profToSync.total}];
-                    await window.syncToGoogleSheets(profToSync, itemsArr);
+                    renderHistoryTable();
+                    
+                    window.setCloudStatus('syncing');
+                    await fetch(window.WEBHOOK_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: "save_proforma", data: profToSync })
+                    });
+                    window.setCloudStatus('success');
                 }
-            } catch (error) { console.error("Error actualizando estado:", error); }
+            } catch (error) { 
+                console.error("Error actualizando estado:", error); 
+                window.setCloudStatus('error');
+            }
         };
 
         window.deleteProforma = async (id) => {
-            if (confirm("¿Eliminar proforma del historial?")) {
-                if (isConnectedToFirebase && currentUser) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'proformas', id));
-                } else {
+            if (confirm("¿Eliminar permanentemente proforma de la Base de Datos?")) {
+                try {
+                    window.setCloudStatus('syncing');
+                    await fetch(window.WEBHOOK_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: "delete_proforma", id: id })
+                    });
+                    
                     proformasList = proformasList.filter(p => p.id !== id);
-                    localStorage.setItem('proformasList_kgb', JSON.stringify(proformasList));
                     renderHistoryTable();
+                    window.setCloudStatus('success');
+                } catch(e) {
+                    alert("Error eliminando en la nube.");
+                    window.setCloudStatus('error');
                 }
             }
         };
@@ -2110,15 +1944,22 @@
         function updateDatalist() {
             const dl = document.getElementById('inventoryList');
             dl.innerHTML = '';
+            
+            // Eliminar duplicados visuales en la lista desplegable
+            const seen = new Set();
             productCatalog.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.desc;
-                dl.appendChild(opt);
+                const desc = (p.desc || '').trim().toUpperCase();
+                if(desc && !seen.has(desc)) {
+                    seen.add(desc);
+                    const opt = document.createElement('option');
+                    opt.value = desc;
+                    dl.appendChild(opt);
+                }
             });
         }
 
         window.addCatalogItem = async () => {
-            const desc = document.getElementById('cat_desc').value.trim();
+            const desc = document.getElementById('cat_desc').value.trim().toUpperCase();
             const cost = parseFloat(document.getElementById('cat_cost').value) || 0;
             const price = parseFloat(document.getElementById('cat_price').value) || 0;
             
@@ -2129,29 +1970,40 @@
             document.getElementById('cat_price').value = '';
 
             try {
-                if (isConnectedToFirebase && currentUser) {
-                    const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory');
-                    await addDoc(colRef, { desc, cost, price });
-                } else {
-                    productCatalog.push({ id: 'mem_' + Date.now(), desc, cost, price });
+                window.setCloudStatus('syncing');
+                const response = await fetch(window.WEBHOOK_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "save_producto", data: {desc, cost, price} })
+                });
+                const resData = await response.json();
+                
+                if (resData.status === "ok") {
+                    productCatalog.push({ id: resData.id, desc, cost, price });
                     localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
                     renderCatalogTable();
                     updateDatalist();
-                }
-                await window.syncProductToGoogleSheets(desc, cost, price);
-            } catch (error) { console.error("Error guardando producto:", error); }
+                    window.setCloudStatus('success');
+                } else { throw new Error(); }
+            } catch (error) { 
+                alert("Error guardando catálogo en la nube.");
+                window.setCloudStatus('error');
+            }
         };
 
         window.deleteCatalogItem = async (id) => {
             if(confirm("¿Eliminar este producto del catálogo?")) {
-                if (isConnectedToFirebase && currentUser) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory', id));
-                } else {
+                try {
+                    window.setCloudStatus('syncing');
+                    await fetch(window.WEBHOOK_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: "delete_producto", id: id })
+                    });
+                    
                     productCatalog = productCatalog.filter(c => c.id !== id);
-                    localStorage.setItem('productCatalog_kgb', JSON.stringify(productCatalog));
                     renderCatalogTable();
                     updateDatalist();
-                }
+                    window.setCloudStatus('success');
+                } catch(e) { window.setCloudStatus('error'); }
             }
         };
 
@@ -2272,7 +2124,6 @@
             if (pdfBtn) window.generateReportPDF(pdfBtn);
         };
 
-        // NUEVO: GUARDAR INFORME EN GOOGLE SHEETS
         window.saveReportToCloud = async (btn) => {
             if (btn.disabled) return;
             const originalText = btn.innerHTML;
@@ -2284,7 +2135,7 @@
                 lucide.createIcons();
 
                 const rawNum = document.getElementById('r_num').value.trim();
-                const data = {
+                const dataObj = {
                     num: rawNum.startsWith('IT-') ? rawNum : "IT-" + rawNum,
                     date: document.getElementById('r_date').value,
                     clientName: document.getElementById('r_clientName').value || 'Sin Nombre',
@@ -2298,31 +2149,28 @@
                     solution: document.getElementById('r_solution').value || ''
                 };
 
-                const payload = {
-                    type: "informe",
-                    data: data
-                };
-
                 window.setCloudStatus('syncing');
-                await fetch(window.WEBHOOK_URL, {
+                const response = await fetch(window.WEBHOOK_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ action: "save_informe", data: dataObj })
                 });
-                window.setCloudStatus('success');
 
-                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> ¡Guardado!';
+                if(response.ok) {
+                    window.setCloudStatus('success');
+                    btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> ¡Guardado!';
+                    
+                    const currentRepNum = parseInt(rawNum.replace(/\D/g, ''), 10);
+                    if (!isNaN(currentRepNum)) {
+                        document.getElementById('r_num').value = String(currentRepNum + 1).padStart(4, '0');
+                        window.updateReportPreview();
+                    }
+                } else {
+                    throw new Error("Fallo en la nube");
+                }
                 lucide.createIcons();
 
-                const currentRepNum = parseInt(rawNum.replace(/\D/g, ''), 10);
-                if (!isNaN(currentRepNum)) {
-                    document.getElementById('r_num').value = String(currentRepNum + 1).padStart(4, '0');
-                    window.updateReportPreview();
-                }
-
             } catch (error) {
-                alert("Error al guardar el informe.");
-                console.error(error);
+                alert("Error al guardar el informe en la nube.");
                 btn.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i> Error';
                 lucide.createIcons();
                 window.setCloudStatus('error');
