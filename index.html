@@ -1282,6 +1282,7 @@
 
         window.clearForm = () => {
             if(confirm('¿Deseas crear una nueva proforma en blanco?')) {
+                // Limpiar campos
                 document.getElementById('f_clientName').value = '';
                 document.getElementById('f_clientDoc').value = '';
                 document.getElementById('f_clientPhone').value = '';
@@ -1289,14 +1290,39 @@
                 document.getElementById('f_yape').value = '917 309 964';
                 document.getElementById('f_yape_qr_url').value = '';
                 document.getElementById('f_obsNotas').value = '';
+                document.getElementById('f_generalDesc').value = '';
                 if(document.getElementById('f_manualTotal')) document.getElementById('f_manualTotal').value = '';
                 if(document.getElementById('f_manualCost')) document.getElementById('f_manualCost').value = '';
                 document.getElementById('f_status').value = 'Solo Proforma';
                 
+                // Poner la fecha de hoy
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                document.getElementById('f_date').value = `${yyyy}-${mm}-${dd}`;
+                
+                // Reiniciar estado
                 window.currentEditId = null; 
                 items = [{ id: 1, qty: 1, desc: '', cost: 0, price: 0 }];
                 window.proformaImages = []; 
-                window.fetchGoogleSheetsData();
+
+                // Calcular el siguiente consecutivo al INSTANTE
+                let maxNum = 0;
+                if (proformasList && proformasList.length > 0) {
+                    proformasList.forEach(p => {
+                        const match = String(p.profNumber).match(/(\d+)$/);
+                        if (match) {
+                            const num = parseInt(match[1], 10);
+                            if (num > maxNum) maxNum = num;
+                        }
+                    });
+                }
+                const nextNum = maxNum > 0 ? maxNum + 1 : 1;
+                document.getElementById('f_profNumber').value = String(nextNum).padStart(4, '0');
+                
+                // Regresar al modo de vista Detallado
+                window.setMode('detalle');
                 window.renderItems();
             }
         };
